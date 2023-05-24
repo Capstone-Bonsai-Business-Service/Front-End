@@ -1,0 +1,45 @@
+.__app-login {
+    height: 100vh;
+    width: 100vw;
+
+    .__app-login-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 38px;
+        justify-items: center;
+        align-items: center;
+        grid-template-rows: 100vh;
+        background-color: #f6f6f6;
+
+        .__login-form-item {
+            width: 300px;
+
+            .__login-image {
+                margin-top: -160px;
+                margin-bottom: 70px;
+            }
+
+            .__login-form {
+                background-color: white;
+                padding-left: 30px;
+                padding-top: 20px;
+                margin-top: -60px;
+                margin-left: -30px;
+                margin-right: -30px;
+                border-radius: 8px;
+                border: 1px solid #d8d8da;
+
+                .__form-controls {
+                    width: 300px;
+                    .__button {
+                        width: 100%;
+                    }
+                }
+                
+                .login-form-forgot {
+                    float: right;
+                }
+            }
+        }
+    }
+}
