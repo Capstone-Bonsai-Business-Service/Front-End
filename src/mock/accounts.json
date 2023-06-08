@@ -1,0 +1,87 @@
+[
+    {
+        "Id": "001",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Nguyễn Trần Phương Hải",
+        "avatar": "https://png.pngtree.com/png-vector/20190629/ourlarge/pngtree-office-work-user-icon-avatar-png-image_1527655.jpg",
+        "phone": "0911 384 047",
+        "address": "12 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nam",
+        "role": "Manager",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "001",
+            "name": "Chi nhánh 1",
+            "address": "57 Hai Bà Trưng, Q1, TP HCM"
+        }
+    },
+    {
+        "Id": "002",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Nguyễn Văn Quá",
+        "avatar": "https://img.freepik.com/free-vector/flat-design-kawaii-person-illustration_23-2149453074.jpg?w=2000",
+        "phone": "0909 887 766",
+        "address": "15 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nam",
+        "role": "Manager",
+        "status": "Dừng hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "001",
+            "name": "Chi nhánh 1",
+            "address": "57 Hai Bà Trưng, Q1, TP HCM"
+        }
+    },
+    {
+        "Id": "003",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Trần Thị Mỹ Tâm",
+        "avatar": "https://static.vecteezy.com/ti/vetor-gratis/p2/23682161-chibi-menina-o-negocio-mascote-para-logotipo-gratis-vetor.jpg",
+        "phone": "0909 887 766",
+        "address": "17 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Manager",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "001",
+            "name": "Chi nhánh 1",
+            "address": "57 Hai Bà Trưng, Q1, TP HCM"
+        }
+    },
+    {
+        "Id": "004",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Nguyễn Hoàng Ly",
+        "avatar": "https://static.vecteezy.com/ti/vetor-gratis/p1/23288246-uma-beleza-menina-e-menina-retrato-ilustrado-com-verde-vestir-e-vermelho-labio-ou-menina-face-e-beleza-senhora-papel-de-parede-projeto-e-moda-menina-projeto-face-vetor.jpg",
+        "phone": "0911 384 047",
+        "address": "19 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Manager",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "001",
+            "name": "Chi nhánh 1",
+            "address": "57 Hai Bà Trưng, Q1, TP HCM"
+        }
+    },
+    {
+        "Id": "005",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Hứa Kim Tuyền",
+        "avatar": "https://img.freepik.com/vecteurs-libre/mignon-garcon-cool-tamponnant-pose-illustration-icone-vecteur-dessin-anime-concept-icone-mode-personnes-isole_138676-5680.jpg?w=360",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nam",
+        "role": "Manager",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "001",
+            "name": "Chi nhánh 1",
+            "address": "57 Hai Bà Trưng, Q1, TP HCM"
+        }
+    }
+]

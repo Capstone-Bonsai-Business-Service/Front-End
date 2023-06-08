@@ -9,21 +9,10 @@ import { AdminInitLanding } from './app/administation/administation-init-landing
 import { LoginAdmin } from './app/administation/login-administation';
 import { PageNotFound } from './app/not-found-page/not-found-page';
 import { AdminPage } from './app/administation/administation-page';
-import { message } from 'antd';
-import { NoticeType } from 'antd/es/message/interface';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const [currentUser, setCurrentUser]: [IUser | undefined, any] = useState();
-  const [messageApi, contextMessageHolder] = message.useMessage();
-
-  const openMessage = (type: NoticeType, message: string, duration: number = 300, key: string = `message_${new Date().getTime()}`) => {
-    messageApi.open({
-      content: message,
-      type: type,
-      duration: duration,
-      key: key
-    });
-  };
 
   const rootRouter = createBrowserRouter([
     {
@@ -32,7 +21,7 @@ function App() {
     },
     {
       path: '/administation-login',
-      element: <LoginAdmin onSaveUserLogin={setCurrentUser} onOpenMessage={openMessage} />,
+      element: <LoginAdmin onSaveUserLogin={setCurrentUser} />,
     },
     {
       path: '/portal',
@@ -62,7 +51,13 @@ function App() {
   return (
     <React.StrictMode>
       <RouterProvider router={rootRouter} />
-      {contextMessageHolder}
+      <Toaster
+        position="bottom-right"
+        reverseOrder={true}
+        toastOptions={{
+          duration: 3000
+        }}
+      />
     </React.StrictMode>
   );
 }

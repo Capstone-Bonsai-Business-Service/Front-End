@@ -5,12 +5,12 @@ import './administation.scss';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { adminServices } from './administation.service';
 import { take } from 'rxjs';
-import { IMessage, IUser } from '../../IApp.interface';
+import { IUser } from '../../IApp.interface';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 interface ILoginAdminProps {
     onSaveUserLogin: (obj: IUser) => any;
-    onOpenMessage: IMessage;
 }
 
 export const LoginAdmin: React.FC<ILoginAdminProps> = (props) => {
@@ -24,14 +24,28 @@ export const LoginAdmin: React.FC<ILoginAdminProps> = (props) => {
         adminService.login$(username, password).pipe(take(1)).subscribe({
             next: (res) => {
                 if (res) {
-                    props.onOpenMessage('success', 'Signin successful.', 3);
-                    props.onSaveUserLogin(res);
-                    return navigate('/administation');
+                    const isAdmin = checkDummyLogin(res);
+                    if (isAdmin) {
+                        toast.success('Login successful');
+                        props.onSaveUserLogin(res.admin);
+                        return navigate('/administation');
+                    }
+                    toast.error('Incorrect username or password');
+                    return;
                 } else {
-
+                    toast.error('Incorrect username or password');
+                    return;
                 }
             }
         })
+    }
+
+    //remove later
+    function checkDummyLogin(users: any) {
+        if (users?.admin.username === username && users?.admin.password === password) {
+            return true;
+        }
+        return false;
     }
 
     return (
@@ -67,7 +81,7 @@ export const LoginAdmin: React.FC<ILoginAdminProps> = (props) => {
                                 <Button
                                     type='primary'
                                     className='__button'
-                                    onClick={(e) => { 
+                                    onClick={(e) => {
                                         e.preventDefault();
                                         submitLogin();
                                     }}
