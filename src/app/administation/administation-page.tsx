@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Button, Col, Divider, Dropdown, Layout, Menu, MenuProps, Row, Tag } from 'antd';
-import { DeleteOutlined, DownOutlined, FormOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { Avatar, Badge, Button, Col, Divider, Dropdown, Layout, Menu, MenuProps, Row, Skeleton, Table, Tag, Tooltip } from 'antd';
+import { BarsOutlined, BellOutlined, CalendarOutlined, DeleteOutlined, DownOutlined, FormOutlined, LogoutOutlined, TableOutlined, UserOutlined } from '@ant-design/icons';
 import { adminServices } from './administation.service';
+import { layoutMode } from '../common/interfaces';
+import { ColumnsType } from 'antd/es/table';
+import Search from 'antd/es/input/Search';
 
 interface IAdminPageProps {
     currentUser?: IUser;
@@ -15,6 +18,8 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
     // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [accounts, setAccount] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
+    const [isDataReady, setDataReady] = useState<boolean>(false);
+    const [mode, setMode] = useState<layoutMode>('list');
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -22,12 +27,11 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                 next: (res) => {
                     setAccount(res);
                     setFirstInit(true);
+                    setDataReady(true);
                 }
             })
         }
     }, [adminService, isFirstInit]);
-
-
 
     const items: MenuProps['items'] = [
         {
@@ -82,6 +86,25 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                 </span>
             ),
             icon: <LogoutOutlined />
+        }
+    ]
+
+    const tableUserColumns: ColumnsType<any> = [
+        {
+            title: 'Họ & Tên',
+            dataIndex: 'fullName',
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+        },
+        {
+            title: 'Số điện thoại',
+            dataIndex: 'phone',
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
         }
     ]
 
@@ -169,10 +192,71 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
         return arrAccounts;
     }
 
+    function renderShimmerLoading() {
+        const arrShimmer = ['', '', ''].reduce((acc, _) => {
+            acc.push(
+                <div className='__app-user-frame-container'>
+                    <div className='__app-avatar-block'>
+                        <Skeleton.Avatar active size={80}></Skeleton.Avatar>
+                    </div>
+                    <div className='__app-account-info-block-container'>
+                        <div className='__app-account-info-top-block'>
+                            <span className='__app-full-name'>
+                                <Skeleton
+                                    className='__app-shimmer-content'
+                                    title
+                                    active
+                                    paragraph={{
+                                        rows: 2,
+                                        width: ['50%', '50%']
+                                    }}
+                                >
+                                </Skeleton>
+                            </span>
+                        </div>
+                        <Divider className='__app-divider-no-margin'></Divider>
+                        <div className='__app-account-info-bottom-block'>
+                            <div className='__app-account-info-left'>
+                                <Skeleton title
+                                    className='__app-shimmer-content'
+                                    active
+                                    paragraph={{
+                                        rows: 4,
+                                        width: ['50%', '50%', '50%', '50%']
+                                    }}
+                                >
+                                </Skeleton>
+                            </div>
+                            <Divider type='vertical' style={{ height: '100%' }} className='__app-divider-no-margin'></Divider>
+                            <div className='__app-account-info-right'>
+                                <Skeleton title
+                                    active
+                                    className='__app-shimmer-content'
+                                    paragraph={{
+                                        rows: 4,
+                                        width: ['50%', '50%', '50%', '50%']
+                                    }}
+                                >
+                                </Skeleton>
+                            </div>
+                        </div>
+                    </div>
+                    <Divider type='vertical' style={{ height: '100%' }} className='__app-divider-no-margin'></Divider>
+                    <div className='__app-command-block'>
+                        <Skeleton.Button active></Skeleton.Button>
+                        <Skeleton.Button active></Skeleton.Button>
+                    </div>
+                </div>
+            );
+            return acc;
+        }, [] as JSX.Element[]);
+        return arrShimmer;
+    }
+
     return (
         <>
-            <Layout className='__admin-layout' >
-                <Layout.Sider className='__app-layout-slider' theme='light' trigger={null}>
+            <Layout className='__admin-layout ant-layout-has-sider'>
+                <Layout.Sider className='__app-layout-slider' trigger={null}>
                     <div className='__app-user-info-slider'>
                         {
                             props.currentUser?.avatar ?
@@ -197,11 +281,60 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                 </Layout.Sider>
                 <Layout>
                     <Layout.Header className='__app-layout-header'>
-
+                        <Badge count={0}>
+                            <Avatar shape="square" size="large" icon={<BellOutlined />} />
+                        </Badge>
                     </Layout.Header>
                     <Layout.Content className='__app-layout-content'>
+                        <div className='__app-toolbar-container'>
+                            <div className='__app-toolbar-left-buttons'>
+                                <Button shape='default' type='primary'>Tạo tài khoản</Button>
+                                <Search style={{ marginLeft: 10 }} placeholder="Tìm kiếm" />
+                            </div>
+                            <div className='__app-toolbar-right-buttons'>
+                                <Tooltip placement='bottom' title='Dữ liệu bảng' arrow={true}>
+                                    <Button
+                                        className={mode === 'table' ? '__app-mode-button active' : '__app-mode-button'}
+                                        type='text'
+                                        icon={<CalendarOutlined />}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setMode('table');
+                                        }}
+                                    />
+                                </Tooltip>
+                                <Tooltip placement='bottom' title='Dữ liệu chi tiết' arrow={true}>
+                                    <Button
+                                        className={mode === 'list' ? '__app-mode-button active' : '__app-mode-button'}
+                                        type='text'
+                                        style={{ marginLeft: 10 }}
+                                        icon={<BarsOutlined />}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setMode('list');
+                                        }}
+                                    />
+                                </Tooltip>
+
+                            </div>
+                        </div>
+                        <div style={{ width: '94%' }}>
+                            <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
+                        </div>
                         <div className='__app-layout-container'>
-                            {renderUserInfoFrame()}
+                            {
+                                mode === 'list' ?
+                                    (isDataReady ?
+                                        renderUserInfoFrame() :
+                                        renderShimmerLoading()
+                                    ) :
+                                    (<Table
+                                        tableLayout='auto'
+                                        columns={tableUserColumns}
+                                        className='__app-user-info-table'
+                                        dataSource={accounts}
+                                    ></Table>)
+                            }
                         </div>
                     </Layout.Content>
                 </Layout>
