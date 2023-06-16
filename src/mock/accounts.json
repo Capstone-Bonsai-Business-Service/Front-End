@@ -7,14 +7,9 @@
         "phone": "0911 384 047",
         "address": "12 Võ Thị Sáu, Q1, TP HCM",
         "gender": "Nam",
-        "role": "Manager",
+        "role": "Administator",
         "status": "Đang hoạt động",
-        "createdAt": "2023-06-08T02:32:17.861Z",
-        "store": {
-            "Id": "001",
-            "name": "Chi nhánh 1",
-            "address": "57 Hai Bà Trưng, Q1, TP HCM"
-        }
+        "createdAt": "2023-06-08T02:32:17.861Z"
     },
     {
         "Id": "002",
@@ -28,9 +23,9 @@
         "status": "Dừng hoạt động",
         "createdAt": "2023-06-08T02:32:17.861Z",
         "store": {
-            "Id": "001",
-            "name": "Chi nhánh 1",
-            "address": "57 Hai Bà Trưng, Q1, TP HCM"
+            "Id": "002",
+            "name": "Chi nhánh 2",
+            "address": "57 Bùi Viện, Q1, TP HCM"
         }
     },
     {
@@ -58,14 +53,9 @@
         "phone": "0911 384 047",
         "address": "19 Võ Thị Sáu, Q1, TP HCM",
         "gender": "Nữ",
-        "role": "Manager",
+        "role": "Owner",
         "status": "Đang hoạt động",
-        "createdAt": "2023-06-08T02:32:17.861Z",
-        "store": {
-            "Id": "001",
-            "name": "Chi nhánh 1",
-            "address": "57 Hai Bà Trưng, Q1, TP HCM"
-        }
+        "createdAt": "2023-06-08T02:32:17.861Z"
     },
     {
         "Id": "005",
@@ -75,7 +65,7 @@
         "phone": "0911 384 047",
         "address": "27 Võ Thị Sáu, Q1, TP HCM",
         "gender": "Nam",
-        "role": "Manager",
+        "role": "Staff",
         "status": "Đang hoạt động",
         "createdAt": "2023-06-08T02:32:17.861Z",
         "store": {
@@ -83,5 +73,128 @@
             "name": "Chi nhánh 1",
             "address": "57 Hai Bà Trưng, Q1, TP HCM"
         }
+    },
+    {
+        "Id": "006",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Bảo Anh",
+        "avatar": "https://img.freepik.com/vecteurs-libre/mignon-garcon-cool-tamponnant-pose-illustration-icone-vecteur-dessin-anime-concept-icone-mode-personnes-isole_138676-5680.jpg?w=360",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Staff",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "001",
+            "name": "Chi nhánh 1",
+            "address": "57 Hai Bà Trưng, Q1, TP HCM"
+        }
+    },
+    {
+        "Id": "007",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Juky San",
+        "avatar": "https://img.freepik.com/vecteurs-libre/mignon-garcon-cool-tamponnant-pose-illustration-icone-vecteur-dessin-anime-concept-icone-mode-personnes-isole_138676-5680.jpg?w=360",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Staff",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "002",
+            "name": "Chi nhánh 2",
+            "address": "57 Bùi Viện, Q1, TP HCM"
+        }
+    },
+    {
+        "Id": "008",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Văn Mai Hương",
+        "avatar": "https://img.freepik.com/vecteurs-libre/mignon-garcon-cool-tamponnant-pose-illustration-icone-vecteur-dessin-anime-concept-icone-mode-personnes-isole_138676-5680.jpg?w=360",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Staff",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z",
+        "store": {
+            "Id": "003",
+            "name": "Chi nhánh 3",
+            "address": "57 Trường Chinh, Q Tân Bình, TP HCM"
+        }
+    },
+    {
+        "Id": "009",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Tóc Tiên",
+        "avatar": "https://gunboundm.vn/wp-content/uploads/2022/11/avatar-doi.4.1.jpg",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Customer",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z"
+    },
+    {
+        "Id": "010",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Emcee L",
+        "avatar": "https://gunboundm.vn/wp-content/uploads/2022/11/avatar-doi.4.1.jpg",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nam",
+        "role": "Customer",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z"
+    },
+    {
+        "Id": "011",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Justa Tee",
+        "avatar": "https://gunboundm.vn/wp-content/uploads/2022/11/avatar-doi.4.1.jpg",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nam",
+        "role": "Customer",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z"
+    },
+    {
+        "Id": "012",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Hoàng Duyên",
+        "avatar": "https://gunboundm.vn/wp-content/uploads/2022/11/avatar-doi.4.1.jpg",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Customer",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z"
+    },
+    {
+        "Id": "013",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Phương Ly",
+        "avatar": "https://gunboundm.vn/wp-content/uploads/2022/11/avatar-doi.4.1.jpg",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Customer",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z"
+    },
+    {
+        "Id": "014",
+        "email": "haintpse130636@fpt.edu.vn",
+        "fullName": "Vũ Cát Tường",
+        "avatar": "https://gunboundm.vn/wp-content/uploads/2022/11/avatar-doi.4.1.jpg",
+        "phone": "0911 384 047",
+        "address": "27 Võ Thị Sáu, Q1, TP HCM",
+        "gender": "Nữ",
+        "role": "Customer",
+        "status": "Đang hoạt động",
+        "createdAt": "2023-06-08T02:32:17.861Z"
     }
 ]
