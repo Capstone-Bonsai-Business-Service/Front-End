@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
 import { Avatar, Button, Col, Divider, Dropdown, Layout, Menu, MenuProps, Row, Skeleton, Table, Tag, Tooltip } from 'antd';
-import { BarsOutlined, CalendarOutlined, DeleteOutlined, FormOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import { adminServices } from './administation.service';
+import { BarsOutlined, CalendarOutlined, DeleteOutlined, FormOutlined, LogoutOutlined, PlusOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
+import { adminServices } from './administration.service';
 import { layoutMode } from '../common/interfaces';
 import { ColumnsType } from 'antd/es/table';
 import Search from 'antd/es/input/Search';
@@ -10,9 +10,11 @@ import { ColumnFilterItem } from 'antd/es/table/interface';
 import { uniqBy } from 'lodash';
 import { DateTime } from 'luxon';
 import { CreateAccountDialog } from './dialogs/add-account-dialog';
+import { useNavigate } from 'react-router-dom';
 
 interface IAdminPageProps {
     currentUser?: IUser;
+    globalSettings: any;
 }
 
 interface ITableFilter {
@@ -26,12 +28,14 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const adminService = new adminServices();
 
+    const navigate = useNavigate();
+
     // const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [accounts, setAccount] = useState<any[]>([]);
+    const [accounts, setAccounts] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [mode, setMode] = useState<layoutMode>('list');
-    const [accountsOnSearch, setAccountOnSearch] = useState<any[]>([]);
+    const [accountsOnSearch, setAccountsOnSearch] = useState<any[]>([]);
     const [objectFilter, setObjectFilter] = useState<ITableFilter>({
         email: [],
         fullName: [],
@@ -44,8 +48,8 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
         if (!isFirstInit) {
             adminService.getAccounts$().subscribe({
                 next: (res) => {
-                    setAccount(res);
-                    setAccountOnSearch(res);
+                    setAccounts(res);
+                    setAccountsOnSearch(res);
                     bindingObjectFilter(res);
                     setFirstInit(true);
                     setDataReady(true);
@@ -96,17 +100,6 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
     ]
 
     const userMenuItems: MenuProps['items'] = [
-        {
-            key: 'user-info',
-            label: (
-                <a href='/userpage'>
-                    Trang cá nhân
-                </a>
-            ),
-            icon: (
-                <UserOutlined />
-            )
-        },
         {
             key: 'logout',
             label: (
@@ -257,7 +250,9 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
     function renderUserInfoFrame() {
         const arrAccounts = accountsOnSearch.reduce((acc, cur) => {
             acc.push(
-                <div className='__app-user-frame-container' key={cur.Id}>
+                <div className='__app-user-frame-container' key={cur.Id} onClick={() => {
+                    openDetailUser(cur.Id);
+                }}>
                     <div className='__app-avatar-block'>
                         <Avatar size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }} src={cur.avatar} />
                     </div>
@@ -419,8 +414,8 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
         setDataReady(false);
         adminService.getAccounts$(filter).subscribe({
             next: res => {
-                setAccount(res);
-                setAccountOnSearch(res);
+                setAccounts(res);
+                setAccountsOnSearch(res);
                 bindingObjectFilter(res);
                 setDataReady(true);
             }
@@ -428,7 +423,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
     }
 
     function openDetailUser(userId: string) {
-
+        return navigate(`/administration/account/${userId}`);
     }
 
     function openCreateAccount() {
@@ -475,9 +470,14 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                     <Layout.Content className='__app-layout-content'>
                         <div className='__app-toolbar-container'>
                             <div className='__app-toolbar-left-buttons'>
-                                <Button shape='default' type='primary' onClick={openCreateAccount}>Tạo tài khoản</Button>
+                                <Button shape='default' icon={<PlusOutlined />} type='text' onClick={openCreateAccount}>Thêm tài khoản</Button>
+                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={openCreateAccount}>Xuất Tệp Excel</Button>
+                                <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={openCreateAccount}>Tải lại</Button>
+                            </div>
+                            <div className='__app-toolbar-right-buttons'>
                                 <Search
                                     style={{ marginLeft: 10 }}
+                                    className='__app-search-box'
                                     placeholder="Tìm kiếm"
                                     onSearch={(value) => {
                                         const accountSearched = accounts.reduce((acc, cur) => {
@@ -490,11 +490,9 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                             }
                                             return acc;
                                         }, []);
-                                        setAccountOnSearch(accountSearched);
+                                        setAccountsOnSearch(accountSearched);
                                     }}
                                 />
-                            </div>
-                            <div className='__app-toolbar-right-buttons'>
                                 <Tooltip placement='bottom' title='Dữ liệu bảng' arrow={true}>
                                     <Button
                                         className={mode === 'table' ? '__app-mode-button active' : '__app-mode-button'}
@@ -510,7 +508,6 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                     <Button
                                         className={mode === 'list' ? '__app-mode-button active' : '__app-mode-button'}
                                         type='text'
-                                        style={{ marginLeft: 10 }}
                                         icon={<BarsOutlined />}
                                         onClick={(e) => {
                                             e.preventDefault();

@@ -4,6 +4,7 @@ import { RcFile, UploadChangeParam, UploadFile } from 'antd/es/upload';
 import { cloneDeep } from 'lodash';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { CommonUtility } from '../../utils/utilities';
 
 interface IAccountDetailProps {
     onCancel: () => void;
@@ -34,12 +35,6 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
         );
         return nodes;
     }
-
-    function getBase64(img: RcFile, callback: (url: string) => void) {
-        const reader = new FileReader();
-        reader.addEventListener('load', () => callback(reader.result as string));
-        reader.readAsDataURL(img);
-    };
 
     return (
         <>
@@ -217,14 +212,14 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                                     }
                                     if (info.file.status === 'done') {
                                         // Get this url from response in real world.
-                                        getBase64(info.file.originFileObj as RcFile, (url) => {
+                                        CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
                                             setLoading(false);
                                             setImageUrl(url);
                                         });
                                     }
                                     if (info.file.status === 'error') {
                                         // Get this url from response in real world.
-                                        getBase64(info.file.originFileObj as RcFile, (url) => {
+                                        CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
                                             setLoading(false);
                                             setImageUrl(url);
                                         });

@@ -1,51 +1,57 @@
 import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import loginImg from '../../assets/images/login.png';
-import './administation.scss';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { adminServices } from './administation.service';
-import { take } from 'rxjs';
+import './owner.scss';
+import { LoadingOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
+import { OwnerServices } from './owner.service';
+import { of, switchMap, take } from 'rxjs';
 import { IUser } from '../../IApp.interface';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-interface ILoginAdminProps {
+interface ILoginOwnerProps {
     onSaveUserLogin: (obj: IUser) => any;
 }
 
-export const LoginAdmin: React.FC<ILoginAdminProps> = (props) => {
+export const LoginOwner: React.FC<ILoginOwnerProps> = (props) => {
     const [username, changedUsername] = useState('');
     const [password, changedPassword] = useState('');
-    const adminService = new adminServices();
+    const [isProccess, setProcessing] = useState(false);
+    const ownerService = new OwnerServices();
 
     const navigate = useNavigate();
 
     function submitLogin() {
-        adminService.login$(username, password).pipe(take(1)).subscribe({
+        let user: IUser = {
+            username: username,
+        } as IUser;
+        setProcessing(true);
+        ownerService.login$(username, password).pipe(take(1)).pipe(
+            switchMap(token => {
+                if (token) {
+                    user['token'] = token;
+                    return ownerService.getUserInfoByToken$(token);
+                } else {
+                    return of(null);
+                }
+            })
+        ).subscribe({
             next: (res) => {
                 if (res) {
-                    const isAdmin = checkDummyLogin(res);
-                    if (isAdmin) {
-                        toast.success('Login successful');
-                        props.onSaveUserLogin(res.admin);
-                        return navigate('/administation');
+                    for (let prop in res) {
+                        user[prop] = res[prop];
                     }
-                    toast.error('Incorrect username or password');
-                    return;
+                    toast.success('Login successful');
+                    props.onSaveUserLogin(user);
+                    setProcessing(false);
+                    // return navigate('/owner');
                 } else {
+                    setProcessing(false);
                     toast.error('Incorrect username or password');
                     return;
                 }
             }
         })
-    }
-
-    //remove later
-    function checkDummyLogin(users: any) {
-        if (users?.admin.username === username && users?.admin.password === password) {
-            return true;
-        }
-        return false;
     }
 
     return (
@@ -78,16 +84,23 @@ export const LoginAdmin: React.FC<ILoginAdminProps> = (props) => {
                                 />
                             </Form.Item>
                             <Form.Item>
-                                <Button
-                                    type='primary'
-                                    className='__button'
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        submitLogin();
-                                    }}
-                                >
-                                    Log in
-                                </Button>
+                                {
+                                    isProccess ?
+                                        <div className="__loading-icon">
+                                            <LoadingOutlined style={{ fontSize: 24, color: '#74060E' }}/>
+                                        </div> :
+                                        <Button
+                                            type='primary'
+                                            className='__button'
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                submitLogin();
+                                            }}
+                                        >
+                                            Log in
+                                        </Button>
+                                }
+
                             </Form.Item>
                         </Form>
                     </div>

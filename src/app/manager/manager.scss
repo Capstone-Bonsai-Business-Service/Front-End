@@ -41,11 +41,17 @@
                     float: right;
                 }
             }
+
+            .__loading-icon {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
         }
     }
 }
 
-.__admin-layout {
+.__manager-layout {
     min-height: 100vh;
 
     .__app-layout-slider {
@@ -127,6 +133,12 @@
         height: 64px;
         display: flex;
         flex-direction: row-reverse;
+        .__app-header-right {
+            gap: 12px;
+            .__app-notification-info {
+                cursor: pointer;
+            }
+        }
     }
 
     .ant-layout-sider-children {
@@ -144,7 +156,33 @@
             margin-bottom: 1px;
             padding-right: 12px;
             transition: all 0.3s ease 0s;
-            padding-left: 30px !important;
+            padding-left: 20px !important;
+
+            .ant-menu-item-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 20px;
+            }
+        }
+
+        .ant-menu-submenu {
+            margin-top: 1px;
+            margin-bottom: 1px;
+            transition: all 0.3s ease 0s;
+
+            .ant-menu-item-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 20px;
+            }
+
+            .ant-menu-sub {
+                padding: 0 0 0 24px;
+                background: transparent;
+            }
+            .ant-menu-submenu-arrow {
+                color: #000000;
+            }
         }
     }
 
@@ -158,8 +196,81 @@
         align-items: center;
         flex-direction: column;
 
-        .__app-layout-container {
+        .__app-services-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 42px;
+            justify-content: center;
+            height: calc(100vh - 64px);
+            overflow: auto;
+            padding: 32px;
 
+            .__app-service-block {
+                width: 360px;
+                background-color: #FFF;
+                height: 210px;
+                border-radius: 8px;
+                box-shadow: 10px 10px 0px 8px #91C4C7;
+                border: 1px solid #DDDDDD;
+                padding: 24px;
+                justify-content: space-between;
+                display: flex;
+                flex-direction: column;
+
+                .__content-block {
+                    display: flex;
+                    flex-direction: row;
+                    gap: 24px;
+
+                    .__left-content {
+                        width: 30%;
+                    }
+
+                    .__right-content {
+                        width: 70%;
+                        display: flex;
+                        flex-direction: column;
+                        line-height: 26px;
+
+                        .__title {
+                            font-size: 18px;
+                            font-weight: 500;
+                        }
+
+                        .__status {
+                            width: fit-content;
+                        }
+                    }
+                }
+
+                .__action-block {
+                    display: flex;
+                    flex-direction: row-reverse;
+                }
+            }
+
+            .__app-create-service-block {
+                width: 360px;
+                background-color: #FFF;
+                height: 210px;
+                border-radius: 8px;
+                border: 3px dashed #91C4C7;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                cursor: pointer;
+
+                .__app-create-service-title {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #8A8A8A;
+                }
+            }
+        }
+
+        .__app-layout-container {
             background-color: #91C4C7;
             background-image: linear-gradient(#91C4C7, #91C4C7, #C0DADC);
             height: calc(100vh - 160px);
@@ -308,8 +419,20 @@
 
             .__app-toolbar-right-buttons {
                 display: flex;
+                gap: 10px;
+
+                .__app-search-box {
+                    width: 200px;
+
+                    input {
+                        height: 32px;
+                    }
+                }
 
                 .__app-mode-button {
+                    width: 32px;
+                    height: 32px;
+
                     &.active {
                         background-color: rgba(0, 0, 0, 0.16);
                     }
@@ -319,6 +442,29 @@
             .__app-toolbar-left-buttons {
                 display: flex;
             }
+
+            .__app-toolbar-title {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 18px;
+            }
+        }
+
+        .__app-user-info-table {
+            .__app-column-name-container {
+                display: flex;
+                gap: 10px;
+
+                .__app-column-name {
+                    font-weight: 700;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                }
+            }
+
         }
     }
 }
@@ -350,8 +496,20 @@
         color: #000000;
         font-size: 15px;
 
+        &.ant-menu-item-active {
+            background-color: rgba(0, 0, 0, 0.06) !important;
+
+            span {
+                color: #000000 !important;
+            }
+        }
+
+        &.hover {
+            background-color: rgba(0, 0, 0, 0.06) !important;
+        }
+
         &.ant-menu-item-selected {
-            background-color: #C0DADC !important;
+            background-color: #e6f4ff !important;
 
             span {
                 color: #000000 !important;
@@ -359,13 +517,7 @@
             }
         }
 
-        &.ant-menu-item-active {
-            background-color: #FFFFFF !important;
 
-            span {
-                color: #000000 !important;
-            }
-        }
     }
 }
 
@@ -377,7 +529,7 @@
     margin-top: 12px;
 }
 
-.__app-account-info-row{
+.__app-account-info-row {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 3px;

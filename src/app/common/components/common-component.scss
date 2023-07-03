@@ -1,0 +1,37 @@
+.__app-dashboard {
+    display: flex;
+    gap: 12px;
+    height: calc(100vh - 70px);
+    flex-direction: column;
+    width: 100%;
+    padding: 24px 32px;
+    overflow: auto;
+
+    .__app-widget-container {
+        box-shadow: 0 4px 8px 0 #00000033, 0 6px 20px 0 #00000030;
+        padding: 14px;
+        gap: 12px;
+        display: flex;
+        flex-direction: column;
+
+        .__app-widget-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            span {
+                display: flex;
+                align-items: center;
+                font-size: 16px;
+                font-weight: 700;
+            }
+        }
+
+        .__app-chart-widget-block {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+    }
+}

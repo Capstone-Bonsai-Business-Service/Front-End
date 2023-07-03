@@ -1,3 +1,4 @@
+import { RcFile } from "antd/es/upload";
 
 
 export module CommonUtility {
@@ -50,4 +51,10 @@ export module CommonUtility {
         elem.href = url;
         elem.click();
     }
+
+    export function getBase64(img: RcFile, callback: (url: string) => void) {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => callback(reader.result as string));
+        reader.readAsDataURL(img);
+    };
 }

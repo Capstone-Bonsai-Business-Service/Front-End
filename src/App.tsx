@@ -5,31 +5,78 @@ import {
   RouterProvider,
 } from 'react-router-dom';
 import { IUser } from './IApp.interface';
-import { AdminInitLanding } from './app/administation/administation-init-landing';
-import { LoginAdmin } from './app/administation/login-administation';
+import { AdminInitLanding } from './app/administration/administration-init-landing';
+import { LoginAdmin } from './app/administration/login-administration';
 import { PageNotFound } from './app/not-found-page/not-found-page';
-import { AdminPage } from './app/administation/administation-page';
+import { AdminPage } from './app/administration/administration-page';
 import { Toaster } from 'react-hot-toast';
+import { AccountDetailPage } from './app/administration/administration-account-detail';
+import { OwnerPage } from './app/owner/owner-page';
+import { OwnerInitLanding } from './app/owner/owner-init-landing';
+import { LoginOwner } from './app/owner/login-owner';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement,
+  LineController,
+  BarController,
+} from 'chart.js';
+import { GlobalSettings } from './app/global-settings';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement,
+  LineController,
+  BarController,
+  ArcElement
+);
 
 function App() {
-  const [currentUser, setCurrentUser]: [IUser | undefined, any] = useState();
+  const userInStorage = localStorage.getItem('user');
+
+  const [currentUser, setCurrentUser]: [IUser | undefined, any] = useState(userInStorage ? JSON.parse(userInStorage) : null);
+
+  const globalSettings = new GlobalSettings();
 
   const rootRouter = createBrowserRouter([
     {
-      path: '/administation',
-      element: currentUser ? <AdminPage currentUser={currentUser} /> : <AdminInitLanding currentUser={currentUser} />,
+      path: '/administration',
+      element: currentUser && currentUser.roleName === 'Admin' ? <AdminPage currentUser={currentUser} globalSettings={globalSettings} /> : <AdminInitLanding currentUser={currentUser} />,
     },
     {
-      path: '/administation-login',
-      element: <LoginAdmin onSaveUserLogin={setCurrentUser} />,
+      path: '/administration/account/:id',
+      element: currentUser && currentUser.roleName === 'Admin' ? <AccountDetailPage currentUser={currentUser} /> : <AdminInitLanding currentUser={currentUser} />,
     },
     {
-      path: '/portal',
-      element: <PageNotFound />,
+      path: '/administration-login',
+      element: currentUser && currentUser.roleName === 'Admin' ? <AdminInitLanding currentUser={currentUser} /> : <LoginAdmin onSaveUserLogin={(user) => {
+        setCurrentUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+      }} />,
+    },
+    {
+      path: '/owner',
+      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerPage currentUser={currentUser} /> : <OwnerInitLanding currentUser={currentUser} />,
     },
     {
       path: '/owner-login',
-      element: <PageNotFound />,
+      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerInitLanding currentUser={currentUser} /> : <LoginOwner onSaveUserLogin={(user) => {
+        setCurrentUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+      }} />,
     },
     {
       path: '/manager',

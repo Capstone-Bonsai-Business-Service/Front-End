@@ -12,16 +12,16 @@ export const AdminInitLanding: React.FC<adminLandingProps> = (props: adminLandin
 
     useEffect(() => {
         if (CommonUtility.isNullOrUndefined(props.currentUser)) {
-            return navigate('/administation-login');
+            return navigate('/administration-login');
         } else {
-            if (props.currentUser?.role === 'admin') {
-                return navigate('/administation');
+            if (props.currentUser?.roleName === 'Admin') {
+                return navigate('/administration');
             }
-            if (props.currentUser?.role === 'owner') {
-                return navigate('/owner-login');
+            if (props.currentUser?.roleName === 'Owner') {
+                return navigate('/owner');
             }
-            if (props.currentUser?.role === 'manager') {
-                return navigate('/manager-login');
+            if (props.currentUser?.roleName === 'Manager') {
+                return navigate('/manager');
             }
         }
     });
