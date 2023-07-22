@@ -43,13 +43,13 @@ export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (pr
                 <div className='__app-service-block'>
                     <div className='__content-block'>
                         <div className='__left-content'>
-                            <Avatar shape='square' src={null} size={100} />
+                            <Avatar shape='square' src={cur.imgList[0] ?? ''} size={100} />
                         </div>
                         <div className='__right-content'>
-                            <span className='__title'>Tiêu đề dịch vụ</span>
-                            <span className='__id'>ID: 001</span>
-                            <Tag color={statusColorMapping('Status')}>Trạng Thái</Tag>
-                            <span className='__id'>Giá: ...........</span>
+                            <span className='__title'>{cur.name}</span>
+                            <span className='__id'>ID: {cur.serviceID}</span>
+                            <Tag className='__status' color={statusColorMapping(cur.status)}>{cur.status}</Tag>
+                            <span className='__price'>Giá: <NumericFormat displayType='text' value={cur.price} thousandSeparator=' ' suffix=" ₫" /></span>
                         </div>
                     </div>
                     <div className='__action-block'>
@@ -70,54 +70,9 @@ export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (pr
 
     return (
         <div className='__app-services-container'>
-            <div className='__app-service-block'>
-                <div className='__content-block'>
-                    <div className='__left-content'>
-                        <Avatar shape='square' src={null} size={100} />
-                    </div>
-                    <div className='__right-content'>
-                        <span className='__title'>Chăm sóc cây tại nhà</span>
-                        <span className='__id'>ID: 001</span>
-                        <Tag className='__status' color={statusColorMapping('Status')}>Trạng Thái</Tag>
-                        <span className='__price'>Giá: ...........</span>
-                    </div>
-                </div>
-                <div className='__action-block'>
-                    <Button>Xem chi tiết</Button>
-                </div>
-            </div>
-            <div className='__app-service-block'>
-                <div className='__content-block'>
-                    <div className='__left-content'>
-                        <Avatar shape='square' src={null} size={100}/>
-                    </div>
-                    <div className='__right-content'>
-                        <span className='__title'>Chăm sóc cây tại vườn</span>
-                        <span className='__id'>ID: 001</span>
-                        <Tag className='__status' color={statusColorMapping('Status')}>Trạng Thái</Tag>
-                        <span className='__price'>Giá: ...........</span>
-                    </div>
-                </div>
-                <div className='__action-block'>
-                    <Button>Xem chi tiết</Button>
-                </div>
-            </div>
-            <div className='__app-service-block'>
-                <div className='__content-block'>
-                    <div className='__left-content'>
-                        <Avatar shape='square' src={null} size={100}/>
-                    </div>
-                    <div className='__right-content'>
-                        <span className='__title'>Tiêu đề dịch vụ</span>
-                        <span className='__id'>ID: 001</span>
-                        <Tag className='__status' color={statusColorMapping('Status')}>Trạng Thái</Tag>
-                        <span className='__price'>Giá: ...........</span>
-                    </div>
-                </div>
-                <div className='__action-block'>
-                    <Button>Xem chi tiết</Button>
-                </div>
-            </div>
+            {
+                renderServicesBlock()
+            }
             <div className='__app-create-service-block'>
                 <BsPlusCircle color='#8A8A8A' size={80} />
                 <span className='__app-create-service-title'>Thêm Dịch Vụ</span>

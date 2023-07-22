@@ -1,0 +1,85 @@
+.__app-login {
+    height: 100vh;
+    width: 100vw;
+
+    .__app-login-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 38px;
+        justify-items: center;
+        align-items: center;
+        grid-template-rows: 100vh;
+        background-color: #f6f6f6;
+
+        .__login-form-item {
+            width: 300px;
+
+            .__login-image {
+                margin-top: -160px;
+                margin-bottom: 70px;
+            }
+
+            .__login-form {
+                background-color: white;
+                padding-left: 30px;
+                padding-top: 20px;
+                margin-top: -60px;
+                margin-left: -30px;
+                margin-right: -30px;
+                border-radius: 8px;
+                border: 1px solid #d8d8da;
+
+                .__form-controls {
+                    width: 300px;
+
+                    .__button {
+                        width: 100%;
+                    }
+                }
+
+                .login-form-forgot {
+                    float: right;
+                }
+            }
+        }
+    }
+}
+
+.app-numeric-input {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 4px 11px;
+    color: rgba(0, 0, 0, 0.88);
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+    list-style: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    min-width: 0;
+    background-color: #ffffff;
+    background-image: none;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #d9d9d9;
+    border-radius: 6px;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: #4096ff;
+        border-inline-end-width: 1px;
+    }
+
+    &:focus {
+        border-color: #4096ff;
+        box-shadow: 0 0 0 2px rgb(5 145 255 / 10%);
+        border-inline-end-width: 1px;
+        outline: 0;
+    }
+
+    &::placeholder {
+        color: rgba(0, 0, 0, 0.25);
+        user-select: none;
+    }
+}

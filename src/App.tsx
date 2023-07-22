@@ -29,6 +29,9 @@ import {
   BarController,
 } from 'chart.js';
 import { GlobalSettings } from './app/global-settings';
+import { LoginPage } from './app/common/components/login.component';
+import { ManagerInitLanding } from './app/manager/manager-init-landing';
+import { ManagerPage } from './app/manager/manager-page';
 
 ChartJS.register(
   CategoryScale,
@@ -51,10 +54,16 @@ function App() {
 
   const globalSettings = new GlobalSettings();
 
+  const onLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('user');
+
+  }
+
   const rootRouter = createBrowserRouter([
     {
       path: '/administration',
-      element: currentUser && currentUser.roleName === 'Admin' ? <AdminPage currentUser={currentUser} globalSettings={globalSettings} /> : <AdminInitLanding currentUser={currentUser} />,
+      element: currentUser && currentUser.roleName === 'Admin' ? <AdminPage onLogoutCallback={onLogout} currentUser={currentUser} globalSettings={globalSettings} /> : <AdminInitLanding currentUser={currentUser} />,
     },
     {
       path: '/administration/account/:id',
@@ -62,29 +71,38 @@ function App() {
     },
     {
       path: '/administration-login',
-      element: currentUser && currentUser.roleName === 'Admin' ? <AdminInitLanding currentUser={currentUser} /> : <LoginAdmin onSaveUserLogin={(user) => {
+      element: currentUser && currentUser.roleName === 'Admin' ? <AdminInitLanding currentUser={currentUser} /> : <LoginPage onSaveUserLogin={(user) => {
         setCurrentUser(user);
         localStorage.setItem('user', JSON.stringify(user));
-      }} />,
+      }}
+        navigatePage='administration'
+      />,
     },
     {
       path: '/owner',
-      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerPage currentUser={currentUser} /> : <OwnerInitLanding currentUser={currentUser} />,
+      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerPage onLogoutCallback={onLogout} currentUser={currentUser}  /> : <OwnerInitLanding currentUser={currentUser} />,
     },
     {
       path: '/owner-login',
-      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerInitLanding currentUser={currentUser} /> : <LoginOwner onSaveUserLogin={(user) => {
+      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerInitLanding currentUser={currentUser} /> : <LoginPage onSaveUserLogin={(user) => {
         setCurrentUser(user);
         localStorage.setItem('user', JSON.stringify(user));
-      }} />,
+      }}
+        navigatePage='owner'
+      />,
     },
     {
       path: '/manager',
-      element: <PageNotFound />,
+      element: currentUser && currentUser.roleName === 'Manager' ? <ManagerPage onLogoutCallback={onLogout} currentUser={currentUser}  /> : <ManagerInitLanding currentUser={currentUser} />,
     },
     {
       path: '/manager-login',
-      element: <PageNotFound />,
+      element: currentUser && currentUser.roleName === 'Manager' ? <ManagerInitLanding currentUser={currentUser} /> : <LoginPage onSaveUserLogin={(user) => {
+        setCurrentUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+      }}
+        navigatePage='manager'
+      />,
     },
     {
       path: '/',

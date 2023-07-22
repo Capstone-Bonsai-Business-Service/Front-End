@@ -2,6 +2,8 @@
 export interface IPlant {
     plantID: string;
     name: string;
+    description: string;
+    careNote: string;
     height: number;
     withPot: boolean;
     totalPage: number;

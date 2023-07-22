@@ -1,10 +1,12 @@
 import { EyeInvisibleOutlined, EyeTwoTone, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Upload } from 'antd';
+import { Avatar, Button, Col, Divider, Input, Modal, Radio, Row, Select, Upload } from 'antd';
 import { RcFile, UploadChangeParam, UploadFile } from 'antd/es/upload';
 import { cloneDeep } from 'lodash';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { CommonUtility } from '../../utils/utilities';
+import { adminServices } from '../administration.service';
+import { take } from 'rxjs';
 
 interface IAccountDetailProps {
     onCancel: () => void;
@@ -12,6 +14,8 @@ interface IAccountDetailProps {
 }
 
 export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
+
+    const adminService = new adminServices();
 
     const [accountDetail, setAccountDetail] = useState<any>(null);
     const [loading, setLoading] = useState(false);
@@ -28,9 +32,23 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
         );
         nodes.push(
             <Button key='save' type='primary' onClick={() => {
-                if (props.onSave) {
-                    props.onSave(accountDetail);
+                const accountInfo = {
+                    "username": accountDetail.username,
+                    "password": accountDetail.password,
+                    "fullName": accountDetail.fullName,
+                    "email": accountDetail.email,
+                    "phone": accountDetail.phone,
+                    "address": accountDetail.address,
+                    "gender": accountDetail.gender,
+                    "avatar": accountDetail.avatar
                 }
+                adminService.createAccount$(accountInfo).pipe(take(1)).subscribe({
+                    next: (res) => {
+                        if (props.onSave) {
+                            props.onSave(res);
+                        }
+                    }
+                })
             }}>Lưu</Button>
         );
         return nodes;
@@ -138,7 +156,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                            <Input 
+                            <Input
                                 onChange={(args) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
                                     temp['fullName'] = args.target.value;
@@ -154,7 +172,13 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                            <Input></Input>
+                        <Input
+                                onChange={(args) => {
+                                    let temp = cloneDeep(accountDetail) ?? {};
+                                    temp['email'] = args.target.value;
+                                    setAccountDetail(temp);
+                                }}
+                            />
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
@@ -164,7 +188,14 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                            <Input></Input>
+                            <Radio.Group onChange={(args) => {
+                                let temp = cloneDeep(accountDetail) ?? {};
+                                temp['gender'] = args.target.value;
+                                setAccountDetail(temp);
+                            }} defaultValue={true}>
+                                <Radio value={true}>Nam</Radio>
+                                <Radio value={false}>Nữ</Radio>
+                            </Radio.Group>
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
@@ -174,7 +205,13 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                            <Input></Input>
+                        <Input
+                                onChange={(args) => {
+                                    let temp = cloneDeep(accountDetail) ?? {};
+                                    temp['phone'] = args.target.value;
+                                    setAccountDetail(temp);
+                                }}
+                            />
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
@@ -182,7 +219,13 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             <strong>Địa chỉ:</strong>
                         </Col>
                         <Col span={18}>
-                            <Input></Input>
+                        <Input
+                                onChange={(args) => {
+                                    let temp = cloneDeep(accountDetail) ?? {};
+                                    temp['address'] = args.target.value;
+                                    setAccountDetail(temp);
+                                }}
+                            />
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
@@ -229,9 +272,9 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                                 }}
                             >
                                 {
-                                    imageUrl ? 
-                                    <Avatar shape="circle" size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }} src={imageUrl} /> :
-                                    // <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> 
+                                    imageUrl ?
+                                        <Avatar shape="circle" size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }} src={imageUrl} /> :
+                                        // <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> 
                                         <div>
                                             {loading ? <LoadingOutlined /> : <PlusOutlined />}
                                             <div style={{ marginTop: 8 }}>Upload</div>

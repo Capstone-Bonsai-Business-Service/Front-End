@@ -11,10 +11,13 @@ import { uniqBy } from 'lodash';
 import { DateTime } from 'luxon';
 import { CreateAccountDialog } from './dialogs/add-account-dialog';
 import { useNavigate } from 'react-router-dom';
+import './administration.scss';
+import { CommonUtility } from '../utils/utilities';
 
 interface IAdminPageProps {
     currentUser?: IUser;
     globalSettings: any;
+    onLogoutCallback: () => void;
 }
 
 interface ITableFilter {
@@ -43,6 +46,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
         status: []
     })
     const [isShowDialogCreate, setShowDialogCreate] = useState<boolean>(false);
+    const [currentMenu, setCurrentMenu] = useState<string>('allAccounts');
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -105,6 +109,8 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
             label: (
                 <span onClick={(e) => {
                     e.preventDefault();
+                    props.onLogoutCallback();
+                    return navigate('/administration-login');
                 }}>
                     Đăng xuất
                 </span>
@@ -280,15 +286,15 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                 <span className='__app-account-info-title'>Thông tin tài khoản</span>
                                 <Row>
                                     <Col className='__app-account-field' span={6}>Account Id:</Col>
-                                    <Col span={18}>{cur.Id}</Col>
+                                    <Col span={18}>{cur.userID}</Col>
                                 </Row>
                                 <Row>
                                     <Col className='__app-account-field' span={6}>Tài khoản:</Col>
-                                    <Col span={18}>{cur.role}</Col>
+                                    <Col span={18}>{cur.roleName}</Col>
                                 </Row>
                                 <Row>
                                     <Col className='__app-account-field' span={6}>Ngày tạo:</Col>
-                                    <Col span={18}>{DateTime.fromISO(cur.createdAt).toFormat('dd-MM-yyyy HH:mm')}</Col>
+                                    <Col span={18}>{DateTime.fromJSDate(new Date(cur.createdDate)).toFormat('dd-MM-yyyy HH:mm')}</Col>
                                 </Row>
                                 <Row>
                                     <Col className='__app-account-field' span={6}>Trạng thái:</Col>
@@ -314,7 +320,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                 </Row>
                                 <Row>
                                     <Col className='__app-account-field' span={6}>Giới tính:</Col>
-                                    <Col span={18}>{cur.gender}</Col>
+                                    <Col span={18}>{cur.gender ? 'Nam' : 'Nữ'}</Col>
                                 </Row>
                             </div>
                         </div>
@@ -393,22 +399,23 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
     }
 
     function onChangeMenuSelect(key: any) {
+        setDataReady(false);
         let filter = '';
         switch (key) {
             case 'allAccounts':
                 filter = ``;
                 break;
             case 'ownerAccounts':
-                filter = `role='Owner'`;
+                filter = `Owner`;
                 break;
             case 'managerAccounts':
-                filter = `role='Manager'`;
+                filter = `Manager`;
                 break;
             case 'staffAccounts':
-                filter = `role='Staff'`;
+                filter = `Staff`;
                 break;
             case 'customerAccounts':
-                filter = `role='Customer'`;
+                filter = `Customer`;
                 break;
         }
         setDataReady(false);
@@ -444,6 +451,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                 <Layout.Sider className='__app-layout-slider' trigger={null}>
                     <Menu className='__app-slider-menu' mode='inline' items={items} defaultSelectedKeys={['allAccounts']} onSelect={(args) => {
                         onChangeMenuSelect(args.key);
+                        setCurrentMenu(args.key);
                     }}></Menu>
                 </Layout.Sider>
                 <Layout>
@@ -471,8 +479,12 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                         <div className='__app-toolbar-container'>
                             <div className='__app-toolbar-left-buttons'>
                                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={openCreateAccount}>Thêm tài khoản</Button>
-                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={openCreateAccount}>Xuất Tệp Excel</Button>
-                                <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={openCreateAccount}>Tải lại</Button>
+                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                                    CommonUtility.exportExcel(accounts, tableUserColumns);
+                                }}>Xuất Tệp Excel</Button>
+                                <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
+                                    onChangeMenuSelect(currentMenu);
+                                }}>Tải lại</Button>
                             </div>
                             <div className='__app-toolbar-right-buttons'>
                                 <Search
@@ -529,10 +541,18 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                         renderShimmerLoading()
                                     ) :
                                     (<Table
+                                        loading={!isDataReady}
                                         tableLayout='auto'
                                         columns={tableUserColumns}
                                         className='__app-user-info-table'
                                         dataSource={accountsOnSearch}
+                                        pagination={{
+                                            pageSize: 7,
+                                            total: accountsOnSearch.length,
+                                            showTotal: (total, range) => {
+                                                return <span>{total} items</span>
+                                            }
+                                        }}
                                     ></Table>)
                             }
                         </div>

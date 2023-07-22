@@ -133,8 +133,11 @@
         height: 64px;
         display: flex;
         flex-direction: row-reverse;
+
         .__app-header-right {
+            display: flex;
             gap: 12px;
+
             .__app-notification-info {
                 cursor: pointer;
             }
@@ -180,6 +183,7 @@
                 padding: 0 0 0 24px;
                 background: transparent;
             }
+
             .ant-menu-submenu-arrow {
                 color: #000000;
             }
@@ -280,6 +284,15 @@
             flex-direction: column;
             padding: 16px 36px 16px 36px;
 
+            &.form-edit {
+                background-color: #FFFFFF;
+                background-image: linear-gradient(#FFF, #FFF);
+                border: 1px solid rgba(0, 0, 0, 0.25);
+                border-radius: 12px;
+                height: calc(100vh - 120px);
+                box-shadow: -16px -15px 12px -4px #E8E8E8;
+            }
+
             .__app-user-frame-container {
                 background-color: #FFFFFF;
                 width: 100%;
@@ -305,12 +318,12 @@
                     align-items: center;
                 }
 
-                .__app-account-info-block-container {
+                .__app-object-info-block-container {
                     width: calc(100% - 230px);
                     display: flex;
                     flex-direction: column;
 
-                    .__app-account-info-top-block {
+                    .__app-object-info-top-block {
                         padding: 4px;
                         display: flex;
                         flex-direction: column;
@@ -321,24 +334,24 @@
                             font-size: 18px;
                         }
 
-                        .__app-account-field {
+                        .__app-object-field {
                             font-weight: 600;
                         }
 
-                        .__app-account-info-title {
+                        .__app-object-info-title {
                             font-weight: 700;
                         }
                     }
 
-                    .__app-account-info-bottom-block {
+                    .__app-object-info-bottom-block {
                         display: flex;
                         flex-direction: row;
 
-                        .__app-account-field {
+                        .__app-object-field {
                             font-weight: 600;
                         }
 
-                        .__app-account-info-left {
+                        .__app-object-info-left {
                             width: 50%;
                             padding: 4px;
                             display: flex;
@@ -346,7 +359,7 @@
                             gap: 4px;
                         }
 
-                        .__app-account-info-right {
+                        .__app-object-info-right {
                             width: 50%;
                             padding: 4px 4px 4px 8px;
                             display: flex;
@@ -354,7 +367,7 @@
                             gap: 4px;
                         }
 
-                        .__app-account-info-title {
+                        .__app-object-info-title {
                             font-weight: 700;
                         }
                     }
@@ -404,6 +417,75 @@
                         .ant-table {
                             height: calc(100% - 52px);
                         }
+                    }
+                }
+            }
+
+            .__app-top-action {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 18px;
+                height: 32px;
+                align-items: center;
+
+                .__app-title-form {
+                    width: 100%;
+                    text-align: center;
+                    padding-right: 14px;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+            }
+
+            .__app-content-container {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+
+                .__app-description {
+                    display: flex;
+                    gap: 10px;
+                    padding: 14px 28px;
+                }
+
+                .__app-action-button {
+                    display: flex;
+                    flex-direction: row-reverse;
+                    margin-right: 24px;
+                    button {
+                        width: 90px;
+                    }
+                }
+
+                .__app-main-info {
+                    display: flex;
+
+                    .__app-images {
+                        width: 50%;
+                        display: flex;
+                        gap: 18px;
+                        padding: 0 0 0 28px;
+                        height: 300px;
+
+                        .__app-list-images {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 5px;
+                            // justify-content: space-between;
+                            height: 300px;
+                            overflow-y: auto;
+
+                            &::-webkit-scrollbar {
+                                width: 0px;
+                            }
+                        }
+                    }
+
+                    .__app-plain-info {
+                        display: flex;
+                        flex-direction: column;
+                        width: 50%;
+                        gap: 8px;
                     }
                 }
             }
@@ -476,6 +558,10 @@
         color: #000000;
     }
 
+    .ant-menu-submenu-title {
+        padding-left: 20px !important;
+    }
+
     .__app-group-menu-label {
         font-weight: 600;
         color: #000000;
@@ -525,11 +611,11 @@
     margin: 0px !important;
 }
 
-.__app-dialog-create-account {
+.__app-dialog-create-object {
     margin-top: 12px;
 }
 
-.__app-account-info-row {
+.__app-object-info-row {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 3px;
@@ -540,13 +626,29 @@
     justify-content: center;
 }
 
-.__app-account-field {
+.__app-object-field {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+
+    &.align-center {
+        align-items: center;
+    }
 }
 
 .__app-required-field {
     color: #ff4d4f
+}
+
+.__app-images-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .__app-list-images {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
 }
 
 ::-webkit-scrollbar {

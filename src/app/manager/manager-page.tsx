@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
 import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps } from 'antd';
-import { BellOutlined, LogoutOutlined } from '@ant-design/icons';
-import { OwnerServices } from './owner.service';
+import { LogoutOutlined } from '@ant-design/icons';
+import { ManagerServices } from './manager.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
 import { AiOutlineAreaChart, AiOutlineFall, AiOutlineRise } from 'react-icons/ai'
@@ -12,21 +12,18 @@ import { useNavigate } from 'react-router-dom';
 import { DashBoardComponent } from '../common/components/dashboard.component';
 import { IDashboard, ITableColumn } from '../common/interfaces';
 import { NumericFormat } from 'react-number-format';
-import { BonsaiManagementComponent } from './owner-components/bonsai-management';
-import { ServiceManagementComponent } from './owner-components/service-management';
-import { StoreManagementComponent } from './owner-components/store-management';
-import { MemberManagementComponent } from './owner-components/member-management';
-import { ContractManagementComponent } from './owner-components/contract-management';
+import './manager.scss';
+import { ContractManagementComponent } from './manager-components/contract-management';
 
 
-interface IOwnerPageProps {
+interface IManagerPageProps {
     currentUser?: IUser;
     onLogoutCallback: () => void;
 }
 
-export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
+export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const ownerService = new OwnerServices();
+    const managerService = new ManagerServices();
 
     const navigate = useNavigate();
 
@@ -40,7 +37,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
             setFirstInit(true);
             setDataReady(true);
         }
-    }, [ownerService, isFirstInit]);
+    }, [managerService, isFirstInit]);
 
     const items: MenuProps['items'] = [
         {
@@ -50,6 +47,16 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
             label: (
                 <div className='__app-group-menu-label'>
                     Bảng thống kê
+                </div>
+            )
+        },
+        {
+            key: 'stores',
+            className: '__app-group-menu',
+            icon: <LiaStoreAltSolid color='#000' />,
+            label: (
+                <div className='__app-group-menu-label'>
+                    Thông tin cửa hàng
                 </div>
             )
         },
@@ -64,46 +71,14 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
             )
         },
         {
-            key: 'services',
+            key: 'orders',
             className: '__app-group-menu',
             icon: <PiHandshake color='#000' />,
             label: (
                 <div className='__app-group-menu-label'>
-                    Dịch vụ
+                    Đơn đặt hàng
                 </div>
             )
-        },
-        {
-            key: 'stores',
-            className: '__app-group-menu',
-            icon: <LiaStoreAltSolid color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Chi nhánh
-                </div>
-            )
-        },
-        {
-            key: 'members',
-            className: '__app-group-menu',
-            icon: <PiUserList color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Thành viên
-                </div>
-            ),
-            children: [
-                {
-                    key: 'manager',
-                    className: '__app-children-menu-divider',
-                    label: 'Quản lý',
-                },
-                {
-                    key: 'staff',
-                    className: '__app-children-menu-divider',
-                    label: 'Nhân viên',
-                },
-            ]
         },
         {
             key: 'contracts',
@@ -114,7 +89,17 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     Hợp đồng
                 </div>
             )
-        }
+        },
+        {
+            key: 'members',
+            className: '__app-group-menu',
+            icon: <PiUserList color='#000' />,
+            label: (
+                <div className='__app-group-menu-label'>
+                    Nhân Viên
+                </div>
+            )
+        },
     ]
 
     const userMenuItems: MenuProps['items'] = [
@@ -124,7 +109,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                 <span onClick={(e) => {
                     e.preventDefault();
                     props.onLogoutCallback();
-                    return navigate('/owner-login');
+                    return navigate('/manager-login');
                 }}>
                     Đăng xuất
                 </span>
@@ -287,7 +272,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
 
     return (
         <>
-            <Layout className='__owner-layout ant-layout-has-sider'>
+            <Layout className='__manager-layout ant-layout-has-sider'>
                 <Layout.Sider className='__app-layout-slider' trigger={null}>
                     <Menu className='__app-slider-menu' mode='inline' items={items} defaultSelectedKeys={[currentMenuItem]} onSelect={(args) => {
                         onChangeMenuSelect(args.key);
@@ -302,7 +287,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                                     menu={{ items: bindingNotifications() }}
                                     placement='bottom'>
                                     <Badge size='default' dot={true}>
-                                        <Avatar shape='circle' size='large' icon={<PiBellRingingLight />} />
+                                        <Avatar shape='circle' size='large' icon={<PiBellRingingLight />}  />
                                     </Badge>
                                 </Dropdown>
                             </div>
@@ -325,16 +310,16 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     <Layout.Content className='__app-layout-content'>
                         {
                             currentMenuItem === 'dashboard' ? <DashBoardComponent
-                                key='dashboard-owner'
+                                key='dashboard-manager'
                                 barChart={barChart}
                                 tableReport={tableReport}
                             /> : <></>
                         }
                         {
-                            currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
+                            currentMenuItem === 'contracts' ? <ContractManagementComponent
                             /> : <></>
                         }
-                        {
+                        {/* {
                             currentMenuItem === 'services' ? <ServiceManagementComponent
                             /> : <></>
                         }
@@ -353,7 +338,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                         {
                             currentMenuItem === 'contracts' ? <ContractManagementComponent />
                                 : <></>
-                        }
+                        } */}
                     </Layout.Content>
                 </Layout>
             </Layout>

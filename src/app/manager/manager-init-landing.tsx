@@ -7,12 +7,12 @@ interface managerLandingProps {
     currentUser: IUser | undefined;
 }
 
-export const OwnerInitLanding: React.FC<managerLandingProps> = (props: managerLandingProps) => {
+export const ManagerInitLanding: React.FC<managerLandingProps> = (props: managerLandingProps) => {
     const navigate = useNavigate();
 
     useEffect(() => {
         if (CommonUtility.isNullOrUndefined(props.currentUser)) {
-            return navigate('/owner-login');
+            return navigate('/manager-login');
         } else {
             if (props.currentUser?.roleName === 'Admin') {
                 return navigate('/administration');

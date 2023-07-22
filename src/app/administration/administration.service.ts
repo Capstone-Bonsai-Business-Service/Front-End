@@ -1,17 +1,10 @@
 import axios from "axios";
-import { GlobalSettings } from "../global-settings";
 import { Observable } from "rxjs";
 import accounts from '../../mock/accounts.json';
 import { CommonUtility } from "../utils/utilities";
-import { environment } from '../../environments/environment'
+import { CoreServices } from "../../service.core";
 
-export class adminServices {
-    constructor() {
-        this.globalSettings = new GlobalSettings();
-        this.globalSettings.domain = environment.domain;
-    };
-
-    globalSettings: GlobalSettings;
+export class adminServices extends CoreServices {
 
     login$(username: string, password: string): Observable<any> {
         return new Observable(obs => {
@@ -49,24 +42,23 @@ export class adminServices {
 
     getAccounts$(options: string = '') {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/api/v1/accounts?${options}`
+            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=USERNAME&sortTypeAsc=true`
             axios.get(url).then((res) => {
-                obs.next(res.data);
-                obs.complete();
-            }).catch(() => {
-                let data: any[] = [];
-                if (CommonUtility.isNullOrEmpty(options)) {
-                    data = accounts;
-                } else {
-                    const __role = options.slice(6, options.length - 1);
-                    data = accounts.reduce((acc, cur) => {
-                        if (cur.role === __role) {
+                if (!CommonUtility.isNullOrEmpty(options)) {
+                    const data = res.data.reduce((acc: any[], cur: any) => {
+                        if (cur.roleName === options) {
                             acc.push(cur);
                         }
                         return acc;
                     }, [] as any);
+                    obs.next(data);
+                    obs.complete();
+                } else {
+                    obs.next(res.data);
+                    obs.complete();
                 }
-                obs.next(data);
+            }).catch(() => {
+                obs.next([]);
                 obs.complete();
             })
         })
@@ -81,6 +73,19 @@ export class adminServices {
             }).catch(() => {
                 let data = accounts.find(item => item.Id === accountId);
                 obs.next(data);
+                obs.complete();
+            })
+        })
+    }
+
+    createAccount$(dataPost: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/user/register`
+            axios.post(url, dataPost).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next(null);
                 obs.complete();
             })
         })
