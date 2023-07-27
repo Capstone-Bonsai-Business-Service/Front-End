@@ -14,6 +14,8 @@ export interface IUser {
     address?: string;
     gender: boolean;
     status: string;
+    storeID: string;
+    storeName: string;
 }
 
 export type IMessage = (type: NoticeType, message: string, duration?: number, key?: string) => void;

@@ -32,6 +32,7 @@ import { GlobalSettings } from './app/global-settings';
 import { LoginPage } from './app/common/components/login.component';
 import { ManagerInitLanding } from './app/manager/manager-init-landing';
 import { ManagerPage } from './app/manager/manager-page';
+import './styles/global.style.scss';
 
 ChartJS.register(
   CategoryScale,

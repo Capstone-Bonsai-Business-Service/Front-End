@@ -1,17 +1,18 @@
-import { FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Button, Col, Divider, Input, Modal, Row, Select, Skeleton, Table, Tag } from "antd";
+import { FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tag } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IPlant } from "../../common/object-interfaces/plant.interface";
+import { IPlant, PlantStatus, PlantStatusMapping } from "../../common/object-interfaces/plant.interface";
 import { NumericFormat } from "react-number-format";
 import { OwnerServices } from "../owner.service";
-import { take } from "rxjs";
+import { switchMap, take } from "rxjs";
 import { cloneDeep } from "lodash";
-import { IStore } from "../../common/object-interfaces/store.interface";
+import { IStore, StoreStatus, StoreStatusMapping } from "../../common/object-interfaces/store.interface";
 import { toast } from "react-hot-toast";
 import { CommonUtility } from "../../utils/utilities";
+import { IUser } from "../../../IApp.interface";
 
 
 interface IStoreManagementProps {
@@ -31,10 +32,12 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [storeDetail, setStoreDetail] = useState<IStore | null>(null);
     const [isShowPopupCreate, setShowPopupCreate] = useState<boolean>(false);
+    const [storeStaff, setStoreStaff] = useState<IUser[]>([]);
+    const [plantIdIncreaseAmount, setPlantIdIncreaseAmount] = useState<string | null>(null);
 
     useEffect(() => {
         if (!isFirstInit) {
-            ownerServices.getStores$({ pageNo: 1, pageSize: 1000 }).pipe(take(1)).subscribe({
+            ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
                 next: data => {
                     setStore(data);
                     setFirstInit(true);
@@ -44,7 +47,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
         }
     }, [isFirstInit, stores, ownerServices]);
 
-    const tableUserColumns: ColumnsType<IPlant> = [
+    const tableUserColumns: ColumnsType<IStore> = [
         {
             title: 'ID',
             dataIndex: 'id',
@@ -103,7 +106,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
             // },
             ellipsis: true,
             render: (value) => {
-                return <Tag color={statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{StoreStatusMapping[value as StoreStatus]}</Tag>
             },
             width: 150,
         },
@@ -120,18 +123,132 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                     <Button className='__app-command-button' onClick={(e) => {
                         e.preventDefault();
                         //openDetailUser(record.Id);
+                        e.preventDefault();
+                        getStoreDetail(record.id);
+                        setFormMode('edit');
                     }} icon={<FormOutlined />} />
                 </div>
             },
         }
     ]
 
-    function statusColorMapping(status: string) {
-        switch (status) {
-            case 'ONSALE': return 'green';
-            case 'Dừng hoạt động': return 'error';
-            default: return 'default';
+    const plantTableColumn: ColumnsType<IPlant> = [
+        {
+            title: 'ID',
+            dataIndex: 'plantID',
+            key: 'plantID',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 80,
+            sorter: {
+                compare: (acc, cur) => acc.plantID > cur.plantID ? 1 : acc.plantID < cur.plantID ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: 'Tên Cây',
+            dataIndex: 'name',
+            key: 'name',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (value, record, index) => {
+                return <div className='__app-column-name-container'>
+                    <Avatar shape='square' src={record.plantIMGList[0]?.url} />
+                    <span className='__app-column-name'>{value}</span>
+                </div>
+            },
+            sorter: {
+                compare: (acc, cur) => acc.name > cur.name ? 1 : acc.name < cur.name ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: 'Số lượng',
+            dataIndex: 'amount',
+            key: 'amount',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (value, record, index) => {
+                return <div>
+                    {value ?? 0}
+                </div>
+            },
+            width: 200,
+            sorter: {
+                compare: (acc, cur) => acc.showPlantPriceModel.price > cur.showPlantPriceModel.price ? 1 : acc.showPlantPriceModel.price < cur.showPlantPriceModel.price ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            key: 'status',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (value) => {
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{PlantStatusMapping[value as PlantStatus]}</Tag>
+            },
+            width: 200,
+            sorter: {
+                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: '',
+            dataIndex: 'command',
+            align: 'center',
+            width: 100,
+            key: 'command',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (_, record, __) => {
+                return <div>
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [{
+                                key: 'amountIncrease',
+                                label: <span
+                                    onClick={() => {
+                                        setPlantIdIncreaseAmount(record.plantID)
+                                    }}
+                                >Thêm số lượng cây</span>
+                            },
+                            {
+                                key: 'disablePlant',
+                                label: 'Huỷ bán cây'
+                            }]
+                        }}
+                        placement='bottom'>
+                        <FormOutlined />
+                    </Dropdown>
+                    {/* <Button className='__app-command-button' onClick={(e) => {
+                        e.preventDefault();
+                        // getBonsaiDetail(record.plantID);
+                        // setFormMode('edit');
+                    }} icon={<FormOutlined />} /> */}
+                </div>
+            },
+            className: '__app-header-title'
         }
+    ]
+
+    function getStoreDetail(storeId: string) {
+        setDataReady(false);
+        let tempStoreDetail = {} as IStore;
+        ownerServices.getStore$(storeId).pipe(
+            switchMap((res: any) => {
+                tempStoreDetail = res;
+                return ownerServices.getStorePlant$(storeId);
+            })
+        ).subscribe({
+            next: storePlants => {
+                tempStoreDetail['storePlant'] = storePlants;
+                setStoreDetail(tempStoreDetail);
+                setDataReady(true);
+            }
+        })
     }
 
     return (
@@ -211,97 +328,100 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                             <div className="__app-title-form">Chi tiết</div>
                         </div>
                         <div className="__app-content-container">
-                            <div className="__app-main-info">
-                                <div className="__app-images">
-                                    {/* <div className="__app-list-images">
+                            <div className="__app-main-info" style={{ flexDirection: 'column', gap: 8, paddingLeft: 40 }}>
+                                <Row style={{ height: 31.6 }}>
+                                    <Col span={12} className='__app-object-field align-center'>
+                                        <strong>ID: </strong>
                                         {
-                                            bindingListImage()
+                                            isDataReady ?
+                                                <div style={{ marginLeft: 10 }}><strong>{storeDetail?.id}</strong></div>
+                                                : <div style={{ width: '50%', marginLeft: '10%' }}><Skeleton.Input active={true} block={true} /></div>
                                         }
-                                    </div> */}
-                                    {/* <Image
-                                        style={{ borderRadius: 4 }}
-                                        preview={false}
-                                        width={350}
-                                        height={300}
-                                        src={imageUrl}
-                                    /> */}
-                                </div>
-                                <div className="__app-plain-info">
-                                    <Row style={{ height: 31.6 }}>
-                                        <Col span={10} className='__app-object-field align-center'>
-                                            <strong>ID: </strong>
-                                            {
-                                                isDataReady ?
-                                                    <div style={{ marginLeft: 10 }}><strong>{storeDetail ? 'Test' : ''}</strong></div>
-                                                    : <div style={{ width: '50%', marginLeft: '10%' }}><Skeleton.Input active={true} block={true} /></div>
-                                            }
-                                        </Col>
-                                        <Col span={10} className='__app-object-field align-center'>
-                                            <strong>Trạng thái: </strong>
-                                            {
-                                                isDataReady ?
-                                                    <div style={{ marginLeft: 10 }}><span>{storeDetail ? 'Test' : ''}</span></div>
-                                                    : <div style={{ width: '50%', marginLeft: '10%' }}><Skeleton.Input active={true} block={true} /></div>
-                                            }
-                                        </Col>
-                                    </Row>
-                                    <Row>
-                                        <Col span={5} className='__app-object-field align-center'>
-                                            <strong>Tên cây:</strong>
-                                        </Col>
-                                        <Col span={17} >
-                                            {
-                                                isDataReady ?
-                                                    <Input defaultValue={storeDetail ? 'Test' : ''} />
-                                                    : <Skeleton.Input block={true} active={true} />
-                                            }
-                                        </Col>
-                                    </Row>
-                                    <Row>
-                                        <Col span={5} className='__app-object-field align-center'>
-                                            <strong>Chiều cao:</strong>
-                                        </Col>
-                                        <Col span={17}>
-                                            {
-                                                isDataReady ?
-                                                    <NumericFormat
-                                                        className="app-numeric-input"
-                                                        value={storeDetail ? 'Test' : ''}
-                                                        onValueChange={(values) => {
-                                                            // let temp = cloneDeep(storeDetail) ?? {};
-                                                            // temp['height'] = values.floatValue as number;
-                                                            // setBonsaitDetail(temp);
-                                                        }}
-                                                        placeholder="Nhập chiều cao"
-                                                        thousandSeparator=" "
-                                                    />
-                                                    : <Skeleton.Input block={true} active={true} />
-                                            }
+                                    </Col>
+                                    <Col span={12} className='__app-object-field align-center'>
+                                        <strong>Trạng thái: </strong>
+                                        {
+                                            isDataReady ?
+                                                <div style={{ marginLeft: 10 }}><Tag color={CommonUtility.statusColorMapping(storeDetail?.status ?? '')}>{StoreStatusMapping[storeDetail?.status as StoreStatus]}</Tag></div>
+                                                : <div style={{ width: '50%', marginLeft: '10%' }}><Skeleton.Input active={true} block={true} /></div>
+                                        }
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col span={12}>
+                                        <Row>
+                                            <Col span={6} className='__app-object-field align-center'>
+                                                <strong>Tên cửa hàng:</strong>
+                                            </Col>
+                                            <Col span={17} >
+                                                {
+                                                    isDataReady ?
+                                                        <Input defaultValue={storeDetail?.storeName} />
+                                                        : <Skeleton.Input block={true} active={true} />
+                                                }
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Row>
+                                            <Col span={6} className='__app-object-field align-center'>
+                                                <strong>Số điện thoại:</strong>
+                                            </Col>
+                                            <Col span={14} >
+                                                {
+                                                    isDataReady ?
+                                                        <Input defaultValue={storeDetail?.phone} />
+                                                        : <Skeleton.Input block={true} active={true} />
+                                                }
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col span={3} className='__app-object-field align-center'>
+                                        <strong>Địa chỉ:</strong>
+                                    </Col>
+                                    <Col span={19}>
+                                        {
+                                            isDataReady ?
+                                                <Input defaultValue={storeDetail?.address} />
+                                                : <Skeleton.Input block={true} active={true} />
+                                        }
 
-                                        </Col>
-                                    </Row>
-                                </div>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col span={3} className='__app-object-field align-center'>
+                                        <strong>Quản lý:</strong>
+                                    </Col>
+                                    <Col span={19}>
+                                        {
+                                            isDataReady ?
+                                                <Input defaultValue={storeDetail?.managerName} />
+                                                : <Skeleton.Input block={true} active={true} />
+                                        }
+
+                                    </Col>
+                                </Row>
                             </div>
-                            {/* <div className="__app-description">
-                                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 8 }}>
-                                    <span style={{ padding: '0 0 0 8px' }}><strong>Mô tả:</strong></span>
-                                    {
-                                        isDataReady ?
-                                            <TextArea rows={5} defaultValue={storeDetail?.description}></TextArea>
-                                            : <Skeleton paragraph={{ rows: 3 }} active={true} />
-                                    }
-
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 8 }}>
-                                    <span style={{ padding: '0 0 0 8px' }}><strong>Lưu ý:</strong></span>
-                                    {
-                                        isDataReady ?
-                                            <TextArea rows={5} defaultValue={storeDetail?.careNote}></TextArea>
-                                            : <Skeleton paragraph={{ rows: 3 }} active={true} />
-                                    }
-
-                                </div>
-                            </div> */}
+                            <Divider style={{ width: '94%', margin: '12px 0', border: '1px solid' }}></Divider>
+                            <div>
+                                <span><strong>Cây trong cửa hàng</strong></span>
+                                <Table
+                                    size='small'
+                                    tableLayout='auto'
+                                    columns={plantTableColumn}
+                                    className='__app-user-info-table'
+                                    dataSource={storeDetail ? storeDetail['storePlant'] : []}
+                                    pagination={{
+                                        pageSize: 4,
+                                        total: storeDetail ? storeDetail['storePlant']?.length : 0,
+                                        showTotal: (total, range) => {
+                                            return <span>{total} items</span>
+                                        }
+                                    }}
+                                />
+                            </div>
                             <div className="__app-action-button">
                                 <Button type="primary" onClick={() => {
 
@@ -328,6 +448,48 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                         }}
                     /> : <></>
             }
+            {
+                plantIdIncreaseAmount !== null ?
+                    <Modal
+                        width={600}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Thêm số lượng
+                            </span>
+                        )}
+                        footer={[
+                            <Button key='cancel' onClick={() => {
+                                setPlantIdIncreaseAmount(null);
+                            }}>Đóng</Button>,
+                            <Button key='save' type='primary' onClick={() => {
+                                // ownerServices.createStore$(storeDetail).pipe(take(1)).subscribe({
+                                //     next: (res) => {
+                                //         if (res) {
+                                //             if (props.onSave) {
+                                //                 props.onSave(res);
+                                //             }
+                                //         } else {
+                                //             toast.error('Tạo chi nhánh thất bại.');
+                                //         }
+
+                                //     }
+                                // })
+                            }}>Lưu</Button>,
+                        ]}
+                        centered
+                    >
+                        <Row>
+                            <Col span={4}>Số lượng</Col>
+                            <Col span={20}>
+                                <NumericFormat className="app-numeric-input" defaultValue={0} onChange={() => {
+
+                                }} />
+                            </Col>
+                        </Row>
+                    </Modal> : <></>
+            }
         </>
 
     )
@@ -340,6 +502,7 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
         address: '',
         districtID: '',
     });
+    const [listProvince, setListProvince] = useState([]);
     const [listDistrict, setListDistrict] = useState([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
 
@@ -347,7 +510,7 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
 
     useEffect(() => {
         if (!isFirstInit) {
-            ownerServices.getDistrict$().pipe(take(1)).subscribe({
+            ownerServices.getProvince$().pipe(take(1)).subscribe({
                 next: (res) => {
                     const result = res.reduce((acc: any[], cur: any) => {
                         acc.push({
@@ -356,7 +519,7 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
                         })
                         return acc;
                     }, []);
-                    setListDistrict(result);
+                    setListProvince(result);
                     setFirstInit(true);
                 }
             })
@@ -458,7 +621,39 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
                     <Row className='__app-object-info-row'>
                         <Col span={6} className='__app-object-field'>
                             <span>
-                                <strong>Quận: </strong> <span className='__app-required-field'> *</span>
+                                <strong>Tỉnh/TP: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                optionFilterProp='label'
+                                style={{ width: '100%' }}
+                                options={listProvince}
+                                onChange={(value) => {
+                                    let temp = cloneDeep(storeDetail) ?? {};
+                                    temp['districtID'] = '';
+                                    setBonsaitDetail(temp);
+                                    ownerServices.getDistrict$(value).pipe(take(1)).subscribe({
+                                        next: value => {
+                                            const result = value.reduce((acc: any[], cur: any) => {
+                                                acc.push({
+                                                    value: cur.id,
+                                                    label: cur.name
+                                                })
+                                                return acc;
+                                            }, []);
+                                            setListDistrict(result);
+                                        }
+                                    })
+                                }}
+                                placeholder='Chọn Quận'
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Quận/Huyện: </strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
                         <Col span={18}>

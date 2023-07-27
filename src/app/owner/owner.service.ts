@@ -2,12 +2,13 @@ import axios from "axios";
 import { Observable } from "rxjs";
 import accounts from '../../mock/accounts.json';
 import { CoreServices } from "../../service.core";
+import { IUser } from "../../IApp.interface";
 
 
 export class OwnerServices extends CoreServices {
     getBonsais$(options: any) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/plant?pageNo=${options.pageNo ?? 1}&pageSize=${options.pageSize ?? 10}&sortBy=ID&sortAsc=true`
+            let url = this.globalSettings.domain + `/plant?pageNo=${options.pageNo ?? 1}&pageSize=${options.pageSize ?? 10}&sortBy=ID&sortAsc=false`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
@@ -44,9 +45,9 @@ export class OwnerServices extends CoreServices {
         })
     }
 
-    getMembers$(options: any) {
+    getStore$(storeId: string) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/user`
+            let url = this.globalSettings.domain + `/store/getByID?storeID=${storeId}`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
@@ -57,9 +58,62 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    getStorePlant$(storeId: string) {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/store/getStorePlant/${storeId}?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getMembers$(roleID: string) {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=USERNAME&sortTypeAsc=true`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                const result = (res.data as IUser[]).reduce((acc, cur) => {
+                    if (cur.roleID === roleID) {
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, [] as IUser[])
+                obs.next(result);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getMemberByID$(userID: number) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/user/getByID?userID=${userID}`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
     getService$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/service?pageNo=0&pageSize=100&sortBy=ID&sortAsc=true`
+            let url = this.globalSettings.domain + `/service?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
@@ -87,7 +141,11 @@ export class OwnerServices extends CoreServices {
     createBonsai$(datapost: any) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/plant`
-            axios.post(url, datapost).then((res) => {
+            axios.post(url, datapost, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -97,9 +155,39 @@ export class OwnerServices extends CoreServices {
         })
     }
 
-    getDistrict$() {
+    createNewCategory$(newCategory: any) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/store/getDistrictByProvinceID?provinceID=PR001`
+            let url = this.globalSettings.domain + `/category?name=${newCategory}`
+            axios.post(url, null, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
+    getProvince$() {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/getAllProvince`
+            axios.get(url).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
+    getDistrict$(provinceID: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/getDistrictByProvinceID?provinceID=${provinceID}`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();

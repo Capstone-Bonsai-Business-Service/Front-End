@@ -8,9 +8,11 @@ import { NumericFormat } from "react-number-format";
 import { ManagerServices } from "../manager.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
+import { CommonUtility } from "../../utils/utilities";
 
 
 interface IContractManagementProps {
+    roleID: string;
 }
 
 export const OrderManagementComponent: React.FC<IContractManagementProps> = (props) => {
@@ -26,7 +28,7 @@ export const OrderManagementComponent: React.FC<IContractManagementProps> = (pro
 
     useEffect(() => {
         if (!isFirstInit) {
-            managerServices.getMembers$({ pageNo: 1, pageSize: 1000 }).pipe(take(1)).subscribe({
+            managerServices.getMembers$().pipe(take(1)).subscribe({
                 next: data => {
                     setContract(data);
                     setFirstInit(true);
@@ -91,7 +93,7 @@ export const OrderManagementComponent: React.FC<IContractManagementProps> = (pro
             // },
             ellipsis: true,
             render: (value) => {
-                return <Tag color={statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
             },
             width: 200,
         },
@@ -113,14 +115,6 @@ export const OrderManagementComponent: React.FC<IContractManagementProps> = (pro
             },
         }
     ]
-
-    function statusColorMapping(status: string) {
-        switch (status) {
-            case 'ONSALE': return 'green';
-            case 'Dừng hoạt động': return 'error';
-            default: return 'default';
-        }
-    }
 
     return (
         <>

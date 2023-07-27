@@ -10,6 +10,7 @@ import { OwnerServices } from '../owner.service';
 import { BsPlusCircle } from 'react-icons/bs';
 import { take } from 'rxjs';
 import '../owner.scss';
+import { CommonUtility } from '../../utils/utilities';
 
 interface IServiceManagementProps {
 
@@ -48,7 +49,7 @@ export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (pr
                         <div className='__right-content'>
                             <span className='__title'>{cur.name}</span>
                             <span className='__id'>ID: {cur.serviceID}</span>
-                            <Tag className='__status' color={statusColorMapping(cur.status)}>{cur.status}</Tag>
+                            <Tag className='__status' color={CommonUtility.statusColorMapping(cur.status)}>{cur.status}</Tag>
                             <span className='__price'>Giá: <NumericFormat displayType='text' value={cur.price} thousandSeparator=' ' suffix=" ₫" /></span>
                         </div>
                     </div>
@@ -60,12 +61,6 @@ export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (pr
             return acc;
         }, []);
         return elements;
-    }
-
-    function statusColorMapping(status: string) {
-        switch (status) {
-            default: return 'green';
-        }
     }
 
     return (

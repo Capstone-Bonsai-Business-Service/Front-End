@@ -1,5 +1,5 @@
 import { CloudUploadOutlined, FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton } from "antd";
+import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Space, Upload } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
@@ -7,12 +7,14 @@ import { useNavigate } from "react-router-dom";
 import { IPlant } from "../../common/object-interfaces/plant.interface";
 import { NumericFormat } from "react-number-format";
 import { OwnerServices } from "../owner.service";
-import { map, take } from "rxjs";
+import { map, of, switchMap, take } from "rxjs";
 import { cloneDeep } from "lodash";
 import TextArea from "antd/es/input/TextArea";
 import { CommonUtility } from "../../utils/utilities";
 import { toast } from "react-hot-toast";
-
+import notFoundImage from '../../../assets/images/Image_not_available.png';
+import { PlantStatusMapping, PlantStatus } from '../../common/object-interfaces/plant.interface'
+import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 
 interface IBonsaiManagementProps {
 
@@ -38,22 +40,30 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
 
     useEffect(() => {
         if (!isFirstInit) {
-            ownerServices.getBonsais$({ pageNo: 0, pageSize: 1000 }).pipe(take(1),
-                map(res => {
-                    return onUpdateDataSource(res);
-                })
-            ).subscribe({
-                next: data => {
-                    setBonsai(data);
-                    setBonsaisOnSearch(data);
+            loadData();
+        }
+    });
+
+    function loadData() {
+        setDataReady(false);
+        ownerServices.getBonsais$({ pageNo: 0, pageSize: 1000 }).pipe(take(1),
+            map(res => {
+                return onUpdateDataSource(res);
+            })
+        ).subscribe({
+            next: data => {
+                setBonsai(data);
+                setBonsaisOnSearch(data);
+                setDataReady(true);
+                if (!isFirstInit) {
                     setFirstInit(true);
-                    setDataReady(true);
                     getPlantCategories();
                     getShipPlant();
                 }
-            })
-        }
-    }, [isFirstInit, bonsais, ownerServices, getPlantCategories, getShipPlant]);
+
+            }
+        })
+    }
 
     const tableUserColumns: ColumnsType<IPlant> = [
         {
@@ -63,6 +73,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             showSorterTooltip: false,
             ellipsis: true,
             width: 80,
+            sorter: {
+                compare: (acc, cur) => acc.plantID > cur.plantID ? 1 : acc.plantID < cur.plantID ? -1 : 0
+            },
+            className: '__app-header-title'
         },
         {
             title: 'Tên Cây',
@@ -76,6 +90,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                     <span className='__app-column-name'>{value}</span>
                 </div>
             },
+            sorter: {
+                compare: (acc, cur) => acc.name > cur.name ? 1 : acc.name < cur.name ? -1 : 0
+            },
+            className: '__app-header-title'
         },
         {
             title: 'Giá',
@@ -89,6 +107,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                 </div>
             },
             width: 200,
+            sorter: {
+                compare: (acc, cur) => acc.showPlantPriceModel.price > cur.showPlantPriceModel.price ? 1 : acc.showPlantPriceModel.price < cur.showPlantPriceModel.price ? -1 : 0
+            },
+            className: '__app-header-title'
         },
         {
             title: 'Chiều cao (cm)',
@@ -97,20 +119,25 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             showSorterTooltip: false,
             ellipsis: true,
             width: 100,
+            sorter: {
+                compare: (acc, cur) => acc.height > cur.height ? 1 : acc.height < cur.height ? -1 : 0
+            },
+            className: '__app-header-title'
         },
         {
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
             showSorterTooltip: false,
-            // sorter: {
-            //     compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
-            // },
             ellipsis: true,
             render: (value) => {
-                return <Tag color={statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{PlantStatusMapping[value as PlantStatus]}</Tag>
             },
             width: 200,
+            sorter: {
+                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+            },
+            className: '__app-header-title'
         },
         {
             title: '',
@@ -129,6 +156,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                     }} icon={<FormOutlined />} />
                 </div>
             },
+            className: '__app-header-title'
         }
     ]
 
@@ -138,22 +166,19 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             next: (response: IPlant) => {
                 if (response) {
                     setBonsaiDetail(response);
-                    setImageUrl(response.plantIMGList[0]?.url ?? '');
+                    setImageUrl(response.plantIMGList[0]?.url ?? notFoundImage);
                     setDataReady(true);
                 }
             }
         })
     }
 
-    function statusColorMapping(status: string) {
-        switch (status) {
-            case 'ONSALE': return 'green';
-            case 'Dừng hoạt động': return 'error';
-            default: return 'default';
-        }
-    }
-
     function bindingListImage() {
+        if (!isDataReady) {
+            return [<Skeleton.Image style={{ width: 100 }} active={true} />,
+            <Skeleton.Image style={{ width: 100 }} active={true} />,
+            <Skeleton.Image style={{ width: 100 }} active={true} />]
+        }
         const elements: JSX.Element[] = (bonsaiDetail?.plantIMGList as any[])?.reduce((acc, cur) => {
             acc.push(
                 <Image
@@ -168,7 +193,18 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             )
             return acc;
         }, []);
-        return elements;
+        if (CommonUtility.isNullOrUndefined(elements) || elements.length === 0) {
+            return [
+                <Image
+                    preview={false}
+                    width={100}
+                    src={notFoundImage}
+                    style={{ cursor: 'pointer', borderRadius: 4, border: '1px solid' }}
+                />
+            ]
+        } else {
+            return elements;
+        }
     }
 
     function onUpdateDataSource(data: any[]) {
@@ -240,9 +276,9 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                 <Search
                                     style={{ marginLeft: 10 }}
                                     className='__app-search-box'
-                                    placeholder="Tìm kiếm"
+                                    placeholder="Nhập ID/ Tên Cây"
                                     onSearch={(value) => {
-                                        const columnsSearch = ['plantID', 'name', 'status', 'height']
+                                        const columnsSearch = ['plantID', 'name']
                                         const data = CommonUtility.onTableSearch(value, bonsais, columnsSearch);
                                         setBonsaisOnSearch(data);
                                     }}
@@ -291,13 +327,17 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                             bindingListImage()
                                         }
                                     </div>
-                                    <Image
-                                        style={{ borderRadius: 4 }}
-                                        preview={false}
-                                        width={350}
-                                        height={300}
-                                        src={imageUrl}
-                                    />
+                                    {
+                                        isDataReady ?
+                                            <Image
+                                                style={{ borderRadius: 4, border: '1px solid' }}
+                                                preview={false}
+                                                width={350}
+                                                height={300}
+                                                src={imageUrl}
+                                            /> : <Skeleton.Image style={{ borderRadius: 4, width: 350, height: 300 }} active={true} />
+                                    }
+
                                 </div>
                                 <div className="__app-plain-info">
                                     <Row style={{ height: 31.6 }}>
@@ -313,7 +353,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                             <strong>Trạng thái: </strong>
                                             {
                                                 isDataReady ?
-                                                    <div style={{ marginLeft: 10 }}><span>{bonsaiDetail?.status}</span></div>
+                                                    <div style={{ marginLeft: 10 }}><span>{PlantStatusMapping[bonsaiDetail?.status ?? 'ONSALE']}</span></div>
                                                     : <div style={{ width: '50%', marginLeft: '10%' }}><Skeleton.Input active={true} block={true} /></div>
                                             }
                                         </Col>
@@ -421,12 +461,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                         defaultValue={bonsaiDetail?.showPlantShipPriceModel.id}
                                                         optionFilterProp='label'
                                                         style={{ width: '100%' }}
-                                                        options={[
-                                                            { value: 'PS001', label: '10000/km (< 20cm)' },
-                                                            { value: 'PS002', label: '11000/km (~ 40cm)' },
-                                                            { value: 'PS003', label: '13000/km (~ 70cm)' },
-                                                            { value: 'PS004', label: '15000/km (> 100cm)' },
-                                                        ]}
+                                                        options={plantShipFee}
                                                         onChange={(values) => {
                                                             // let temp = cloneDeep(bonsaiDetail) ?? {};
                                                             // temp['categoryIDList'] = values.reduce((acc, cur) => {
@@ -506,7 +541,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                         onCancel={() => { setShowPopupCreate(false) }}
                         onSave={(data: any) => {
                             setShowPopupCreate(false);
-
+                            loadData();
                         }}
                     /> : <></>
             }
@@ -526,9 +561,12 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
         price: 0,
         applyDate: ''
     });
-    const [images, setImages] = useState<File[]>([]);
+    const [images, setImages] = useState<string[]>([]);
     const [categories, setCategories] = useState<any[]>([])
     const [plantShipFee, setPlantShipFee] = useState<any[]>([]);
+    const [isUpload, setIsUpload] = useState<boolean>(false);
+
+    const [newCategory, setNewCategory] = useState<string>('');
 
     const ownerServices = new OwnerServices();
 
@@ -571,22 +609,58 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
         return nodes;
     }
 
-    function onCreateBonsai() {
-        const form = new FormData();
-        form.append('name', bonsaiDetail.name);
-        form.append('height', bonsaiDetail.height);
-        form.append('description', bonsaiDetail.description);
-        form.append('careNote', bonsaiDetail.careNote);
-        form.append('withPot', bonsaiDetail.withPot);
-        form.append('shipPriceID', bonsaiDetail.shipPriceID);
-        form.append('categoryIDList', bonsaiDetail.categoryIDList);
-        form.append('price', bonsaiDetail.price);
-        form.append('applyDate', new Date().toISOString());
+    function getPlantCategories() {
+        ownerServices.getPlantCategories$().pipe(take(1)).subscribe({
+            next: (data) => {
+                const categoriesOptions = data.reduce((acc: any[], cur: any) => {
+                    acc.push({
+                        value: cur.categoryID,
+                        label: cur.categoryName
+                    })
+                    return acc;
+                }, []);
+                setCategories(categoriesOptions);
+                localStorage.setItem('plantCategories', JSON.stringify(data));
+            }
+        })
+    }
 
-        ownerServices.createBonsai$(form).subscribe({
+    function onCreateBonsai() {
+        // const form = new FormData();
+        // form.append('name', bonsaiDetail.name);
+        // form.append('height', bonsaiDetail.height);
+        // form.append('description', bonsaiDetail.description);
+        // form.append('careNote', bonsaiDetail.careNote);
+        // form.append('withPot', bonsaiDetail.withPot);
+        // form.append('shipPriceID', bonsaiDetail.shipPriceID);
+        // form.append('categoryIDList', bonsaiDetail.categoryIDList);
+        // form.append('price', bonsaiDetail.price);
+        // form.append('applyDate', new Date().toISOString());
+        const data = {
+            name: bonsaiDetail.name,
+            height: bonsaiDetail.height,
+            description: bonsaiDetail.description,
+            careNote: bonsaiDetail.careNote,
+            withPot: bonsaiDetail.withPot,
+            shipPriceID: bonsaiDetail.shipPriceID,
+            categoryIDList: bonsaiDetail.categoryIDList,
+            price: bonsaiDetail.price,
+            applyDate: new Date().toISOString()
+        }
+
+        ownerServices.createBonsai$(data).pipe(
+            switchMap(res => {
+                if (res) {
+                    return ownerServices.addImageToDatabase$('PLANT', res, images);
+                } else {
+                    return of(null);
+                }
+            })
+        ).subscribe({
             next: (res) => {
                 if (res) {
-                    //update image by res.id
+                    toast.success('Thêm cây thành công');
+                    props.onSave();
                 } else {
                     toast.error('Tạo thêm cây thất bại.');
                 }
@@ -644,6 +718,37 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                                     setBonsaitDetail(temp);
                                 }}
                                 placeholder='Chọn loại cây'
+                                dropdownRender={(menu) => (
+                                    <>
+                                        <Space style={{ padding: '0 8px 4px' }}>
+                                            <Input
+                                                placeholder='Thêm loại cây'
+                                                style={{ width: 280 }}
+                                                onChange={(value) => {
+                                                    setNewCategory(value.target.value);
+                                                }}
+                                                value={newCategory}
+                                            />
+                                            <Button type="text" icon={<PlusOutlined />} disabled={newCategory === ''} onClick={() => {
+                                                ownerServices.createNewCategory$(newCategory).pipe(take(1)).subscribe({
+                                                    next: (value) => {
+                                                        if (value) {
+                                                            toast.success('Tạo loại cây mới thành công!');
+                                                            getPlantCategories();
+                                                            setNewCategory('');
+                                                        } else {
+                                                            toast.error('Tạo loại cây thất bại');
+                                                            return;
+                                                        }
+                                                    }
+                                                })
+                                            }}>Thêm
+                                            </Button>
+                                        </Space>
+                                        <Divider style={{ margin: '8px 0' }} />
+                                        {menu}
+                                    </>
+                                )}
                             />
                         </Col>
                     </Row>
@@ -760,23 +865,34 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                         </Col>
                         <Col span={18}>
                             <div className="__app-images-upload-container">
-                                <div className="__app-list-images">
+                                <div className="__app-list-images" style={{ flexDirection: 'row' }}>
                                     {renderImages()}
                                 </div>
                                 <div className="__app-button-upload">
-                                    <Button key='upload' icon={<CloudUploadOutlined />} onClick={() => {
-                                        document.getElementById('upload')?.click();
-                                    }}>Tải ảnh</Button>
+                                    {
+                                        !isUpload ? <Button key='upload' icon={<CloudUploadOutlined />} onClick={() => {
+                                            document.getElementById('upload')?.click();
+                                        }}>Tải ảnh</Button> : <Skeleton.Button active={true}></Skeleton.Button>
+                                    }
+                                    
                                 </div>
                                 <input
                                     id='upload'
                                     type="file"
                                     accept="*"
-                                    multiple={true}
+                                    multiple={false}
                                     hidden={true}
                                     onChange={(args) => {
-                                        const files = Array.from(args.target.files as FileList);
-                                        setImages(files);
+                                        setIsUpload(true);
+                                        const file = Array.from(args.target.files as FileList);
+                                        ownerServices.uploadImageToFireBase$(file[0]).pipe(take(1)).subscribe({
+                                            next: url => {
+                                                const img = images;
+                                                img.push(url as string);
+                                                setImages(img);
+                                                setIsUpload(false);
+                                            }
+                                        });
                                     }}
                                 />
                             </div>
@@ -790,7 +906,7 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
     function renderImages() {
         const elements: JSX.Element[] = images.reduce((acc, cur) => {
             acc.push(
-                <span>{cur.name}</span>
+                <img style={{ width: 100 }} src={cur} alt='img' />
             )
             return acc;
         }, [] as JSX.Element[]);

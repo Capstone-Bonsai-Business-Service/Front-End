@@ -184,7 +184,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
             },
             ellipsis: true,
             render: (value) => {
-                return <Tag color={statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
             },
             width: 200,
             filterMode: 'menu',
@@ -245,14 +245,6 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
         setObjectFilter(__objFilter);
     }
 
-    function statusColorMapping(status: string) {
-        switch (status) {
-            case 'Đang hoạt động': return 'green';
-            case 'Dừng hoạt động': return 'error';
-            default: return 'default';
-        }
-    }
-
     function renderUserInfoFrame() {
         const arrAccounts = accountsOnSearch.reduce((acc, cur) => {
             acc.push(
@@ -299,7 +291,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                 <Row>
                                     <Col className='__app-account-field' span={6}>Trạng thái:</Col>
                                     <Col span={18}>
-                                        <Tag color={statusColorMapping(cur.status)}>{cur.status}</Tag>
+                                        <Tag color={CommonUtility.statusColorMapping(cur.status)}>{cur.status}</Tag>
                                     </Col>
                                 </Row>
                             </div>

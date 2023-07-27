@@ -67,8 +67,44 @@ export class CoreServices {
 
     getShipPlant$(): Observable<any> {
         return new Observable(obs => {
-            let url = this.globalSettings.domain + '/plantShipPrice?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true';
+            let url = this.globalSettings.domain + '/plantShipPrice?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false';
             axios.get(url).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            });
+        })
+    }
+
+    addImageToDatabase$(entityName: string,  entityID: string, listURL: string[]) {
+        return new Observable(obs => {
+            let url = this.globalSettings.domain + `/image/addImage?entityName=${entityName}&entityID=${entityID}&listURL=${listURL}`;
+            axios.post(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            });
+        })
+    }
+
+    uploadImageToFireBase$(file: any) {
+        return new Observable(obs => {
+            let url = this.globalSettings.domain + `/image/convertFromFileToImageURL`;
+            const dataPost = new FormData();
+            dataPost.append('file', file);
+            axios.post(url, dataPost, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {

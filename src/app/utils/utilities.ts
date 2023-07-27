@@ -143,4 +143,12 @@ export module CommonUtility {
                 });
         });
     }
+
+    export function statusColorMapping(status: string) {
+        switch (status) {
+            case 'ONSALE': case 'APPROVE': case 'SIGN': case 'WORKING': return 'green';
+            case 'WAITING': return 'lime'
+            default: return 'default';
+        }
+    }
 }

@@ -281,6 +281,15 @@
             flex-direction: column;
             padding: 16px 36px 16px 36px;
 
+            &.form-edit {
+                background-color: #FFFFFF;
+                background-image: linear-gradient(#FFF, #FFF);
+                border: 1px solid rgba(0, 0, 0, 0.25);
+                border-radius: 12px;
+                height: calc(100vh - 120px);
+                box-shadow: -16px -15px 12px -4px #E8E8E8;
+            }
+
             .__app-user-frame-container {
                 background-color: #FFFFFF;
                 width: 100%;
@@ -405,6 +414,76 @@
                         .ant-table {
                             height: calc(100% - 52px);
                         }
+                    }
+                }
+            }
+
+            .__app-top-action {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 18px;
+                height: 32px;
+                align-items: center;
+
+                .__app-title-form {
+                    width: 100%;
+                    text-align: center;
+                    padding-right: 14px;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+            }
+
+            .__app-content-container {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+
+                .__app-description {
+                    display: flex;
+                    gap: 10px;
+                    padding: 14px 28px;
+                }
+
+                .__app-action-button {
+                    display: flex;
+                    flex-direction: row-reverse;
+                    margin-right: 24px;
+                    gap: 10px;
+                    button {
+                        width: 90px;
+                    }
+                }
+
+                .__app-main-info {
+                    display: flex;
+
+                    .__app-images {
+                        width: 50%;
+                        display: flex;
+                        gap: 18px;
+                        padding: 0 0 0 28px;
+                        height: 300px;
+
+                        .__app-list-images {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 5px;
+                            // justify-content: space-between;
+                            height: 300px;
+                            overflow-y: auto;
+
+                            &::-webkit-scrollbar {
+                                width: 0px;
+                            }
+                        }
+                    }
+
+                    .__app-plain-info {
+                        display: flex;
+                        flex-direction: column;
+                        width: 50%;
+                        gap: 8px;
                     }
                 }
             }

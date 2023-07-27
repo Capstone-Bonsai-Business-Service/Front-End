@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
 import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps } from 'antd';
-import { BellOutlined, LogoutOutlined } from '@ant-design/icons';
+import { BellOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { OwnerServices } from './owner.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
@@ -314,7 +314,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                                     placement='bottomRight'>
                                     {
                                         props.currentUser?.avatar ?
-                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} /> :
+                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />}/> :
                                             <Avatar className='__app-user-avatar' size={'large'}>PH</Avatar>
                                     }
                                 </Dropdown>
@@ -343,11 +343,11 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                             /> : <></>
                         }
                         {
-                            currentMenuItem === 'staff' ? <MemberManagementComponent roleName='Nhân Viên' />
+                            currentMenuItem === 'staff' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
                                 : <></>
                         }
                         {
-                            currentMenuItem === 'manager' ? <MemberManagementComponent roleName='Quản Lý' />
+                            currentMenuItem === 'manager' ? <MemberManagementComponent roleName='Quản Lý' roleID='R003' />
                                 : <></>
                         }
                         {

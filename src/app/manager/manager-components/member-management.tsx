@@ -4,7 +4,7 @@ import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { OwnerServices } from "../owner.service";
+import { ManagerServices } from "../manager.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
 import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
@@ -13,15 +13,14 @@ import toast from "react-hot-toast";
 
 
 interface IMemberManagementProps {
-    roleName: 'Nhân Viên' | 'Quản Lý';
+    roleName: 'Nhân Viên';
     roleID: string;
 }
 
 export const MemberManagementComponent: React.FC<IMemberManagementProps> = (props) => {
 
-    const navigate = useNavigate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const ownerServices = new OwnerServices();
+    const managerServices = new ManagerServices();
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [members, setMember] = useState<any[]>([]);
@@ -34,7 +33,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
 
     useEffect(() => {
         if (!isFirstInit) {
-            ownerServices.getMembers$(props.roleID).pipe(take(1)).subscribe({
+            managerServices.getMembers$().pipe(take(1)).subscribe({
                 next: data => {
                     setMember(data);
                     setSearchMember(data);
@@ -42,7 +41,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                     setDataReady(true);
                 }
             });
-            ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
+            managerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
                 next: data => {
                     const optionStore = data.reduce((acc, cur) => {
                         acc.push({
@@ -55,7 +54,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                 }
             })
         }
-    }, [isFirstInit, members, ownerServices, props.roleID, props.roleName]);
+    }, [isFirstInit, members, managerServices, props.roleID, props.roleName]);
 
     const tableUserColumns: ColumnsType<IUser> = [
         {
@@ -162,7 +161,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
 
     function getUserDetail(userID: number) {
         setDataReady(false);
-        ownerServices.getMemberByID$(userID).pipe(take(1)).subscribe({
+        managerServices.getMemberByID$(userID).pipe(take(1)).subscribe({
             next: (data) => {
                 setUserDetail(data);
                 setDataReady(true);
@@ -180,7 +179,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                             <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>
                             <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                 setDataReady(false);
-                                ownerServices.getMembers$(props.roleID).pipe(take(1)).subscribe({
+                                managerServices.getMembers$().pipe(take(1)).subscribe({
                                     next: data => {
                                         setMember(data);
                                         setSearchMember(data);

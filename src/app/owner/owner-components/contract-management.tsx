@@ -8,6 +8,7 @@ import { NumericFormat } from "react-number-format";
 import { OwnerServices } from "../owner.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
+import { CommonUtility } from "../../utils/utilities";
 
 
 interface IContractManagementProps {
@@ -26,12 +27,12 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
 
     useEffect(() => {
         if (!isFirstInit) {
-            ownerServices.getMembers$({ pageNo: 1, pageSize: 1000 }).pipe(take(1)).subscribe({
-                next: data => {
-                    setContract(data);
-                    setFirstInit(true);
-                }
-            })
+            // ownerServices.g$().pipe(take(1)).subscribe({
+            //     next: data => {
+            //         setContract(data);
+            //         setFirstInit(true);
+            //     }
+            // })
         }
     }, [isFirstInit, contracts, ownerServices]);
 
@@ -91,7 +92,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
             // },
             ellipsis: true,
             render: (value) => {
-                return <Tag color={statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
             },
             width: 200,
         },
@@ -113,14 +114,6 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
             },
         }
     ]
-
-    function statusColorMapping(status: string) {
-        switch (status) {
-            case 'ONSALE': return 'green';
-            case 'Dừng hoạt động': return 'error';
-            default: return 'default';
-        }
-    }
 
     return (
         <>

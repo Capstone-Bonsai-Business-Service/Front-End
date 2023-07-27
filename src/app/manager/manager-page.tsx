@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
 import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps } from 'antd';
-import { LogoutOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { ManagerServices } from './manager.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
@@ -14,6 +14,8 @@ import { IDashboard, ITableColumn } from '../common/interfaces';
 import { NumericFormat } from 'react-number-format';
 import './manager.scss';
 import { ContractManagementComponent } from './manager-components/contract-management';
+import { BonsaiManagementComponent } from './manager-components/bonsai-management';
+import { MemberManagementComponent } from './manager-components/member-management';
 
 
 interface IManagerPageProps {
@@ -50,16 +52,16 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                 </div>
             )
         },
-        {
-            key: 'stores',
-            className: '__app-group-menu',
-            icon: <LiaStoreAltSolid color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Thông tin cửa hàng
-                </div>
-            )
-        },
+        // {
+        //     key: 'stores',
+        //     className: '__app-group-menu',
+        //     icon: <LiaStoreAltSolid color='#000' />,
+        //     label: (
+        //         <div className='__app-group-menu-label'>
+        //             Thông tin cửa hàng
+        //         </div>
+        //     )
+        // },
         {
             key: 'bonsais',
             className: '__app-group-menu',
@@ -299,8 +301,8 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                     placement='bottomRight'>
                                     {
                                         props.currentUser?.avatar ?
-                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} /> :
-                                            <Avatar className='__app-user-avatar' size={'large'}>PH</Avatar>
+                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />}/> :
+                                            <Avatar className='__app-user-avatar' size={'large'} icon={<UserOutlined />}></Avatar>
                                     }
                                 </Dropdown>
                             </div>
@@ -319,19 +321,19 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                             currentMenuItem === 'contracts' ? <ContractManagementComponent
                             /> : <></>
                         }
-                        {/* {
-                            currentMenuItem === 'services' ? <ServiceManagementComponent
+                        {
+                            currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
                             /> : <></>
                         }
-                        {
+                        {/* {
                             currentMenuItem === 'stores' ? <StoreManagementComponent
                             /> : <></>
-                        }
+                        } */}
                         {
-                            currentMenuItem === 'staff' ? <MemberManagementComponent roleName='Nhân Viên' />
+                            currentMenuItem === 'members' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
                                 : <></>
                         }
-                        {
+                        { /*{
                             currentMenuItem === 'manager' ? <MemberManagementComponent roleName='Quản Lý' />
                                 : <></>
                         }

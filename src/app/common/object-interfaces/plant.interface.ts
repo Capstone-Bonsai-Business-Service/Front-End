@@ -1,5 +1,6 @@
 
 export interface IPlant {
+    [k: string]: any;
     plantID: string;
     name: string;
     description: string;
@@ -26,5 +27,12 @@ export interface IPlant {
         url: string;
     }[];
     //status
-    status: string;
+    status: PlantStatus;
+    showStorePlantModel: any;
+}
+
+export type PlantStatus = 'ONSALE';
+
+export enum PlantStatusMapping {
+    'ONSALE' = 'Đang bán'
 }

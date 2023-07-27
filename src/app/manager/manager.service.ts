@@ -1,7 +1,8 @@
 import axios from "axios";
 import { Observable } from "rxjs";
-import accounts from '../../mock/accounts.json';
 import { CoreServices } from "../../service.core";
+import { IUser } from "../../IApp.interface";
+import { IContractDetail } from "../common/object-interfaces/contract.interface";
 
 
 export class ManagerServices extends CoreServices {
@@ -16,19 +17,6 @@ export class ManagerServices extends CoreServices {
 
     storeId: string = '';
 
-    getBonsais$(options: any) {
-        return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/plant?pageNo=${options.pageNo ?? 0}&pageSize=${options.pageSize ?? 1000}&sortBy=ID&sortAsc=true`
-            axios.get(url).then((res) => {
-                obs.next(res.data);
-                obs.complete();
-            }).catch(() => {
-                obs.next([]);
-                obs.complete();
-            })
-        })
-    }
-
     getStores$(options: any) {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/store`
@@ -42,10 +30,14 @@ export class ManagerServices extends CoreServices {
         })
     }
 
-    getMembers$(options: any) {
+    getMembers$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/user`
-            axios.get(url).then((res) => {
+            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -57,7 +49,7 @@ export class ManagerServices extends CoreServices {
 
     getService$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/service?pageNo=1&pageSize=10&sortBy=ID&sortAsc=true`
+            let url = this.globalSettings.domain + `/service?pageNo=1&pageSize=10&sortBy=ID&sortAsc=false`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
@@ -68,15 +60,52 @@ export class ManagerServices extends CoreServices {
         })
     }
 
-    getAccount$(accountId: string) {
+    getMemberByID$(userID: number) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/api/v1/accounts/${accountId}`
-            axios.get(url).then((res) => {
+            let url = this.globalSettings.domain + `/user/getByID?userID=${userID}`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
-                let data = accounts.find(item => item.Id === accountId);
-                obs.next(data);
+                obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
+    getBonsais$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/store/getStorePlant/${this.storeId}?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getBonsai$(plantId: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/plant/${plantId}`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next(null);
                 obs.complete();
             })
         })
@@ -84,7 +113,41 @@ export class ManagerServices extends CoreServices {
 
     getContracts$() {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/contract?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true`
+            let url = this.globalSettings.domain + `/contract?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getContractDetail$(id: string) {
+        return new Observable<IContractDetail[]>(obs => {
+            let url = this.globalSettings.domain + `/contract/contractDetail/${id}?pageNo=0&pageSize=10&sortBy=ID&sortAsc=true`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getStaffForContract$() {
+        return new Observable<IUser[]>(obs => {
+            let url = this.globalSettings.domain + `/contract/getStaffForContract`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
