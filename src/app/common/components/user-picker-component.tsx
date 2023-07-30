@@ -2,9 +2,9 @@ import { Select } from "antd";
 import React, { useState } from "react";
 
 interface IUserPickerProps {
-    listUser: { value: any, label: string}[];
+    listUser: { value: number, label: string}[];
     defaultValue?: string;
-    onChanged: (value: string) => void;
+    onChanged: (value: number) => void;
     placeholder?: string;
 }
 
@@ -18,7 +18,7 @@ export const UserPicker: React.FC<IUserPickerProps> = (props) => {
                 placeholder={props.placeholder ?? ''}
                 optionFilterProp="label"
                 onChange={(value) => {
-                    props.onChanged(value);
+                    props.onChanged(Number(value));
                 }}
                 filterOption={(input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())

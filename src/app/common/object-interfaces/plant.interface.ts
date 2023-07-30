@@ -31,8 +31,9 @@ export interface IPlant {
     showStorePlantModel: any;
 }
 
-export type PlantStatus = 'ONSALE';
+export type PlantStatus = 'ONSALE' | 'INACTIVE';
 
 export enum PlantStatusMapping {
-    'ONSALE' = 'Đang bán'
+    'ONSALE' = 'Đang bán',
+    'INACTIVE' = 'Ngưng bán'
 }

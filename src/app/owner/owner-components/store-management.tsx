@@ -501,6 +501,8 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
         phone: '',
         address: '',
         districtID: '',
+        districtName: '',
+        provinceName: '',
     });
     const [listProvince, setListProvince] = useState([]);
     const [listDistrict, setListDistrict] = useState([]);
@@ -537,7 +539,13 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
         );
         nodes.push(
             <Button key='save' type='primary' onClick={() => {
-                ownerServices.createStore$(storeDetail).pipe(take(1)).subscribe({
+                const dataPost = {
+                    storeName: storeDetail.storeName,
+                    phone: storeDetail.phone,
+                    address: `${storeDetail.address}, ${storeDetail.districtName}, ${storeDetail.provinceName}, Việt Nam`,
+                    districtID: storeDetail.districtID,
+                }
+                ownerServices.createStore$(dataPost).pipe(take(1)).subscribe({
                     next: (res) => {
                         if (res) {
                             if (props.onSave) {
@@ -632,6 +640,9 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
                                 onChange={(value) => {
                                     let temp = cloneDeep(storeDetail) ?? {};
                                     temp['districtID'] = '';
+                                    temp['districtName'] = '';
+                                    const provinceName = (listProvince.find((item: any) => item.value === value) as any)?.label ?? '';
+                                    temp['provinceName'] = provinceName;
                                     setBonsaitDetail(temp);
                                     ownerServices.getDistrict$(value).pipe(take(1)).subscribe({
                                         next: value => {
@@ -663,6 +674,8 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
                                 options={listDistrict}
                                 onChange={(value) => {
                                     let temp = cloneDeep(storeDetail) ?? {};
+                                    const districtName = (listDistrict.find((item: any) => item.value === value) as any)?.label ?? '';
+                                    temp['districtName'] = districtName;
                                     temp['districtID'] = value;
                                     setBonsaitDetail(temp);
                                 }}

@@ -9,6 +9,7 @@ import { OwnerServices } from "../owner.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
 import { CommonUtility } from "../../utils/utilities";
+import { ContractStatusMapping, IContract } from "../../common/object-interfaces/contract.interface";
 
 
 interface IContractManagementProps {
@@ -21,66 +22,75 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
     const ownerServices = new OwnerServices();
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [contracts, setContract] = useState<any[]>([]);
+    const [contracts, setContracts] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
+    const [contractsOnSearch, setContractOnSearch] = useState<any[]>([]);
 
     useEffect(() => {
         if (!isFirstInit) {
-            // ownerServices.g$().pipe(take(1)).subscribe({
-            //     next: data => {
-            //         setContract(data);
-            //         setFirstInit(true);
-            //     }
-            // })
+            loadData();
         }
-    }, [isFirstInit, contracts, ownerServices]);
+    });
 
-    const tableUserColumns: ColumnsType<IUser> = [
+    function loadData() {
+        setDataReady(false);
+        ownerServices.getAllContracts$().pipe(take(1)).subscribe({
+            next: data => {
+                const dataSource = onUpdateDataContracts(data);
+                setContracts(dataSource);
+                setContractOnSearch(dataSource);
+                setFirstInit(true);
+                setDataReady(true);
+            }
+        })
+    }
+
+    function onUpdateDataContracts(data: IContract[]) {
+        for (let item of data) {
+            item['storeName'] = item.showStoreModel?.storeName ?? '';
+        }
+        return data;
+    }
+
+    const tableUserColumns: ColumnsType<IContract> = [
         {
             title: 'ID',
-            dataIndex: 'plantID',
-            key: 'plantID',
+            dataIndex: 'id',
+            key: 'id',
             showSorterTooltip: false,
             ellipsis: true,
             width: 80,
+            className: '__app-header-title'
         },
         {
-            title: `Tên`,
-            dataIndex: 'name',
-            key: 'name',
+            title: `Tên Hợp Đồng`,
+            dataIndex: 'title',
+            key: 'title',
             showSorterTooltip: false,
             ellipsis: true,
-            render: (value, record, index) => {
-                return <div className='__app-column-name-container'>
-                    <Avatar shape='square' src={record.plantIMGList[0]?.url} />
-                    <span className='__app-column-name'>{value}</span>
-                </div>
-            },
+            className: '__app-header-title'
         },
         {
-            title: 'Chi Nhánh Làm Việc',
-            dataIndex: 'price',
-            key: 'price',
+            title: 'Khách hàng',
+            dataIndex: 'fullName',
+            key: 'fullName',
             showSorterTooltip: false,
             ellipsis: true,
             width: 250,
+            className: '__app-header-title'
         },
         {
-            title: 'Địa Chỉ',
-            dataIndex: 'height',
-            key: 'height',
+            title: 'Cửa hàng tiếp nhận',
+            dataIndex: 'storeName',
+            key: 'storeName',
             showSorterTooltip: false,
             ellipsis: true,
             width: 250,
-        },
-        {
-            title: 'Số điện thoại',
-            dataIndex: 'height',
-            key: 'height',
-            showSorterTooltip: false,
-            ellipsis: true,
-            width: 100,
+            className: '__app-header-title',
+            render: (_, record) => {
+                return <span>{record.showStaffModel?.fullName ?? '--'}</span>
+            }
         },
         {
             title: 'Trạng thái',
@@ -92,9 +102,10 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
             // },
             ellipsis: true,
             render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{ContractStatusMapping[value]}</Tag>
             },
             width: 200,
+            className: '__app-header-title'
         },
         {
             title: '',
@@ -108,10 +119,12 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                 return <div>
                     <Button className='__app-command-button' onClick={(e) => {
                         e.preventDefault();
-                        //openDetailUser(record.Id);
+                        // getContractDetail(record.id);
+                        // setFormMode('edit');
                     }} icon={<FormOutlined />} />
                 </div>
             },
+            className: '__app-header-title'
         }
     ]
 
@@ -119,26 +132,22 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
         <>
             <div className='__app-toolbar-container'>
                 <div className='__app-toolbar-left-buttons'>
-                    <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>
-                    <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => { }}>Tải Lại</Button>
+                    <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                        CommonUtility.exportExcel(contracts, tableUserColumns);
+                    }}>Xuất Tệp Excel</Button>
+                    <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
+                        loadData();
+                    }}>Tải Lại</Button>
                 </div>
                 <div className='__app-toolbar-right-buttons'>
                     <Search
                         style={{ marginLeft: 10 }}
                         className='__app-search-box'
-                        placeholder="Tìm kiếm"
+                        placeholder="ID, Tên HĐ"
                         onSearch={(value) => {
-                            // const accountSearched = accounts.reduce((acc, cur) => {
-                            //     if (cur.fullName.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                            //         acc.push(cur);
-                            //     } else if (cur.phone.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                            //         acc.push(cur);
-                            //     } else if (cur.email.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                            //         acc.push(cur);
-                            //     }
-                            //     return acc;
-                            // }, []);
-                            // setAccountsOnSearch(accountSearched);
+                            const columnsSearch = ['id', 'title']
+                            const data = CommonUtility.onTableSearch(value, contracts, columnsSearch);
+                            setContractOnSearch(data);
                         }}
                     />
                 </div>
@@ -148,10 +157,18 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
             </div>
             <div className='__app-layout-container'>
                 <Table
+                    loading={!isDataReady}
                     tableLayout='auto'
                     columns={tableUserColumns}
                     className='__app-user-info-table'
-                    dataSource={contracts}
+                    dataSource={contractsOnSearch}
+                    pagination={{
+                        pageSize: 6,
+                        total: contractsOnSearch.length,
+                        showTotal: (total, range) => {
+                            return <span>{total} items</span>
+                        }
+                    }}
                 ></Table>
             </div>
         </>

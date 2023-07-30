@@ -10,6 +10,7 @@ import { IUser } from "../../../IApp.interface";
 import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import { CommonUtility } from "../../utils/utilities";
 import toast from "react-hot-toast";
+import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
 
 
 interface IMemberManagementProps {
@@ -136,7 +137,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
             className: '__app-header-title',
             ellipsis: true,
             render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{AccountStatusMapping[value]}</Tag>
             },
             width: 200,
         },

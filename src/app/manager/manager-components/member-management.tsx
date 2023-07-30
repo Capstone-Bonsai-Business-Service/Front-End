@@ -10,6 +10,7 @@ import { IUser } from "../../../IApp.interface";
 import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import { CommonUtility } from "../../utils/utilities";
 import toast from "react-hot-toast";
+import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
 
 
 interface IMemberManagementProps {
@@ -59,13 +60,13 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
     const tableUserColumns: ColumnsType<IUser> = [
         {
             title: 'ID',
-            dataIndex: 'userID',
-            key: 'userID',
+            dataIndex: 'id',
+            key: 'id',
             showSorterTooltip: false,
             ellipsis: true,
             width: 80,
             sorter: {
-                compare: (acc, cur) => acc.userID > cur.userID ? 1 : acc.userID < cur.userID ? -1 : 0
+                compare: (acc, cur) => acc.id > cur.id ? 1 : acc.id < cur.id ? -1 : 0
             },
             className: '__app-header-title'
         },
@@ -83,23 +84,6 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
             },
             sorter: {
                 compare: (acc, cur) => acc.fullName > cur.fullName ? 1 : acc.fullName < cur.fullName ? -1 : 0
-            },
-            className: '__app-header-title'
-        },
-        {
-            title: 'Chi Nhánh Làm Việc',
-            dataIndex: 'storeName',
-            key: 'storeName',
-            showSorterTooltip: false,
-            ellipsis: true,
-            width: 250,
-            render: (value) => {
-                return <div>
-                    {value ?? '--'}
-                </div>
-            },
-            sorter: {
-                compare: (acc, cur) => acc.storeName > cur.storeName ? 1 : acc.storeName < cur.storeName ? -1 : 0
             },
             className: '__app-header-title'
         },
@@ -135,7 +119,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
             className: '__app-header-title',
             ellipsis: true,
             render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{AccountStatusMapping[value]}</Tag>
             },
             width: 200,
         },
@@ -151,7 +135,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                 return <div>
                     <Button className='__app-command-button' onClick={(e) => {
                         e.preventDefault();
-                        getUserDetail(record.userID);
+                        getUserDetail(record.id);
                         setFormMode('edit');
                     }} icon={<FormOutlined />} />
                 </div>

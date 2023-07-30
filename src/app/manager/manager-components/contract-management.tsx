@@ -1,12 +1,12 @@
 import { CloudUploadOutlined, FormOutlined, LeftOutlined, LoadingOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tag, Upload } from "antd";
+import { Avatar, Button, Col, DatePicker, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tag, Upload } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NumericFormat } from "react-number-format";
 import { ManagerServices } from "../manager.service";
-import { take } from "rxjs";
+import { forkJoin, take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
 import { ContractStatus, ContractStatusMapping, IContract, IContractDetail } from "../../common/object-interfaces/contract.interface";
 import { cloneDeep } from "lodash";
@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 import '../manager.scss';
 import { UserPicker } from "../../common/components/user-picker-component";
 import { DateTime } from "luxon";
+import TextArea from "antd/es/input/TextArea";
 
 
 interface IContractManagementProps {
@@ -28,18 +29,23 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [contracts, setContract] = useState<IContract[]>([]);
+    const [contractsOnSearch, setContractOnSearch] = useState<IContract[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [isShowPopupCreate, setShowPopupCreate] = useState<boolean>(false);
     const [contractDetail, setContractDetail] = useState<IContractDetail[]>([])
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [staffList, setStaffList] = useState<any[]>([]);
+    const [staffForContract, setStaffForContract] = useState<number | null>(null);
+    const [imageScanUrls, setImageScanUrls] = useState<string[]>([]);
+    const [isUpload, setIsUpload] = useState<boolean>(false);
 
     useEffect(() => {
         if (!isFirstInit) {
             managerServices.getContracts$().pipe(take(1)).subscribe({
                 next: data => {
                     setContract(data);
+                    setContractOnSearch(data);
                     setFirstInit(true);
                     setDataReady(true);
                 }
@@ -76,14 +82,14 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
         },
         {
             title: 'Nhân viên tiếp nhận',
-            dataIndex: 'height',
-            key: 'height',
+            dataIndex: 'staff',
+            key: 'staff',
             showSorterTooltip: false,
             ellipsis: true,
             width: 250,
             className: '__app-header-title',
-            render: (value) => {
-                return <span>{value ?? '--'}</span>
+            render: (_, record) => {
+                return <span>{record.showStaffModel?.fullName ?? '--'}</span>
             }
         },
         {
@@ -124,26 +130,20 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
 
     function getContractDetail(id: string) {
         setDataReady(false);
-        managerServices.getContractDetail$(id).pipe(take(1)).subscribe({
-            next: (response: IContractDetail[]) => {
-                if (response) {
-                    setContractDetail(response);
-                    setDataReady(true);
-                }
-            }
-        });
-        managerServices.getStaffForContract$().pipe(take(1)).subscribe({
-            next: (value) => {
-                const staffListOption = value.reduce((acc, cur) => {
+        forkJoin([managerServices.getContractDetail$(id), managerServices.getStaffForContract$()]).subscribe({
+            next: (values) => {
+                const staffListOption = values[1].reduce((acc, cur) => {
                     acc.push({
-                        value: cur.userID,
-                        label: cur.fullName
+                        value: cur.staffID,
+                        label: cur.staffName
                     })
                     return acc;
                 }, [] as any)
                 setStaffList(staffListOption);
+                setContractDetail(values[0]);
+                setDataReady(true);
             }
-        })
+        });
     }
 
     return (
@@ -156,8 +156,19 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                     setShowPopupCreate(true);
                                 }}>Tạo Hợp Đồng</Button>
-                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>
-                                <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => { }}>Tải Lại</Button>
+                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                                    CommonUtility.exportExcel(contracts, tableUserColumns);
+                                }}>Xuất Tệp Excel</Button>
+                                <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
+                                    setDataReady(false);
+                                    managerServices.getContracts$().pipe(take(1)).subscribe({
+                                        next: data => {
+                                            setContract(data);
+                                            setContractOnSearch(data);
+                                            setDataReady(true);
+                                        }
+                                    })
+                                }}>Tải Lại</Button>
                             </div>
                             <div className='__app-toolbar-right-buttons'>
                                 <Search
@@ -165,17 +176,9 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                     className='__app-search-box'
                                     placeholder="ID, Tên hợp đồng"
                                     onSearch={(value) => {
-                                        // const accountSearched = accounts.reduce((acc, cur) => {
-                                        //     if (cur.fullName.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                                        //         acc.push(cur);
-                                        //     } else if (cur.phone.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                                        //         acc.push(cur);
-                                        //     } else if (cur.email.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                                        //         acc.push(cur);
-                                        //     }
-                                        //     return acc;
-                                        // }, []);
-                                        // setAccountsOnSearch(accountSearched);
+                                        const columnsSearch = ['id', 'title']
+                                        const data = CommonUtility.onTableSearch(value, contracts, columnsSearch);
+                                        setContractOnSearch(data);
                                     }}
                                 />
                             </div>
@@ -189,10 +192,10 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                 tableLayout='auto'
                                 columns={tableUserColumns}
                                 className='__app-user-info-table'
-                                dataSource={contracts}
+                                dataSource={contractsOnSearch}
                                 pagination={{
                                     pageSize: 7,
-                                    total: contracts.length,
+                                    total: contractsOnSearch.length,
                                     showTotal: (total, range) => {
                                         return <span>{total} items</span>
                                     }
@@ -217,6 +220,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                             <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
                                 setFormMode('display');
                                 setContractDetail([]);
+                                setImageScanUrls([]);
                             }} />
                             <div className="__app-title-form">HỢP ĐỒNG</div>
                         </div>
@@ -308,12 +312,12 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                         <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
                                         <Col span={16}>
                                             {
-                                                contractDetail[0]?.showContractModel?.showStaffModel ?
-                                                    <span>{ }</span> :
+                                                contractDetail[0]?.showContractModel?.showStaffModel.id ?
+                                                    <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
                                                     <UserPicker
                                                         listUser={staffList}
                                                         onChanged={(value) => {
-
+                                                            setStaffForContract(value);
                                                         }}
                                                     />
                                             }
@@ -323,42 +327,159 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                         contractDetail[0]?.showContractModel?.status === 'DENIED' ?
                                             <>
                                                 <Row>
-                                                    <Col span={5} style={{ fontWeight: 500 }}>Ngày từ chối:</Col>
+                                                    <Col span={8} style={{ fontWeight: 500 }}>Ngày từ chối:</Col>
                                                     <Col>{contractDetail[0]?.showContractModel.rejectedDate}</Col>
                                                 </Row>
                                                 <Row>
-                                                    <Col span={5} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
+                                                    <Col span={16} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
                                                     <Col>{contractDetail[0]?.showContractModel.reason}</Col>
                                                 </Row>
                                             </> : <></>
                                     }
                                     {
-                                        contractDetail[0]?.showContractModel?.status === 'APPROVE' ?
+                                        contractDetail[0]?.showContractModel?.status === 'APPROVED' ?
                                             <>
                                                 <Row>
-                                                    <Col span={5} style={{ fontWeight: 500 }}>Ngày duyệt:</Col>
-                                                    <Col>{contractDetail[0]?.showContractModel.approvedDate}</Col>
+                                                    <Col span={8} style={{ fontWeight: 500 }}>Ngày duyệt:</Col>
+                                                    <Col>{DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel.approvedDate)).toFormat('dd/MM/yyyy HH:mm')}</Col>
                                                 </Row>
                                                 <Row>
-                                                    <Col span={5} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
+                                                    <Col span={8} style={{ fontWeight: 500 }}>Ảnh Scan:</Col>
+                                                    <Col>
+                                                        <div className="__app-button-upload">
+                                                            {
+                                                                !isUpload ? <Button key='upload' icon={<CloudUploadOutlined />} onClick={() => {
+                                                                    document.getElementById('uploadContract')?.click();
+                                                                }}>Tải ảnh</Button> : <Skeleton.Button active={true}></Skeleton.Button>
+                                                            }
+
+                                                        </div>
+                                                        <input
+                                                            id='uploadContract'
+                                                            type="file"
+                                                            accept="*"
+                                                            multiple={false}
+                                                            hidden={true}
+                                                            onChange={(args) => {
+                                                                setIsUpload(true);
+                                                                const file = Array.from(args.target.files as FileList);
+                                                                managerServices.uploadImageToFireBase$(file[0]).pipe(take(1)).subscribe({
+                                                                    next: url => {
+                                                                        const img = imageScanUrls;
+                                                                        img.push(url as string);
+                                                                        setImageScanUrls(img);
+                                                                        setIsUpload(false);
+                                                                    }
+                                                                });
+                                                            }}
+                                                        />
+                                                        <div>
+                                                            {
+                                                                imageScanUrls.reduce((acc, cur) => {
+                                                                    acc.push(
+                                                                        <img src={cur} alt='' style={{ width: 150, height: 200 }} />
+                                                                    )
+                                                                    return acc;
+                                                                }, [] as React.ReactNode[])
+                                                            }
+                                                        </div>
+                                                    </Col>
+                                                </Row>
+                                            </> : <></>
+                                    }
+                                    {
+                                        contractDetail[0]?.showContractModel?.status === 'DENIED' ?
+                                            <>
+                                                <Row>
+                                                    <Col span={8} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
                                                     <Col>{contractDetail[0]?.showContractModel.reason}</Col>
+                                                </Row>
+                                            </> : <></>
+                                    }
+                                    {
+                                        contractDetail[0]?.showContractModel?.status !== 'WAITING' &&
+                                            contractDetail[0]?.showContractModel?.status !== 'APPROVED' ?
+                                            <>
+                                                <Row>
+                                                    <Col span={8} style={{ fontWeight: 500 }}>Ảnh Đính Kèm:</Col>
+                                                    <Col span={16}>
+                                                        {
+                                                            contractDetail[0]?.showContractModel?.imgList.reduce((acc, cur) => {
+                                                                acc.push(
+                                                                    <img src={cur.imgUrl} alt='' style={{ width: 150, height: 200 }} />
+                                                                )
+                                                                return acc;
+                                                            }, [] as React.ReactNode[])
+                                                        }
+                                                    </Col>
                                                 </Row>
                                             </> : <></>
                                     }
                                 </Col>
                             </div>
-                            <div className="__app-action-button">
-                                <Button type="primary" onClick={() => {
-                                    //todo
-                                    setFormMode('display');
-                                    setContractDetail([]);
-                                }}>Duyệt</Button>
-                                <Button type="default" onClick={() => {
-                                    //todo
-                                    setFormMode('display');
-                                    setContractDetail([]);
-                                }}>Từ chối</Button>
-                            </div>
+                            {
+                                contractDetail[0]?.showContractModel?.status === 'WAITING' ?
+                                    <div className="__app-action-button">
+                                        <Button type="primary" onClick={() => {
+                                            const dataPost = {
+                                                "contractID": contractDetail[0]?.showContractModel?.id,
+                                                "deposit": contractDetail[0]?.showContractModel?.deposit,
+                                                "paymentMethod": contractDetail[0]?.showContractModel?.paymentMethod,
+                                                "staffID": staffForContract,
+                                                "paymentTypeID": contractDetail[0]?.showContractModel?.paymentTypeID ?? 'PT003'
+                                            }
+                                            managerServices.approveContract$(dataPost).pipe(take(1)).subscribe({
+                                                next: (res) => {
+                                                    if (res) {
+                                                        setFormMode('display');
+                                                        setContractDetail([]);
+                                                        toast.success('Duyệt Hợp đồng thành công');
+                                                    } else {
+                                                        toast.error('Duyệt Hợp đồng thất bại');
+                                                    }
+                                                }
+                                            })
+                                        }}>Duyệt</Button>
+                                        <Button type="default" onClick={() => {
+                                            //todo
+                                            setFormMode('display');
+                                            setContractDetail([]);
+                                        }}>Từ chối</Button>
+                                    </div> : <></>
+                            }
+                            {
+                                contractDetail[0]?.showContractModel?.status !== 'WAITING' ?
+                                    <div className="__app-action-button">
+                                        {
+                                            contractDetail[0]?.showContractModel?.status === 'APPROVED' ?
+                                                <Button type="primary" onClick={() => {
+                                                    if (imageScanUrls.length > 0) {
+                                                        managerServices.activeContract$(imageScanUrls, contractDetail[0]?.showContractModel?.id as string).pipe(take(1)).subscribe({
+                                                            next: (res) => {
+                                                                if (res) {
+                                                                    setFormMode('display');
+                                                                    setContractDetail([]);
+                                                                    setImageScanUrls([]);
+                                                                    toast.success('Lưu Hợp đồng thành công');
+                                                                } else {
+                                                                    toast.error('Lưu Hợp đồng thất bại');
+                                                                }
+                                                            }
+                                                        })
+                                                    } else {
+                                                        toast.error('Vui lòng upload ảnh scan hợp đồng')
+                                                    }
+                                                }}>Lưu</Button> : <></>
+                                        }
+
+                                        <Button style={{ width: 200, backgroundColor: '#8E0000' }} type="primary" onClick={() => {
+                                            //todo
+                                            setFormMode('display');
+                                            setContractDetail([]);
+                                        }}>Huỷ Hợp Đồng</Button>
+                                    </div> : <></>
+                            }
+
                         </div>
                     </div>
                     : <></>
@@ -369,10 +490,35 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
 
 const FormCreateContractDialog: React.FC<any> = (props: any) => {
     const [contractDetail, setContractDetail] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
-    const [images, setImages] = useState<File[]>([]);
-
+    const [isUpload, setIsUpload] = useState(false);
+    const [imageScanUrls, setImageScanUrls] = useState<string[]>([]);
+    const [staffList, setStaffList] = useState<any[]>([]);
+    const [serviceList, setServiceList] = useState<any[]>([]);
+    const [serviceTypeList, setServiceTypeList] = useState<any[]>([]);
+    const [servicePackList, setServicePackTypeList] = useState<any[]>([]);
+    const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const managerServices = new ManagerServices();
+
+    useEffect(() => {
+        if (!isFirstInit) {
+            forkJoin([managerServices.getStaffForContract$(), managerServices.getService$(), managerServices.getServicePacks$()]).subscribe({
+                next: values => {
+                    const staffListOption = values[0].reduce((acc, cur) => {
+                        acc.push({
+                            value: cur.staffID,
+                            label: cur.staffName
+                        })
+                        return acc;
+                    }, [] as any)
+                    setStaffList(staffListOption);
+                    setServicePackTypeList(values[2]);
+                    setStaffList(staffListOption);
+                    setServiceList(values[1]);
+                    setFirstInit(true);
+                }
+            })
+        }
+    })
 
     function getRenderFooterButton(): React.ReactNode[] {
         let nodes: React.ReactNode[] = []
@@ -385,9 +531,44 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
         );
         nodes.push(
             <Button key='save' type='primary' onClick={() => {
-                if (props.onSave) {
-                    props.onSave(contractDetail);
+                const dataPost = {
+                    "title": `Contract ${DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd')}`,
+                    "fullName": contractDetail['fullName'],
+                    "phone": contractDetail['phone'] ?? '',
+                    "address": contractDetail['address'] ?? '',
+                    "storeID": managerServices.storeId,
+                    "deposit": contractDetail['deposit'] ?? 0,
+                    "paymentMethod": contractDetail['paymentMethod'] ?? '',
+                    "paymentTypeID": contractDetail['paymentTypeID'] ?? '',
+                    "customerID": null,
+                    "email": '',
+                    "detailModelList": [
+                        {
+                            "note": contractDetail['note'] ?? '',
+                            "timeWorking": contractDetail['timeWorking'] ?? '',
+                            "totalPrice": 0,
+                            "servicePackID": contractDetail['servicePackID'] ?? '',
+                            "serviceTypeID": contractDetail['serviceTypeID'] ?? '',
+                            "startDate": contractDetail['startDate'] ?? '',
+                            "endDate": contractDetail['endDate'] ?? ''
+                        }
+                    ],
+                    "staffID": contractDetail['staffID'],
+                    "listURL": imageScanUrls
                 }
+                managerServices.createContract$(dataPost).subscribe({
+                    next: (res) => {
+                        if (res) {
+                            toast.success('Tạo hợp đồng thành công');
+                            if (props.onSave) {
+                                props.onSave(contractDetail);
+                            }
+                        } else {
+                            toast.error('Tạo hợp đồng thất bại');
+                        }
+                    }
+                })
+                
             }}>Lưu</Button>
         );
         return nodes;
@@ -456,7 +637,104 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             />
                         </Col>
                     </Row>
-                    {/* <Row className='__app-account-info-row'>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
+                            <span>
+                                <strong>Dịch vụ:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                options={serviceList.reduce((acc, cur) => {
+                                    acc.push({
+                                        value: cur.serviceID,
+                                        label: cur.name
+                                    })
+                                    return acc;
+                                }, [])}
+                                placeholder='Dịch vụ'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(contractDetail) ?? {};
+                                    temp['serviceID'] = value;
+                                    temp['serviceTypeID'] = null;
+                                    const _serviceTypeList = serviceList.find(item => item.serviceID === value)?.typeList.reduce((acc: any, cur: any) => {
+                                        acc.push({
+                                            value: cur.id,
+                                            label: cur.name
+                                        })
+                                        return acc;
+                                    }, []);
+                                    setServiceTypeList(_serviceTypeList);
+                                    setContractDetail(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
+                            <span>
+                                <strong>Loại dịch vụ:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                value={contractDetail?.serviceTypeID}
+                                options={serviceTypeList}
+                                placeholder='Loại dịch vụ'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(contractDetail) ?? {};
+                                    temp['serviceTypeID'] = value;
+                                    setContractDetail(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
+                            <span>
+                                <strong>Gói:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                options={servicePackList?.reduce((acc, cur) => {
+                                    if (cur.status === 'ACTIVE') {
+                                        acc.push({
+                                            value: cur.id,
+                                            label: cur.range
+                                        })
+                                    }
+                                    return acc;
+                                }, [] as any)}
+                                placeholder='Loại dịch vụ'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(contractDetail) ?? {};
+                                    temp['servicePackID'] = value;
+                                    setContractDetail(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
+                            <span>
+                                <strong>Thành tiền:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            {
+                                contractDetail?.serviceID && contractDetail?.serviceTypeID && contractDetail?.servicePackID ?
+                                    <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={
+                                        getTotalPrice()
+                                    } />
+                                    : <>--</>
+                            }
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
                             <span>
                                 <strong>Ngày bắt đầu:</strong> <span className='__app-required-field'> *</span>
@@ -464,39 +742,62 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
 
                         </Col>
                         <Col span={18}>
-                            <Select
-                                defaultValue='001'
+                            <DatePicker
                                 style={{ width: '100%' }}
-                                options={[
-                                    { value: '001', label: 'Chi Nhánh 1' },
-                                    { value: '002', label: 'Chi Nhánh 2' },
-                                    { value: '003', label: 'Chi Nhánh 3' },
-                                ]}
+                                placeholder="Chọn ngày bắt đầu"
                                 onChange={(value) => {
                                     let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['storeId'] = value;
+                                    temp['startDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
                                     setContractDetail(temp);
-                                }}
-                            />
+                                }} />
                         </Col>
-                    </Row> */}
-                    {/* <Divider className='__app-divider-no-margin'></Divider> */}
-                    {/* <Row className='__app-account-info-row'>
+                    </Row>
+                    <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
                             <span>
-                                <strong>Thời hạn:</strong> <span className='__app-required-field'> *</span>
+                                <strong>Ngày kết thúc:</strong> <span className='__app-required-field'> *</span>
                             </span>
+
                         </Col>
                         <Col span={18}>
-                            <Input
-                                onChange={(args) => {
+                            <DatePicker
+                                style={{ width: '100%' }}
+                                placeholder="Chọn ngày kết thúc"
+                                onChange={(value) => {
                                     let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['fullName'] = args.target.value;
+                                    temp['endDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
+                                    setContractDetail(temp);
+                                }} />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
+                            <span>
+                                <strong>Lịch làm việc:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                options={[
+                                    { value: 'Thứ 2', label: 'Thứ 2' },
+                                    { value: 'Thứ 3', label: 'Thứ 3' },
+                                    { value: 'Thứ 4', label: 'Thứ 4' },
+                                    { value: 'Thứ 5', label: 'Thứ 5' },
+                                    { value: 'Thứ 6', label: 'Thứ 6' },
+                                    { value: 'Thứ 7', label: 'Thứ 7' },
+                                    { value: 'Chủ Nhật', label: 'Chủ Nhật' },
+                                ]}
+                                placeholder='Chọn Lịch'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(contractDetail) ?? {};
+                                    temp['timeWorking'] = value;
                                     setContractDetail(temp);
                                 }}
                             />
                         </Col>
-                    </Row> */}
+                    </Row>
                     <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
                             <span>
@@ -523,12 +824,48 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
                             <span>
+                                <strong>Loại thanh toán:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                options={[
+                                    { value: 'Thanh toán online', label: 'Thanh toán online' },
+                                    { value: 'Thanh toán tiền mặt', label: 'Thanh toán tiền mặt' },
+                                ]}
+                                placeholder='Chọn loại thanh toán'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(contractDetail) ?? {};
+                                    temp['paymentMethod'] = value;
+                                    setContractDetail(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
+                            <span>
+                                <strong>Tiền đặt cọc:</strong>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <NumericFormat className="app-numeric-input" thousandSeparator=" " defaultValue={0} onChange={(args) => {
+                                let temp = cloneDeep(contractDetail) ?? {};
+                                temp['deposit'] = Number(args.target.value);
+                                setContractDetail(temp);
+                            }} />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
+                            <span>
                                 <strong>Nhân viên tiếp nhận:</strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
                         <Col span={18}>
                             <UserPicker
-                                listUser={[{ value: '001', label: 'Nhân viên 1' }]}
+                                listUser={staffList}
                                 placeholder="Chọn nhân viên"
                                 onChanged={(value) => {
                                     let temp = cloneDeep(contractDetail) ?? {};
@@ -540,29 +877,65 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     </Row>
                     <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
+                            <span>
+                                <strong>Ghi chú:</strong>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <TextArea
+                                placeholder="Nhập ghi chú"
+                                rows={2}
+                                onChange={(value) => {
+                                    let temp = cloneDeep(contractDetail) ?? {};
+                                    temp['note'] = value.target.value;
+                                    setContractDetail(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={6} className='__app-account-field'>
                             <strong>Ảnh Scan: </strong> <span className='__app-required-field'> *</span>
                         </Col>
                         <Col span={18}>
                             <div className="__app-images-upload-container">
-                                <div className="__app-list-images">
-                                    {renderImages()}
-                                </div>
                                 <div className="__app-button-upload">
-                                    <Button key='upload' icon={<CloudUploadOutlined />} onClick={() => {
-                                        document.getElementById('upload')?.click();
-                                    }}>Tải ảnh</Button>
+                                    {
+                                        !isUpload ? <Button key='upload' icon={<CloudUploadOutlined />} onClick={() => {
+                                            document.getElementById('uploadContract')?.click();
+                                        }}>Tải ảnh</Button> : <Skeleton.Button active={true}></Skeleton.Button>
+                                    }
+
                                 </div>
                                 <input
-                                    id='upload'
+                                    id='uploadContract'
                                     type="file"
                                     accept="*"
-                                    multiple={true}
+                                    multiple={false}
                                     hidden={true}
                                     onChange={(args) => {
-                                        const files = Array.from(args.target.files as FileList);
-                                        setImages(files);
+                                        setIsUpload(true);
+                                        const file = Array.from(args.target.files as FileList);
+                                        managerServices.uploadImageToFireBase$(file[0]).pipe(take(1)).subscribe({
+                                            next: url => {
+                                                const img = imageScanUrls;
+                                                img.push(url as string);
+                                                setImageScanUrls(img);
+                                                setIsUpload(false);
+                                            }
+                                        });
                                     }}
                                 />
+                                <div>
+                                    {
+                                        imageScanUrls.reduce((acc, cur) => {
+                                            acc.push(
+                                                <img src={cur} alt='' style={{ width: 150, height: 200 }} />
+                                            )
+                                            return acc;
+                                        }, [] as React.ReactNode[])
+                                    }
+                                </div>
                             </div>
                         </Col>
                     </Row>
@@ -571,13 +944,23 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
         </>
     )
 
-    function renderImages() {
-        const elements: JSX.Element[] = images.reduce((acc, cur) => {
-            acc.push(
-                <span>{cur.name}</span>
-            )
-            return acc;
-        }, [] as JSX.Element[]);
-        return elements;
+    function getTotalPrice() {
+        let duration = ((new Date(contractDetail['startDate']).getTime() - new Date(contractDetail['startDate']).getTime()) / (1000*60*60*24)) / 30;
+        duration = duration > 1 ? duration : 1;
+        const servicePrice = serviceList.find(item => item.serviceID === contractDetail['serviceID'])?.price ?? 0;
+        const servicePackPercent = servicePackList.find(item => item.id === contractDetail['servicePackID'])?.percentage ?? 0;
+        const serviceTypePercent = serviceList.find(item => item.serviceID === contractDetail['serviceID'])?.typeList.find((itemTL: any) => itemTL.id === contractDetail['serviceTypeID'])?.percentage ?? 0;
+        const total = (servicePrice * duration) - (servicePrice * (servicePackPercent / 100)) + (servicePrice * (serviceTypePercent / 100));
+        return total;
     }
+
+    // function renderImages() {
+    //     const elements: JSX.Element[] = images.reduce((acc, cur) => {
+    //         acc.push(
+    //             <span>{cur.name}</span>
+    //         )
+    //         return acc;
+    //     }, [] as JSX.Element[]);
+    //     return elements;
+    // }
 }

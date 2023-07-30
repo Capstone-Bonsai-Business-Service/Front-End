@@ -16,6 +16,7 @@ import './manager.scss';
 import { ContractManagementComponent } from './manager-components/contract-management';
 import { BonsaiManagementComponent } from './manager-components/bonsai-management';
 import { MemberManagementComponent } from './manager-components/member-management';
+import { OrderManagementComponent } from './manager-components/order-management';
 
 
 interface IManagerPageProps {
@@ -333,11 +334,11 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                             currentMenuItem === 'members' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
                                 : <></>
                         }
-                        { /*{
-                            currentMenuItem === 'manager' ? <MemberManagementComponent roleName='Quản Lý' />
+                        {
+                            currentMenuItem === 'orders' ? <OrderManagementComponent roleID='R004'/>
                                 : <></>
                         }
-                        {
+                        { /*{
                             currentMenuItem === 'contracts' ? <ContractManagementComponent />
                                 : <></>
                         } */}

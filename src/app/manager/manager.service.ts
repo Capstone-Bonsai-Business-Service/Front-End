@@ -38,7 +38,15 @@ export class ManagerServices extends CoreServices {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
                 }
             }).then((res) => {
-                obs.next(res.data);
+                const currentUser = localStorage.getItem('user');
+                const objUser = JSON.parse(currentUser as string);
+                const member = res.data.reduce((acc: any[], cur: any) => {
+                    if (objUser.userID !== cur.id) {
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, [])
+                obs.next(member);
                 obs.complete();
             }).catch(() => {
                 obs.next([]);
@@ -49,7 +57,7 @@ export class ManagerServices extends CoreServices {
 
     getService$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/service?pageNo=1&pageSize=10&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/service?pageNo=0&pageSize=10&sortBy=ID&sortAsc=false`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
@@ -148,6 +156,92 @@ export class ManagerServices extends CoreServices {
     getStaffForContract$() {
         return new Observable<IUser[]>(obs => {
             let url = this.globalSettings.domain + `/contract/getStaffForContract`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getServicePacks$() {
+        return new Observable<IUser[]>(obs => {
+            let url = this.globalSettings.domain + `/servicePack`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    createContract$(dataPost: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/contract/createContractManager`
+            axios.post(url, dataPost, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    approveContract$(dataPost: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/contract/approveContract`
+            axios.put(url, dataPost, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    activeContract$(listUrl: string[], contractID: string) {
+        return new Observable<any>(obs => {
+            const paramUrl = listUrl.join('&listURL=');
+            let url = this.globalSettings.domain + `/contract/addContractIMG?contractID=${contractID}&listURL=${paramUrl}`
+            axios.post(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    getStoreOrders$() {
+        return new Observable<IUser[]>(obs => {
+            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

@@ -124,6 +124,19 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    getServicePacks$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/servicePack`
+            axios.get(url).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
     getAccount$(accountId: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/api/v1/accounts/${accountId}`
@@ -202,6 +215,23 @@ export class OwnerServices extends CoreServices {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/store`
             axios.post(url, datapost, {
+                'headers': {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
+    getAllContracts$() {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/contract/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
                 'headers': {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
                 }

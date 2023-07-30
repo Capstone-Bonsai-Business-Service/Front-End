@@ -1,6 +1,7 @@
 
 
 export interface IContract {
+    [k: string]: any;
     id: string,
     title: string,
     fullName: string,
@@ -33,6 +34,11 @@ export interface IContract {
         }
     ],
     totalPage: number,
+    showPaymentTypeModel: {
+        "id": string,
+        "name": string,
+        "value": number
+    }
 
 }
 
@@ -59,7 +65,7 @@ export interface IContractDetail {
         "packRange": string,
         "packPercentage": number,
         "packApplyDate": string
-      };
+    };
     workingDateList?: any[];
     totalPrice?: number;
     endDate?: string;
@@ -71,7 +77,7 @@ export const ContractStatusMapping: {
     [k: string]: string;
 } = {
     'WAITING': 'Đang chờ duyệt',
-    'APPROVE': 'Đã duyệt',
+    'APPROVED': 'Đã duyệt',
     'DENIED': 'Đã từ chối',
     'STAFFCANCELED': 'Đã từ chối',
     'CUSTOMERCANCELED': 'Đã huỷ',
@@ -80,4 +86,4 @@ export const ContractStatusMapping: {
     'DONE': 'Đã kết thúc'
 }
 
-export type ContractStatus = 'WAITING' | 'APPROVE' | 'DENIED' | 'STAFFCANCELED' | 'CUSTOMERCANCELED' | 'SIGNED' | 'WORKING' | 'DONE'
+export type ContractStatus = 'WAITING' | 'APPROVED' | 'DENIED' | 'STAFFCANCELED' | 'CUSTOMERCANCELED' | 'SIGNED' | 'WORKING' | 'DONE'

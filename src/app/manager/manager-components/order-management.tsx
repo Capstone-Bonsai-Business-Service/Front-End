@@ -9,91 +9,89 @@ import { ManagerServices } from "../manager.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
 import { CommonUtility } from "../../utils/utilities";
+import { OrderStatusMapping } from "../../common/object-interfaces/order.interface";
 
 
-interface IContractManagementProps {
+interface IOrderManagementProps {
     roleID: string;
 }
 
-export const OrderManagementComponent: React.FC<IContractManagementProps> = (props) => {
+export const OrderManagementComponent: React.FC<IOrderManagementProps> = (props) => {
 
     const navigate = useNavigate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const managerServices = new ManagerServices();
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [contracts, setContract] = useState<any[]>([]);
+    const [orders, setOrder] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
+    const [orderOnSearch, setOrderOnSearch] = useState<any[]>([]);
 
     useEffect(() => {
         if (!isFirstInit) {
-            managerServices.getMembers$().pipe(take(1)).subscribe({
+            managerServices.getStoreOrders$().pipe(take(1)).subscribe({
                 next: data => {
-                    setContract(data);
+                    setOrder(data);
+                    setOrderOnSearch(data);
                     setFirstInit(true);
+                    setDataReady(true);
                 }
             })
         }
-    }, [isFirstInit, contracts, managerServices]);
+    }, [isFirstInit, orders, managerServices]);
 
     const tableUserColumns: ColumnsType<IUser> = [
         {
             title: 'ID',
-            dataIndex: 'plantID',
-            key: 'plantID',
+            dataIndex: 'id',
+            key: 'id',
             showSorterTooltip: false,
             ellipsis: true,
             width: 80,
         },
         {
-            title: `Tên`,
-            dataIndex: 'name',
-            key: 'name',
+            title: `Tên khách hàng`,
+            dataIndex: 'fullName',
+            key: 'fullName',
             showSorterTooltip: false,
             ellipsis: true,
-            render: (value, record, index) => {
-                return <div className='__app-column-name-container'>
-                    <Avatar shape='square' src={record.plantIMGList[0]?.url} />
-                    <span className='__app-column-name'>{value}</span>
-                </div>
-            },
-        },
-        {
-            title: 'Chi Nhánh Làm Việc',
-            dataIndex: 'price',
-            key: 'price',
-            showSorterTooltip: false,
-            ellipsis: true,
-            width: 250,
-        },
-        {
-            title: 'Địa Chỉ',
-            dataIndex: 'height',
-            key: 'height',
-            showSorterTooltip: false,
-            ellipsis: true,
-            width: 250,
         },
         {
             title: 'Số điện thoại',
-            dataIndex: 'height',
-            key: 'height',
+            dataIndex: 'phone',
+            key: 'phone',
             showSorterTooltip: false,
             ellipsis: true,
             width: 100,
         },
         {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
+            title: 'Tổng thanh toán',
+            dataIndex: 'total',
+            key: 'total',
             showSorterTooltip: false,
-            // sorter: {
-            //     compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
-            // },
+            ellipsis: true,
+            width: 250,
+            render: (value) => {
+                return <NumericFormat displayType="text" value={value} thousandSeparator=" " suffix=" vnđ" />
+            }
+        },
+        {
+            title: 'Hình thức thanh toán',
+            dataIndex: 'paymentMethod',
+            key: 'paymentMethod',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 250,
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'progressStatus',
+            key: 'progressStatus',
+            showSorterTooltip: false,
             ellipsis: true,
             render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{OrderStatusMapping[value]}</Tag>
             },
             width: 200,
         },
@@ -120,26 +118,29 @@ export const OrderManagementComponent: React.FC<IContractManagementProps> = (pro
         <>
             <div className='__app-toolbar-container'>
                 <div className='__app-toolbar-left-buttons'>
-                    <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>
-                    <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => { }}>Tải Lại</Button>
+                    <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                        CommonUtility.exportExcel(orders, tableUserColumns);
+                    }}>Xuất Tệp Excel</Button>
+                    <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
+                        setDataReady(false);
+                        managerServices.getStoreOrders$().pipe(take(1)).subscribe({
+                            next: data => {
+                                setOrder(data);
+                                setOrderOnSearch(data);
+                                setDataReady(true);
+                            }
+                        })
+                    }}>Tải Lại</Button>
                 </div>
                 <div className='__app-toolbar-right-buttons'>
                     <Search
                         style={{ marginLeft: 10 }}
                         className='__app-search-box'
-                        placeholder="Tìm kiếm"
+                        placeholder="ID, Tên KH, SĐT"
                         onSearch={(value) => {
-                            // const accountSearched = accounts.reduce((acc, cur) => {
-                            //     if (cur.fullName.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                            //         acc.push(cur);
-                            //     } else if (cur.phone.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                            //         acc.push(cur);
-                            //     } else if (cur.email.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                            //         acc.push(cur);
-                            //     }
-                            //     return acc;
-                            // }, []);
-                            // setAccountsOnSearch(accountSearched);
+                            const columnsSearch = ['id', 'fullName', 'phone']
+                            const data = CommonUtility.onTableSearch(value, orders, columnsSearch);
+                            setOrderOnSearch(data);
                         }}
                     />
                 </div>
@@ -149,10 +150,18 @@ export const OrderManagementComponent: React.FC<IContractManagementProps> = (pro
             </div>
             <div className='__app-layout-container'>
                 <Table
+                    loading={!isDataReady}
                     tableLayout='auto'
                     columns={tableUserColumns}
                     className='__app-user-info-table'
-                    dataSource={contracts}
+                    dataSource={orderOnSearch}
+                    pagination={{
+                        pageSize: 7,
+                        total: orderOnSearch.length,
+                        showTotal: (total, range) => {
+                            return <span>{total} items</span>
+                        }
+                    }}
                 ></Table>
             </div>
         </>
