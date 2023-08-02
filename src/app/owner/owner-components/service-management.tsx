@@ -21,24 +21,26 @@ interface IServiceManagementProps {
 
 export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (props) => {
 
+    const [tabKey, setTabKey] = useState<string>('service')
+
     return (
         // <div className='__app-services-container'>
         <Tabs
             style={{ width: '90%' }}
             defaultActiveKey='service'
-            onChange={() => {
-                
+            onChange={(key) => {
+                setTabKey(key);
             }}
             items={[
                 {
                     label: 'Dịch vụ',
                     key: 'service',
-                    children: <TabServiceList />,
+                    children: tabKey === 'service' ? <TabServiceList /> : <></>,
                 },
                 {
                     label: 'Gói dịch vụ',
                     key: 'packs',
-                    children: <TabPackList />
+                    children: tabKey === 'packs' ? <TabPackList /> : <></>
                 }
             ]}
         />
@@ -197,9 +199,6 @@ const TabServiceList: React.FC<any> = (props) => {
 
     useEffect(() => {
         if (!isFirstInit) {
-            setServiceDetail(null);
-            setImageUrl('');
-            setFormMode('display');
             loadData();
         }
     });
@@ -254,7 +253,7 @@ const TabServiceList: React.FC<any> = (props) => {
         <>
             {
                 formMode === 'display' ? <>
-                    <div className='__app-toolbar-container'>
+                    <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                         <div className='__app-toolbar-left-buttons'>
                             <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                 // setShowPopupCreate(true);
@@ -286,6 +285,7 @@ const TabServiceList: React.FC<any> = (props) => {
                         <Table
                             loading={!isDataReady}
                             tableLayout='auto'
+                            size='middle'
                             columns={tableUserColumns}
                             className='__app-user-info-table'
                             dataSource={servicesOnSearch}
@@ -537,7 +537,7 @@ const TabPackList: React.FC<{}> = (props) => {
     }
 
     return <>
-        <div className='__app-toolbar-container'>
+        <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
             <div className='__app-toolbar-left-buttons'>
                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                     // setShowPopupCreate(true);
@@ -569,6 +569,7 @@ const TabPackList: React.FC<{}> = (props) => {
             <Table
                 loading={!isDataReady}
                 tableLayout='auto'
+                size='middle'
                 columns={tableUserColumns}
                 className='__app-user-info-table'
                 dataSource={servicePacksOnSearch}

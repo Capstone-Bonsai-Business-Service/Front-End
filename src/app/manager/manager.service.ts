@@ -186,6 +186,23 @@ export class ManagerServices extends CoreServices {
             })
         })
     }
+    
+    getPlantQuantityHistory$(plantID: string) {
+        return new Observable<IUser[]>(obs => {
+            let url = this.globalSettings.domain + `/store/getStorePlantRecord?plantID=${plantID}&storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
 
     createContract$(dataPost: any) {
         return new Observable<any>(obs => {
@@ -221,6 +238,91 @@ export class ManagerServices extends CoreServices {
         })
     }
 
+    approveOrder$(orderId: string, staffId: number = 0) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/order/approveOrder/${orderId}?staffID=${staffId}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    confirmPaymentOrder$(orderID: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/order/updateIsPaid?orderID=${orderID}&isPaid=true`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    rejectOrder$(orderId: string, reason: string ) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/order/rejectOrder?orderID=${orderId}&reason=${reason}&status=DENIED`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    rejectContract$(contractId: string, status: string ) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/contract/changeContractStatus?contractID=${contractId}&status=${status}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    cancelContract$(orderId: string, reason: string ) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/contract/rejectOrder?orderID=${orderId}&reason=${reason}&status=STAFFCANCEL`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
     activeContract$(listUrl: string[], contractID: string) {
         return new Observable<any>(obs => {
             const paramUrl = listUrl.join('&listURL=');
@@ -243,6 +345,23 @@ export class ManagerServices extends CoreServices {
         return new Observable<IUser[]>(obs => {
             let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
             axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    addStorePlantQuantity$(dataPost: any) {
+        return new Observable<IUser[]>(obs => {
+            let url = this.globalSettings.domain + `/store/addStorePlant`
+            axios.post(url, dataPost, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
                 }

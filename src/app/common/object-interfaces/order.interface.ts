@@ -3,12 +3,12 @@
 export const OrderStatusMapping: {
     [k: string]: string;
 } = {
-    'WAITING': 'Đang chờ duyệt',
-    'APPROVE': 'Đã duyệt',
+    'WAITING': 'Đơn mới',
+    'APPROVED': 'Đã duyệt',
     'DENIED': 'Đã từ chối',
     'PACKAGING': 'Đang đóng gói',
     'DELIVERING': 'Đang giao',
-    'RECEIVED': 'Đã nhận hàng',
+    'RECEIVED': 'Đã giao',
     'STAFFCANCELED': 'Đã từ chối',
     'CUSTOMERCANCELED': 'Đã huỷ',
 }

@@ -64,7 +64,8 @@ export interface IContractDetail {
         "id": string,
         "packRange": string,
         "packPercentage": number,
-        "packApplyDate": string
+        "packApplyDate": string,
+        "packUnit": string;
     };
     workingDateList?: any[];
     totalPrice?: number;
@@ -79,8 +80,8 @@ export const ContractStatusMapping: {
     'WAITING': 'Đang chờ duyệt',
     'APPROVED': 'Đã duyệt',
     'DENIED': 'Đã từ chối',
-    'STAFFCANCELED': 'Đã từ chối',
-    'CUSTOMERCANCELED': 'Đã huỷ',
+    'STAFFCANCELED': 'Cửa hàng đã huỷ',
+    'CUSTOMERCANCELED': 'Bị huỷ',
     'SIGNED': 'Đã ký',
     'WORKING': 'Đang hoạt động',
     'DONE': 'Đã kết thúc'

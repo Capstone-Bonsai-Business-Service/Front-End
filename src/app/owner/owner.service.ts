@@ -3,12 +3,13 @@ import { Observable } from "rxjs";
 import accounts from '../../mock/accounts.json';
 import { CoreServices } from "../../service.core";
 import { IUser } from "../../IApp.interface";
+import { IContractDetail } from "../common/object-interfaces/contract.interface";
 
 
 export class OwnerServices extends CoreServices {
     getBonsais$(options: any) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/plant?pageNo=${options.pageNo ?? 1}&pageSize=${options.pageSize ?? 10}&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/plant/getAllPlantWithInactive?pageNo=${options.pageNo ?? 1}&pageSize=${options.pageSize ?? 10}&sortBy=ID&sortAsc=false`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
@@ -73,7 +74,7 @@ export class OwnerServices extends CoreServices {
 
     getMembers$(roleID: string) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=USERNAME&sortTypeAsc=true`
+            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=ID&sortTypeAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -240,6 +241,23 @@ export class OwnerServices extends CoreServices {
                 obs.complete();
             }).catch(() => {
                 obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
+    getContractDetail$(id: string) {
+        return new Observable<IContractDetail[]>(obs => {
+            let url = this.globalSettings.domain + `/contract/contractDetail/${id}?pageNo=0&pageSize=10&sortBy=ID&sortAsc=true`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
                 obs.complete();
             })
         })

@@ -155,7 +155,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                         e.preventDefault();
                         getUserDetail(record.userID);
                         setFormMode('edit');
-                    }} icon={<FormOutlined />} />
+                    }}>Chi tiết</Button>
                 </div>
             },
         }
@@ -175,7 +175,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
         <>
             {
                 formMode === 'display' ? <>
-                    <div className='__app-toolbar-container'>
+                    <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                         <div className='__app-toolbar-left-buttons'>
                             {/* <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => { }}>Thêm {props.roleName}</Button> */}
                             <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>

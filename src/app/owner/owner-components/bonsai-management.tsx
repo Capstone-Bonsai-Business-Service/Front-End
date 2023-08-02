@@ -253,7 +253,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             {
                 formMode === 'display' ?
                     <>
-                        <div className='__app-toolbar-container'>
+                        <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                             <div className='__app-toolbar-left-buttons'>
                                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                     setShowPopupCreate(true);
@@ -288,16 +288,17 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                         <div style={{ width: '94%' }}>
                             <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
                         </div>
-                        <div className='__app-layout-container'>
+                        <div className='__app-layout-container' style={{ padding: '8px 24px' }}>
 
                             <Table
                                 loading={!isDataReady}
                                 tableLayout='auto'
+                                size="middle"
                                 columns={tableUserColumns}
                                 className='__app-user-info-table'
                                 dataSource={bonsaisOnSearch}
                                 pagination={{
-                                    pageSize: 7,
+                                    pageSize: 8,
                                     total: bonsais.length,
                                     showTotal: (total, range) => {
                                         return <span>{total} items</span>

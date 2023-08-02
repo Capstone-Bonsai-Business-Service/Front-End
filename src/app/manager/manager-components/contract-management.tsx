@@ -1,5 +1,5 @@
-import { CloudUploadOutlined, FormOutlined, LeftOutlined, LoadingOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, DatePicker, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tag, Upload } from "antd";
+import { CloudUploadOutlined, EyeOutlined, FormOutlined, LeftOutlined, LoadingOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, DatePicker, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tabs, Tag, Upload } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
@@ -20,9 +20,63 @@ import TextArea from "antd/es/input/TextArea";
 
 
 interface IContractManagementProps {
+    contractStatus: ContractStatus;
 }
 
-export const ContractManagementComponent: React.FC<IContractManagementProps> = (props) => {
+export const ContractManagementComponent: React.FC<any> = () => {
+    const [tabKey, setTabKey] = useState<string>('waiting')
+    return (
+        <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
+            <Tabs
+                style={{ marginBottom: 0 }}
+                defaultActiveKey='waiting'
+                type='card'
+                onChange={(key) => {
+                    setTabKey(key);
+                }}
+                items={[
+                    {
+                        label: 'HĐ mới',
+                        key: 'waiting',
+                        children: tabKey === 'waiting' ? <ContractTabLayoutComponent contractStatus='WAITING' /> : <></>,
+                    },
+                    {
+                        label: 'HĐ đã duyệt',
+                        key: 'approved',
+                        children: tabKey === 'approved' ? <ContractTabLayoutComponent contractStatus='APPROVED' /> : <></>,
+                    },
+                    {
+                        label: 'HĐ đang thực hiện',
+                        key: 'working',
+                        children: tabKey === 'working' ? <ContractTabLayoutComponent contractStatus='WORKING' /> : <></>,
+                    },
+                    {
+                        label: 'HĐ đã từ chối',
+                        key: 'denied',
+                        children: tabKey === 'denied' ? <ContractTabLayoutComponent contractStatus='DENIED' /> : <></>,
+                    },
+                    {
+                        label: 'HĐ cửa hàng đã huỷ',
+                        key: 'storeCancel',
+                        children: tabKey === 'storeCancel' ? <ContractTabLayoutComponent contractStatus='STAFFCANCELED' /> : <></>,
+                    },
+                    {
+                        label: 'HĐ đã bị huỷ',
+                        key: 'cancel',
+                        children: tabKey === 'cancel' ? <ContractTabLayoutComponent contractStatus='CUSTOMERCANCELED' /> : <></>,
+                    },
+                    {
+                        label: 'HĐ đã hoàn thành',
+                        key: 'done',
+                        children: tabKey === 'done' ? <ContractTabLayoutComponent contractStatus='DONE' /> : <></>,
+                    },
+                ]}
+            />
+        </div>
+    )
+}
+
+export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (props) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const managerServices = new ManagerServices();
@@ -42,16 +96,27 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
 
     useEffect(() => {
         if (!isFirstInit) {
-            managerServices.getContracts$().pipe(take(1)).subscribe({
-                next: data => {
-                    setContract(data);
-                    setContractOnSearch(data);
-                    setFirstInit(true);
-                    setDataReady(true);
-                }
-            })
+            loadData();
         }
-    }, [isFirstInit, contracts, managerServices]);
+    });
+
+    function loadData() {
+        setDataReady(false);
+        managerServices.getContracts$().pipe(take(1)).subscribe({
+            next: data => {
+                const result = data.reduce((acc: any[], cur: any) => {
+                    if (cur.status === props.contractStatus) {
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, []);
+                setContract(result);
+                setContractOnSearch(result);
+                setFirstInit(true);
+                setDataReady(true);
+            }
+        })
+    }
 
     const tableUserColumns: ColumnsType<IContract> = [
         {
@@ -93,21 +158,6 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
             }
         },
         {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            showSorterTooltip: false,
-            // sorter: {
-            //     compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
-            // },
-            ellipsis: true,
-            render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{ContractStatusMapping[value]}</Tag>
-            },
-            width: 200,
-            className: '__app-header-title'
-        },
-        {
             title: '',
             dataIndex: 'command',
             align: 'center',
@@ -121,7 +171,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                         e.preventDefault();
                         getContractDetail(record.id);
                         setFormMode('edit');
-                    }} icon={<FormOutlined />} />
+                    }}>Chi tiết</Button>
                 </div>
             },
             className: '__app-header-title'
@@ -151,7 +201,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
             {
                 formMode === 'display' ?
                     <>
-                        <div className='__app-toolbar-container'>
+                        <div className='__app-toolbar-container' style={{ width: '100%', padding: '8px 24px' }}>
                             <div className='__app-toolbar-left-buttons'>
                                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                     setShowPopupCreate(true);
@@ -160,14 +210,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                     CommonUtility.exportExcel(contracts, tableUserColumns);
                                 }}>Xuất Tệp Excel</Button>
                                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
-                                    setDataReady(false);
-                                    managerServices.getContracts$().pipe(take(1)).subscribe({
-                                        next: data => {
-                                            setContract(data);
-                                            setContractOnSearch(data);
-                                            setDataReady(true);
-                                        }
-                                    })
+                                    loadData();
                                 }}>Tải Lại</Button>
                             </div>
                             <div className='__app-toolbar-right-buttons'>
@@ -183,18 +226,19 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                 />
                             </div>
                         </div>
-                        <div style={{ width: '94%' }}>
+                        <div style={{ width: '100%' }}>
                             <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
                         </div>
-                        <div className='__app-layout-container'>
+                        <div className='__app-layout-container' style={{ width: '100%', height: 'calc(100vh - 220px)', padding: '8px 24px' }}>
                             <Table
                                 loading={!isDataReady}
                                 tableLayout='auto'
+                                size='middle'
                                 columns={tableUserColumns}
                                 className='__app-user-info-table'
                                 dataSource={contractsOnSearch}
                                 pagination={{
-                                    pageSize: 7,
+                                    pageSize: 6,
                                     total: contractsOnSearch.length,
                                     showTotal: (total, range) => {
                                         return <span>{total} items</span>
@@ -215,7 +259,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
             }
             {
                 formMode === 'edit' ?
-                    <div className="__app-layout-container form-edit">
+                    <div className="__app-layout-container form-edit" style={{ width: '100%', height: 'calc(100vh - 160px)' }}>
                         <div className="__app-top-action">
                             <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
                                 setFormMode('display');
@@ -238,7 +282,6 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                         <Col span={5} style={{ fontWeight: 500 }}>Khách hàng:</Col>
                                         <Col>
                                             <Row style={{ fontWeight: 600 }}>{contractDetail[0]?.showContractModel?.fullName}</Row>
-                                            <Row>{contractDetail[0]?.showContractModel?.email ?? 'No Email'}</Row>
                                             <Row>{contractDetail[0]?.showContractModel?.phone}</Row>
                                         </Col>
                                     </Row>
@@ -269,7 +312,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                                             </Row>
                                                             <Row style={{ width: '100%' }}>
                                                                 <Col span={8}>Gói dịch vụ:</Col>
-                                                                <Col span={16}>{cur.showServicePackModel?.packRange}</Col>
+                                                                <Col span={16}>{`${cur.showServicePackModel?.packRange} ${cur.showServicePackModel?.packUnit}`}</Col>
                                                             </Row>
                                                             <Row style={{ width: '100%' }}>
                                                                 <Col span={8}>Ngày làm:</Col>
@@ -293,7 +336,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                     </Row>
                                     <Divider className='__app-divider-no-margin' />
                                     <Row>
-                                        <Col span={5} style={{ fontWeight: 500 }}>Tổng thanh toán:</Col><Col><NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={contractDetail[0]?.showContractModel?.total} /></Col>
+                                        <span style={{ fontWeight: 500 }}>Tổng thanh toán: <span><NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={contractDetail[0]?.showContractModel?.total} /></span></span>
                                     </Row>
                                 </Col>
                                 <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
@@ -306,7 +349,9 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                     </Row>
                                     <Row>
                                         <Col span={8} style={{ fontWeight: 500 }}>Đã đặt cọc:</Col>
-                                        <Col><NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={contractDetail[0]?.showContractModel?.deposit} /></Col>
+                                        <Col>
+                                            <NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={contractDetail[0]?.showContractModel?.deposit} />
+                                        </Col>
                                     </Row>
                                     <Row>
                                         <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
@@ -433,6 +478,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                                     if (res) {
                                                         setFormMode('display');
                                                         setContractDetail([]);
+                                                        loadData();
                                                         toast.success('Duyệt Hợp đồng thành công');
                                                     } else {
                                                         toast.error('Duyệt Hợp đồng thất bại');
@@ -441,9 +487,18 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                             })
                                         }}>Duyệt</Button>
                                         <Button type="default" onClick={() => {
-                                            //todo
-                                            setFormMode('display');
-                                            setContractDetail([]);
+                                            managerServices.rejectContract$(contractDetail[0]?.showContractModel?.id as string, 'DENIED').pipe(take(1)).subscribe({
+                                                next: (res) => {
+                                                    if (res) {
+                                                        setFormMode('display');
+                                                        setContractDetail([]);
+                                                        loadData();
+                                                        toast.success('Cập nhật thành công');
+                                                    } else {
+                                                        toast.error('Cập nhật thất bại. Vui lòng thử lại');
+                                                    }
+                                                }
+                                            })
                                         }}>Từ chối</Button>
                                     </div> : <></>
                             }
@@ -460,6 +515,7 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                                                     setFormMode('display');
                                                                     setContractDetail([]);
                                                                     setImageScanUrls([]);
+                                                                    loadData();
                                                                     toast.success('Lưu Hợp đồng thành công');
                                                                 } else {
                                                                     toast.error('Lưu Hợp đồng thất bại');
@@ -473,13 +529,22 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
                                         }
 
                                         <Button style={{ width: 200, backgroundColor: '#8E0000' }} type="primary" onClick={() => {
-                                            //todo
-                                            setFormMode('display');
-                                            setContractDetail([]);
+                                            managerServices.rejectContract$(contractDetail[0]?.showContractModel?.id as string, 'STAFFCANCELED').pipe(take(1)).subscribe({
+                                                next: (res) => {
+                                                    if (res) {
+                                                        setFormMode('display');
+                                                        setContractDetail([]);
+                                                        setImageScanUrls([]);
+                                                        loadData();
+                                                        toast.success('Cập nhật thành công');
+                                                    } else {
+                                                        toast.error('Cập nhật thất bại. Vui lòng thử lại');
+                                                    }
+                                                }
+                                            })
                                         }}>Huỷ Hợp Đồng</Button>
                                     </div> : <></>
                             }
-
                         </div>
                     </div>
                     : <></>
@@ -489,14 +554,16 @@ export const ContractManagementComponent: React.FC<IContractManagementProps> = (
 }
 
 const FormCreateContractDialog: React.FC<any> = (props: any) => {
-    const [contractDetail, setContractDetail] = useState<any>(null);
+    const [contractDetail, setContractDetail] = useState<any>({});
     const [isUpload, setIsUpload] = useState(false);
     const [imageScanUrls, setImageScanUrls] = useState<string[]>([]);
     const [staffList, setStaffList] = useState<any[]>([]);
     const [serviceList, setServiceList] = useState<any[]>([]);
-    const [serviceTypeList, setServiceTypeList] = useState<any[]>([]);
     const [servicePackList, setServicePackTypeList] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
+
+    const [servicesForm, setServiceForm] = useState<any[]>([]);
+
     const managerServices = new ManagerServices();
 
     useEffect(() => {
@@ -542,17 +609,18 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     "paymentTypeID": contractDetail['paymentTypeID'] ?? '',
                     "customerID": null,
                     "email": '',
-                    "detailModelList": [
-                        {
-                            "note": contractDetail['note'] ?? '',
-                            "timeWorking": contractDetail['timeWorking'] ?? '',
-                            "totalPrice": 0,
-                            "servicePackID": contractDetail['servicePackID'] ?? '',
-                            "serviceTypeID": contractDetail['serviceTypeID'] ?? '',
-                            "startDate": contractDetail['startDate'] ?? '',
-                            "endDate": contractDetail['endDate'] ?? ''
-                        }
-                    ],
+                    "detailModelList": servicesForm.reduce((acc, cur) => {
+                        acc.push({
+                            "note": cur['note'] ?? '',
+                            "timeWorking": cur['timeWorking']?.join(', ') ?? '',
+                            "totalPrice": getTotalPrice(cur),
+                            "servicePackID": cur['servicePackID'] ?? '',
+                            "serviceTypeID": cur['serviceTypeID'] ?? '',
+                            "startDate": cur['startDate'] ?? '',
+                            "endDate": getEndDate(cur) ?? ''
+                        })
+                        return acc;
+                    }, []),
                     "staffID": contractDetail['staffID'],
                     "listURL": imageScanUrls
                 }
@@ -568,7 +636,6 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                         }
                     }
                 })
-                
             }}>Lưu</Button>
         );
         return nodes;
@@ -577,7 +644,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
     return (
         <>
             <Modal
-                width={600}
+                width={1100}
                 open={true}
                 closable={false}
                 title={(
@@ -590,44 +657,50 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
             >
                 <div className='__app-dialog-create-account'>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Khách Hàng: </strong> <span className='__app-required-field'> *</span>
-                            </span>
+                        <Col span={12}>
+                            <Row>
+                                <Col span={6} className='__app-account-field'>
+                                    <span>
+                                        <strong>Khách Hàng: </strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={16}>
+                                    <Input onChange={(args) => {
+                                        let temp = cloneDeep(contractDetail) ?? {};
+                                        temp['fullName'] = args.target.value;
+                                        setContractDetail(temp);
+                                    }}
+                                        placeholder="Nhập tên khách hàng"
+                                    />
+                                </Col>
+                            </Row>
                         </Col>
-                        <Col span={18}>
-                            <Input onChange={(args) => {
-                                let temp = cloneDeep(contractDetail) ?? {};
-                                temp['fullName'] = args.target.value;
-                                setContractDetail(temp);
-                            }}
-                                placeholder="Nhập tên khách hàng"
-                            />
+                        <Col span={12}>
+                            <Row>
+                                <Col span={6} className='__app-account-field'>
+                                    <span>
+                                        <strong>Số điện thoại:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={16}>
+                                    <Input onChange={(args) => {
+                                        let temp = cloneDeep(contractDetail) ?? {};
+                                        temp['phone'] = args.target.value;
+                                        setContractDetail(temp);
+                                    }}
+                                        placeholder="Nhập số điện thoại khách hàng"
+                                    />
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Số điện thoại:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-                        </Col>
-                        <Col span={18}>
-                            <Input onChange={(args) => {
-                                let temp = cloneDeep(contractDetail) ?? {};
-                                temp['phone'] = args.target.value;
-                                setContractDetail(temp);
-                            }}
-                                placeholder="Nhập số điện thoại khách hàng"
-                            />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
+                        <Col span={3} className='__app-account-field'>
                             <span>
                                 <strong>Địa chỉ:</strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
-                        <Col span={18}>
+                        <Col span={20}>
                             <Input onChange={(args) => {
                                 let temp = cloneDeep(contractDetail) ?? {};
                                 temp['address'] = args.target.value;
@@ -638,173 +711,45 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
+                        <Col span={3} className='__app-account-field' style={{ alignItems: 'flex-start' }}>
                             <span>
                                 <strong>Dịch vụ:</strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
-                        <Col span={18}>
-                            <Select
-                                style={{ width: '100%' }}
-                                options={serviceList.reduce((acc, cur) => {
-                                    acc.push({
-                                        value: cur.serviceID,
-                                        label: cur.name
-                                    })
-                                    return acc;
-                                }, [])}
-                                placeholder='Dịch vụ'
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['serviceID'] = value;
-                                    temp['serviceTypeID'] = null;
-                                    const _serviceTypeList = serviceList.find(item => item.serviceID === value)?.typeList.reduce((acc: any, cur: any) => {
-                                        acc.push({
-                                            value: cur.id,
-                                            label: cur.name
-                                        })
-                                        return acc;
-                                    }, []);
-                                    setServiceTypeList(_serviceTypeList);
-                                    setContractDetail(temp);
-                                }}
-                            />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Loại dịch vụ:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-                        </Col>
-                        <Col span={18}>
-                            <Select
-                                style={{ width: '100%' }}
-                                value={contractDetail?.serviceTypeID}
-                                options={serviceTypeList}
-                                placeholder='Loại dịch vụ'
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['serviceTypeID'] = value;
-                                    setContractDetail(temp);
-                                }}
-                            />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Gói:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-                        </Col>
-                        <Col span={18}>
-                            <Select
-                                style={{ width: '100%' }}
-                                options={servicePackList?.reduce((acc, cur) => {
-                                    if (cur.status === 'ACTIVE') {
-                                        acc.push({
-                                            value: cur.id,
-                                            label: cur.range
-                                        })
-                                    }
-                                    return acc;
-                                }, [] as any)}
-                                placeholder='Loại dịch vụ'
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['servicePackID'] = value;
-                                    setContractDetail(temp);
-                                }}
-                            />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Thành tiền:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-                        </Col>
-                        <Col span={18}>
+                        <Col span={20}>
                             {
-                                contractDetail?.serviceID && contractDetail?.serviceTypeID && contractDetail?.servicePackID ?
-                                    <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={
-                                        getTotalPrice()
-                                    } />
-                                    : <>--</>
+                                renderServiceForms()
+                            }
+                            {
+                                servicesForm.length < 5 ?
+                                    <Button
+                                        icon={<PlusOutlined />}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const form = cloneDeep(servicesForm);
+                                            form.push({
+                                                'tempId': new Date().getTime().toString(),
+                                                "note": '',
+                                                "timeWorking": [],
+                                                "totalPrice": 0,
+                                                "servicePackID": '',
+                                                "serviceTypeID": '',
+                                                "startDate": '',
+                                                "endDate": ''
+                                            })
+                                            setServiceForm(form);
+                                        }}
+                                    >Thêm dịch vụ</Button> : <></>
                             }
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Ngày bắt đầu:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-
-                        </Col>
-                        <Col span={18}>
-                            <DatePicker
-                                style={{ width: '100%' }}
-                                placeholder="Chọn ngày bắt đầu"
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['startDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
-                                    setContractDetail(temp);
-                                }} />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Ngày kết thúc:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-
-                        </Col>
-                        <Col span={18}>
-                            <DatePicker
-                                style={{ width: '100%' }}
-                                placeholder="Chọn ngày kết thúc"
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['endDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
-                                    setContractDetail(temp);
-                                }} />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Lịch làm việc:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-
-                        </Col>
-                        <Col span={18}>
-                            <Select
-                                style={{ width: '100%' }}
-                                options={[
-                                    { value: 'Thứ 2', label: 'Thứ 2' },
-                                    { value: 'Thứ 3', label: 'Thứ 3' },
-                                    { value: 'Thứ 4', label: 'Thứ 4' },
-                                    { value: 'Thứ 5', label: 'Thứ 5' },
-                                    { value: 'Thứ 6', label: 'Thứ 6' },
-                                    { value: 'Thứ 7', label: 'Thứ 7' },
-                                    { value: 'Chủ Nhật', label: 'Chủ Nhật' },
-                                ]}
-                                placeholder='Chọn Lịch'
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['timeWorking'] = value;
-                                    setContractDetail(temp);
-                                }}
-                            />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
+                        <Col span={3} className='__app-account-field'>
                             <span>
                                 <strong>Phương thức thanh toán:</strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
-                        <Col span={18}>
+                        <Col span={20}>
                             <Select
                                 style={{ width: '100%' }}
                                 options={[
@@ -822,48 +767,58 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Loại thanh toán:</strong> <span className='__app-required-field'> *</span>
-                            </span>
+                        <Col span={12}>
+                            <Row>
+                                <Col span={6} className='__app-account-field'>
+                                    <span>
+                                        <strong>Loại thanh toán:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={16}>
+                                    <Select
+                                        style={{ width: '100%' }}
+                                        options={[
+                                            { value: 'Thanh toán online', label: 'Thanh toán online' },
+                                            { value: 'Thanh toán tiền mặt', label: 'Thanh toán tiền mặt' },
+                                        ]}
+                                        placeholder='Chọn loại thanh toán'
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(contractDetail) ?? {};
+                                            temp['paymentMethod'] = value;
+                                            setContractDetail(temp);
+                                        }}
+                                    />
+                                </Col>
+                            </Row>
                         </Col>
-                        <Col span={18}>
-                            <Select
-                                style={{ width: '100%' }}
-                                options={[
-                                    { value: 'Thanh toán online', label: 'Thanh toán online' },
-                                    { value: 'Thanh toán tiền mặt', label: 'Thanh toán tiền mặt' },
-                                ]}
-                                placeholder='Chọn loại thanh toán'
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['paymentMethod'] = value;
-                                    setContractDetail(temp);
-                                }}
-                            />
+                        <Col span={12}>
+                            <Row>
+                                <Col span={6} className='__app-account-field'>
+                                    <span>
+                                        <strong>Tiền đặt cọc:</strong>
+                                    </span>
+                                </Col>
+                                <Col span={16}>
+                                    <NumericFormat className="app-numeric-input" thousandSeparator=" " defaultValue={0} onChange={(args) => {
+                                        let temp = cloneDeep(contractDetail) ?? {};
+                                        temp['deposit'] = Number(args.target.value);
+                                        setContractDetail(temp);
+                                    }} />
+                                </Col>
+                            </Row>
                         </Col>
+
                     </Row>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Tiền đặt cọc:</strong>
-                            </span>
-                        </Col>
-                        <Col span={18}>
-                            <NumericFormat className="app-numeric-input" thousandSeparator=" " defaultValue={0} onChange={(args) => {
-                                let temp = cloneDeep(contractDetail) ?? {};
-                                temp['deposit'] = Number(args.target.value);
-                                setContractDetail(temp);
-                            }} />
-                        </Col>
+
                     </Row>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
+                        <Col span={3} className='__app-account-field'>
                             <span>
                                 <strong>Nhân viên tiếp nhận:</strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
-                        <Col span={18}>
+                        <Col span={20}>
                             <UserPicker
                                 listUser={staffList}
                                 placeholder="Chọn nhân viên"
@@ -876,28 +831,10 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                         </Col>
                     </Row>
                     <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <span>
-                                <strong>Ghi chú:</strong>
-                            </span>
+                        <Col span={3} className='__app-account-field'>
+                            <span><strong>Ảnh Scan: </strong> <span className='__app-required-field'> *</span></span>
                         </Col>
-                        <Col span={18}>
-                            <TextArea
-                                placeholder="Nhập ghi chú"
-                                rows={2}
-                                onChange={(value) => {
-                                    let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['note'] = value.target.value;
-                                    setContractDetail(temp);
-                                }}
-                            />
-                        </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={6} className='__app-account-field'>
-                            <strong>Ảnh Scan: </strong> <span className='__app-required-field'> *</span>
-                        </Col>
-                        <Col span={18}>
+                        <Col span={20}>
                             <div className="__app-images-upload-container">
                                 <div className="__app-button-upload">
                                     {
@@ -928,9 +865,9 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 />
                                 <div>
                                     {
-                                        imageScanUrls.reduce((acc, cur) => {
+                                        imageScanUrls.reduce((acc, cur, index) => {
                                             acc.push(
-                                                <img src={cur} alt='' style={{ width: 150, height: 200 }} />
+                                                <img key={`image_contract_${index}`} src={cur} alt='' style={{ width: 150, height: 200 }} />
                                             )
                                             return acc;
                                         }, [] as React.ReactNode[])
@@ -944,23 +881,218 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
         </>
     )
 
-    function getTotalPrice() {
-        let duration = ((new Date(contractDetail['startDate']).getTime() - new Date(contractDetail['startDate']).getTime()) / (1000*60*60*24)) / 30;
-        duration = duration > 1 ? duration : 1;
-        const servicePrice = serviceList.find(item => item.serviceID === contractDetail['serviceID'])?.price ?? 0;
-        const servicePackPercent = servicePackList.find(item => item.id === contractDetail['servicePackID'])?.percentage ?? 0;
-        const serviceTypePercent = serviceList.find(item => item.serviceID === contractDetail['serviceID'])?.typeList.find((itemTL: any) => itemTL.id === contractDetail['serviceTypeID'])?.percentage ?? 0;
-        const total = (servicePrice * duration) - (servicePrice * (servicePackPercent / 100)) + (servicePrice * (serviceTypePercent / 100));
+    function renderServiceForms() {
+        return servicesForm.reduce((acc, cur, currentIndex) => {
+            acc.push(
+                <Row
+                    id={`service_${currentIndex}`}
+                    key={`service_${currentIndex}`}
+                    className='__app-service-form'
+                    style={{ padding: 10, border: '1px solid #a5a5a5', borderRadius: 4, margin: '8px 0' }}>
+                    <Col span={23}>
+                        <Row
+                            style={{ gap: 6 }}
+                        >
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={12}>
+                                    <Row>
+                                        <Col className='__app-account-field' span={8}>
+                                            <span>
+                                                <strong>Tên dịch vụ:</strong> <span className='__app-required-field'> *</span>
+                                            </span>
+                                        </Col>
+                                        <Col span={13}>
+                                            <Select
+                                                style={{ width: '100%' }}
+                                                options={serviceList.reduce((acc, cur) => {
+                                                    acc.push({
+                                                        value: cur.serviceID,
+                                                        label: cur.name
+                                                    })
+                                                    return acc;
+                                                }, [])}
+                                                placeholder='Dịch vụ'
+                                                onChange={(value) => {
+                                                    const temp = cloneDeep(servicesForm) ?? [];
+                                                    temp[currentIndex]['serviceID'] = value
+                                                    temp[currentIndex]['serviceTypeID'] = null;
+                                                    const _serviceTypeList = serviceList.find(item => item.serviceID === value)?.typeList.reduce((acc: any, cur: any) => {
+                                                        acc.push({
+                                                            value: cur.id,
+                                                            label: cur.name
+                                                        })
+                                                        return acc;
+                                                    }, []);
+                                                    temp[currentIndex]['serviceTypeList'] = _serviceTypeList;
+                                                    setServiceForm(temp);
+                                                }}
+                                            />
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col span={12}>
+                                    <Row>
+                                        <Col className='__app-account-field' span={8}>
+                                            <span>
+                                                <strong>Loại dịch vụ:</strong> <span className='__app-required-field'> *</span>
+                                            </span>
+                                        </Col>
+                                        <Col span={13}>
+                                            <Select
+                                                style={{ width: '100%' }}
+                                                options={cur?.serviceTypeList ?? []}
+                                                placeholder='Loại dịch vụ'
+                                                onChange={(value) => {
+                                                    let temp = cloneDeep(servicesForm) ?? [];
+                                                    temp[currentIndex]['serviceTypeID'] = value;
+                                                    setServiceForm(temp);
+                                                }}
+                                            />
+                                        </Col>
+                                    </Row>
+                                </Col>
+                            </Row>
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+
+                            </Row>
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={4} className='__app-account-field'>
+                                    <span>
+                                        <strong>Gói:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={20}>
+                                    <Select
+                                        style={{ width: '100%' }}
+                                        options={servicePackList?.reduce((acc, cur) => {
+                                            if (cur.status === 'ACTIVE') {
+                                                acc.push({
+                                                    value: cur.id,
+                                                    label: `${cur.range} ${cur.unit}`
+                                                })
+                                            }
+                                            return acc;
+                                        }, [] as any)}
+                                        placeholder='Loại dịch vụ'
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(servicesForm) ?? [];
+                                            temp[currentIndex]['servicePackID'] = value;
+                                            setServiceForm(temp);
+                                        }}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={4} className='__app-account-field'>
+                                    <span>
+                                        <strong>Ngày bắt đầu:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
+
+                                </Col>
+                                <Col span={20}>
+                                    <DatePicker
+                                        style={{ width: '100%' }}
+                                        placeholder="Chọn ngày bắt đầu"
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(servicesForm) ?? [];
+                                            temp[currentIndex]['startDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
+                                            setServiceForm(temp);
+                                        }} />
+                                </Col>
+                            </Row>
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={4} className='__app-account-field'>
+                                    <span>
+                                        <strong>Lịch làm việc:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
+
+                                </Col>
+                                <Col span={20}>
+                                    <Select
+                                        style={{ width: '100%' }}
+                                        mode='multiple'
+                                        // disabled={cur?.timeWorking?.length >= 3}
+                                        options={[
+                                            { value: 'Thứ 2', label: 'Thứ 2' },
+                                            { value: 'Thứ 3', label: 'Thứ 3' },
+                                            { value: 'Thứ 4', label: 'Thứ 4' },
+                                            { value: 'Thứ 5', label: 'Thứ 5' },
+                                            { value: 'Thứ 6', label: 'Thứ 6' },
+                                            { value: 'Thứ 7', label: 'Thứ 7' },
+                                            { value: 'Chủ Nhật', label: 'Chủ Nhật' },
+                                        ]}
+                                        optionFilterProp='label'
+                                        placeholder='Chọn Lịch'
+                                        onChange={(values) => {
+                                            let temp = cloneDeep(servicesForm) ?? [];
+                                            temp[currentIndex]['timeWorking'] = values;
+                                            setServiceForm(temp);
+                                        }}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={4} className='__app-account-field'>
+                                    <span>
+                                        <strong>Thành tiền:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={20}>
+                                    {
+                                        cur?.serviceID && cur?.serviceTypeID && cur?.servicePackID ?
+                                            <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={
+                                                getTotalPrice(cur)
+                                            } />
+                                            : <>--</>
+                                    }
+                                </Col>
+                            </Row>
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={4} className='__app-account-field'>
+                                    <span>
+                                        <strong>Ghi chú:</strong>
+                                    </span>
+                                </Col>
+                                <Col span={20}>
+                                    <TextArea
+                                        placeholder="Nhập ghi chú"
+                                        rows={2}
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(servicesForm) ?? [];
+                                            temp[currentIndex]['note'] = value.target.value;
+                                            setServiceForm(temp);
+                                        }}
+                                    />
+                                </Col>
+                            </Row>
+                        </Row>
+                    </Col>
+                    <Col span={1}>
+                        <RestOutlined style={{ width: 18, height: 18, fontSize: 18 }} onClick={(e) => {
+                            e.preventDefault();
+                            const form = servicesForm.filter(item => { return item.tempId !== cur.tempId })
+                            setServiceForm(form);
+                        }} />
+                    </Col>
+                </Row>
+            );
+            return acc;
+        }, [] as React.ReactNode[]);
+    }
+
+    function getTotalPrice(cur: any) {
+        const pack = Number(servicePackList.find(item => item.id === cur.servicePackID)?.range ?? '0')
+        const servicePrice = serviceList.find(item => item.serviceID === cur['serviceID'])?.price ?? 0;
+        const servicePackPercent = servicePackList.find(item => item.id === cur['servicePackID'])?.percentage ?? 0;
+        const serviceTypePercent = serviceList.find(item => item.serviceID === cur['serviceID'])?.typeList.find((itemTL: any) => itemTL.id === cur['serviceTypeID'])?.percentage ?? 0;
+        const total = (servicePrice * pack) - (servicePrice * (servicePackPercent / 100)) + (servicePrice * (serviceTypePercent / 100));
         return total;
     }
 
-    // function renderImages() {
-    //     const elements: JSX.Element[] = images.reduce((acc, cur) => {
-    //         acc.push(
-    //             <span>{cur.name}</span>
-    //         )
-    //         return acc;
-    //     }, [] as JSX.Element[]);
-    //     return elements;
-    // }
+    function getEndDate(cur: any) {
+        const startDate = new Date(cur['startDate'] ?? null);
+        const numberOfDay = Number(servicePackList.find(item => item.id === cur.servicePackID)?.range ?? '0') * 30;
+        const endDate = new Date(startDate.setDate(startDate.getDate() + numberOfDay));
+        return DateTime.fromJSDate(endDate).toFormat('yyyy-MM-dd');
+    }
 }

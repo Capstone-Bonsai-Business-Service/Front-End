@@ -147,7 +147,7 @@ export module CommonUtility {
     export function statusColorMapping(status: string) {
         switch (status) {
             case 'ONSALE': case 'APPROVED': case 'SIGN': case 'WORKING': case 'ACTIVE': case 'AVAILABLE': return 'green';
-            case 'WAITING': return 'lime';
+            case 'WAITING': return 'processing';
             case 'RECEIVED': case 'PACKAGING': case 'DELIVERING': return 'orange'
             case 'UNAVAILABLE': case 'INACTIVE': return 'error';
             case 'STAFFCANCELED': return 'red';

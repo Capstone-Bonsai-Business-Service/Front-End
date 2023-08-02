@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.scss';
 import {
   createBrowserRouter,
@@ -55,10 +55,22 @@ function App() {
 
   const globalSettings = new GlobalSettings();
 
+  const [isRegister, setRegister] = useState<boolean>(false);
+
   const onLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('user');
+  }
 
+  useEffect(() => {
+    if (!isRegister) {
+      setRegister(true);
+      registerContractChangeStatus();
+    }
+  })
+
+  function registerContractChangeStatus() {
+    
   }
 
   const rootRouter = createBrowserRouter([

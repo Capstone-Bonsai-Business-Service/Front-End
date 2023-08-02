@@ -1,4 +1,4 @@
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { GlobalSettings } from "./app/global-settings";
 import { environment } from "./environments/environment";
 import axios from "axios";
@@ -112,5 +112,25 @@ export class CoreServices {
                 obs.complete();
             });
         })
+    }
+
+    updateStatusContract$() {
+        return of()
+        // return new Observable(obs => {
+        //     let url = this.globalSettings.domain + `/image/convertFromFileToImageURL`;
+        //     const dataPost = new FormData();
+        //     dataPost.append('file', file);
+        //     axios.post(url, dataPost, {
+        //         headers: {
+        //             'Authorization': `Bearer ${this.globalSettings.userToken}`
+        //         }
+        //     }).then((res) => {
+        //         obs.next(res.data);
+        //         obs.complete();
+        //     }).catch(() => {
+        //         obs.next();
+        //         obs.complete();
+        //     });
+        // })
     }
 }

@@ -164,13 +164,13 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
         },
         {
             title: 'Số lượng',
-            dataIndex: 'amount',
-            key: 'amount',
+            dataIndex: 'quantity',
+            key: 'quantity',
             showSorterTooltip: false,
             ellipsis: true,
             render: (value, record, index) => {
                 return <div>
-                    {value ?? 0}
+                    {record.showStorePlantModel?.quantity ?? 0}
                 </div>
             },
             width: 200,
@@ -194,44 +194,45 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
             },
             className: '__app-header-title'
         },
-        {
-            title: '',
-            dataIndex: 'command',
-            align: 'center',
-            width: 100,
-            key: 'command',
-            showSorterTooltip: false,
-            ellipsis: true,
-            render: (_, record, __) => {
-                return <div>
-                    <Dropdown
-                        trigger={['click']}
-                        menu={{
-                            items: [{
-                                key: 'amountIncrease',
-                                label: <span
-                                    onClick={() => {
-                                        setPlantIdIncreaseAmount(record.plantID)
-                                    }}
-                                >Thêm số lượng cây</span>
-                            },
-                            {
-                                key: 'disablePlant',
-                                label: 'Huỷ bán cây'
-                            }]
-                        }}
-                        placement='bottom'>
-                        <FormOutlined />
-                    </Dropdown>
-                    {/* <Button className='__app-command-button' onClick={(e) => {
-                        e.preventDefault();
-                        // getBonsaiDetail(record.plantID);
-                        // setFormMode('edit');
-                    }} icon={<FormOutlined />} /> */}
-                </div>
-            },
-            className: '__app-header-title'
-        }
+        // {
+        //     title: '',
+        //     dataIndex: 'command',
+        //     align: 'center',
+        //     width: 100,
+        //     key: 'command',
+        //     showSorterTooltip: false,
+        //     ellipsis: true,
+        //     render: (_, record, __) => {
+        //         return <div>
+        //             <Dropdown
+        //                 trigger={['click']}
+        //                 menu={{
+        //                     items: [
+        //                     // {
+        //                     //     key: 'amountIncrease',
+        //                     //     label: <span
+        //                     //         onClick={() => {
+        //                     //             setPlantIdIncreaseAmount(record.plantID)
+        //                     //         }}
+        //                     //     >Thêm số lượng cây</span>
+        //                     // },
+        //                     {
+        //                         key: 'disablePlant',
+        //                         label: 'Huỷ bán cây'
+        //                     }]
+        //                 }}
+        //                 placement='bottom'>
+        //                 <FormOutlined />
+        //             </Dropdown>
+        //             {/* <Button className='__app-command-button' onClick={(e) => {
+        //                 e.preventDefault();
+        //                 // getBonsaiDetail(record.plantID);
+        //                 // setFormMode('edit');
+        //             }} icon={<FormOutlined />} /> */}
+        //         </div>
+        //     },
+        //     className: '__app-header-title'
+        // }
     ]
 
     function getStoreDetail(storeId: string) {
@@ -256,7 +257,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
             {
                 formMode === 'display' ?
                     <>
-                        <div className='__app-toolbar-container'>
+                        <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                             <div className='__app-toolbar-left-buttons'>
                                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                     //getDataStore
@@ -303,6 +304,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                             <Table
                                 loading={!isDataReady}
                                 tableLayout='fixed'
+                                size="middle"
                                 columns={tableUserColumns}
                                 className='__app-user-info-table'
                                 dataSource={stores}
@@ -447,48 +449,6 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                             })
                         }}
                     /> : <></>
-            }
-            {
-                plantIdIncreaseAmount !== null ?
-                    <Modal
-                        width={600}
-                        open={true}
-                        closable={false}
-                        title={(
-                            <span className='__app-dialog-title'>
-                                Thêm số lượng
-                            </span>
-                        )}
-                        footer={[
-                            <Button key='cancel' onClick={() => {
-                                setPlantIdIncreaseAmount(null);
-                            }}>Đóng</Button>,
-                            <Button key='save' type='primary' onClick={() => {
-                                // ownerServices.createStore$(storeDetail).pipe(take(1)).subscribe({
-                                //     next: (res) => {
-                                //         if (res) {
-                                //             if (props.onSave) {
-                                //                 props.onSave(res);
-                                //             }
-                                //         } else {
-                                //             toast.error('Tạo chi nhánh thất bại.');
-                                //         }
-
-                                //     }
-                                // })
-                            }}>Lưu</Button>,
-                        ]}
-                        centered
-                    >
-                        <Row>
-                            <Col span={4}>Số lượng</Col>
-                            <Col span={20}>
-                                <NumericFormat className="app-numeric-input" defaultValue={0} onChange={() => {
-
-                                }} />
-                            </Col>
-                        </Row>
-                    </Modal> : <></>
             }
         </>
 
