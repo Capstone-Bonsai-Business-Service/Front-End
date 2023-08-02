@@ -46,7 +46,12 @@ export const ContractManagementComponent: React.FC<any> = () => {
                         children: tabKey === 'approved' ? <ContractTabLayoutComponent contractStatus='APPROVED' /> : <></>,
                     },
                     {
-                        label: 'HĐ đang thực hiện',
+                        label: 'HĐ đã ký',
+                        key: 'signed',
+                        children: tabKey === 'signed' ? <ContractTabLayoutComponent contractStatus='SIGNED' /> : <></>,
+                    },
+                    {
+                        label: 'HĐ đang hoạt động',
                         key: 'working',
                         children: tabKey === 'working' ? <ContractTabLayoutComponent contractStatus='WORKING' /> : <></>,
                     },
@@ -93,6 +98,10 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
     const [staffForContract, setStaffForContract] = useState<number | null>(null);
     const [imageScanUrls, setImageScanUrls] = useState<string[]>([]);
     const [isUpload, setIsUpload] = useState<boolean>(false);
+    const [signedForm, setSignedForm] = useState<any>({
+        deposit: 0,
+        paymentTypeID: null
+    })
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -345,12 +354,49 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                     </Row>
                                     <Row>
                                         <Col span={8} style={{ fontWeight: 500 }}>Loại thanh toán:</Col>
-                                        <Col>{contractDetail[0]?.showContractModel?.paymentMethod}</Col>
+                                        <Col>{
+                                            contractDetail[0]?.showContractModel?.status === 'APPROVED' ?
+                                                <Select
+                                                    style={{ width: '100%' }}
+                                                    options={[
+                                                        { value: 'PT001', label: 'Thanh toán trước 50%' },
+                                                        { value: 'PT002', label: 'Thanh toán trước 80%' },
+                                                        { value: 'PT003', label: 'Thanh toán hoàn toàn' },
+                                                    ]}
+                                                    placeholder='Chọn phương thức thanh toán'
+                                                    onChange={(value) => {
+                                                        let _dep = 0
+                                                        switch (value) {
+                                                            case 'PT001':
+                                                                _dep = (contractDetail[0]?.showContractModel?.total ?? 0) * 0.5;
+                                                                break;
+                                                            case 'PT002':
+                                                                _dep = (contractDetail[0]?.showContractModel?.total ?? 0) * 0.8;
+                                                                break;
+                                                            case 'PT003':
+                                                                _dep = (contractDetail[0]?.showContractModel?.total ?? 0);
+                                                                break;
+                                                        }
+                                                        setSignedForm({
+                                                            deposit: _dep,
+                                                            paymentTypeID: value
+                                                        })
+                                                    }}
+                                                />
+                                                : contractDetail[0]?.showContractModel?.showPaymentTypeModel?.name ?? ''
+                                        }</Col>
                                     </Row>
                                     <Row>
-                                        <Col span={8} style={{ fontWeight: 500 }}>Đã đặt cọc:</Col>
+                                        <Col span={8} style={{ fontWeight: 500 }}>Đặt cọc:</Col>
                                         <Col>
-                                            <NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={contractDetail[0]?.showContractModel?.deposit} />
+                                            <NumericFormat
+                                                displayType='text'
+                                                thousandSeparator=' '
+                                                suffix={' vnđ'}
+                                                value={
+                                                    contractDetail[0]?.showContractModel?.status === 'APPROVED' ? 
+                                                    signedForm.deposit : contractDetail[0]?.showContractModel?.deposit
+                                                } />
                                         </Col>
                                     </Row>
                                     <Row>
@@ -359,12 +405,13 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                             {
                                                 contractDetail[0]?.showContractModel?.showStaffModel.id ?
                                                     <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
+                                                    contractDetail[0]?.showContractModel?.status === 'WAITING' ?
                                                     <UserPicker
                                                         listUser={staffList}
                                                         onChanged={(value) => {
                                                             setStaffForContract(value);
                                                         }}
-                                                    />
+                                                    /> : <span>--</span>
                                             }
                                         </Col>
                                     </Row>
@@ -509,7 +556,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                             contractDetail[0]?.showContractModel?.status === 'APPROVED' ?
                                                 <Button type="primary" onClick={() => {
                                                     if (imageScanUrls.length > 0) {
-                                                        managerServices.activeContract$(imageScanUrls, contractDetail[0]?.showContractModel?.id as string).pipe(take(1)).subscribe({
+                                                        managerServices.activeContract$(imageScanUrls, contractDetail[0]?.showContractModel?.id as string, signedForm['paymentTypeID'], signedForm['deposit']).pipe(take(1)).subscribe({
                                                             next: (res) => {
                                                                 if (res) {
                                                                     setFormMode('display');

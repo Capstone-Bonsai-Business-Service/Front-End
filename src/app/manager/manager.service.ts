@@ -323,10 +323,10 @@ export class ManagerServices extends CoreServices {
         })
     }
 
-    activeContract$(listUrl: string[], contractID: string) {
+    activeContract$(listUrl: string[], contractID: string, paymentTypeID: string, deposit: number) {
         return new Observable<any>(obs => {
             const paramUrl = listUrl.join('&listURL=');
-            let url = this.globalSettings.domain + `/contract/addContractIMG?contractID=${contractID}&listURL=${paramUrl}`
+            let url = this.globalSettings.domain + `/contract/addContractIMG?contractID=${contractID}&listURL=${paramUrl}&paymentTypeID=${paymentTypeID}&deposit=${deposit}`
             axios.post(url, undefined, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

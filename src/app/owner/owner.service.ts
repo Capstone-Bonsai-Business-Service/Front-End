@@ -240,7 +240,7 @@ export class OwnerServices extends CoreServices {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
-                obs.next(null);
+                obs.next([]);
                 obs.complete();
             })
         })

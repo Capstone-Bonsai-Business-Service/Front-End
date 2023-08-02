@@ -313,7 +313,7 @@ const TabServiceList: React.FC<any> = (props) => {
                             <div className="__app-title-form">Chi tiết</div>
                         </div>
                         <div className="__app-content-container">
-                            <div className="__app-main-info">
+                            <div className="__app-main-info" style={{ gap: 18 }}>
                                 <div className="__app-images">
                                     <div className="__app-list-images" style={{ width: 101 }}>
                                         {
@@ -441,7 +441,7 @@ const TabPackList: React.FC<{}> = (props) => {
     const [servicePacks, setServicePacks] = useState<any[]>([]);
     const [servicePacksOnSearch, setServicePacksOnSearch] = useState<any[]>([]);
 
-    const tableUserColumns: ColumnsType<IPlant> = [
+    const tableUserColumns: ColumnsType<any> = [
         {
             title: 'ID',
             dataIndex: 'id',
@@ -462,6 +462,9 @@ const TabPackList: React.FC<{}> = (props) => {
             ellipsis: true,
             sorter: {
                 compare: (acc, cur) => acc.range > cur.range ? 1 : acc.range < cur.range ? -1 : 0
+            },
+            render: (value, record) => {
+                return <span>{value} {record.unit}</span>
             },
             className: '__app-header-title'
         },
