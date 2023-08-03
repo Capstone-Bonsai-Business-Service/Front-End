@@ -1128,7 +1128,11 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
     }
 
     function getTotalPrice(cur: any) {
-        const pack = Number(servicePackList.find(item => item.id === cur.servicePackID)?.range ?? '0')
+        let pack = Number(servicePackList.find(item => item.id === cur.servicePackID)?.range ?? '0')
+        const unit = servicePackList.find(item => item.id === cur.servicePackID)?.unit;
+        if (unit === 'năm') {
+            pack = pack * 12;
+        }
         const servicePrice = serviceList.find(item => item.serviceID === cur['serviceID'])?.price ?? 0;
         const servicePackPercent = servicePackList.find(item => item.id === cur['servicePackID'])?.percentage ?? 0;
         const serviceTypePercent = serviceList.find(item => item.serviceID === cur['serviceID'])?.typeList.find((itemTL: any) => itemTL.id === cur['serviceTypeID'])?.percentage ?? 0;
