@@ -87,3 +87,17 @@
 .__app-user-picker {
     width: 100%;
 }
+
+.ant-tabs-nav {
+    margin: 0 !important;
+
+    .ant-tabs-tab {
+        border: 0 !important;
+        &.ant-tabs-tab-active {
+            background: #91C4CA !important;
+            div {
+                color: #000000 !important;
+            }
+        }
+    }
+}

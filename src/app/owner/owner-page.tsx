@@ -19,6 +19,8 @@ import { MemberManagementComponent } from './owner-components/member-management'
 import { ContractManagementComponent } from './owner-components/contract-management';
 import { OrderManagementComponent } from './owner-components/order-management';
 import Logo from '../../assets/images/logo1.png'
+import './owner.scss';
+import '../../styles/global.style.scss';
 
 interface IOwnerPageProps {
     currentUser?: IUser;

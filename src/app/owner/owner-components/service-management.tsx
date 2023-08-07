@@ -24,27 +24,28 @@ export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (pr
     const [tabKey, setTabKey] = useState<string>('service')
 
     return (
-        // <div className='__app-services-container'>
-        <Tabs
-            style={{ width: '90%' }}
-            defaultActiveKey='service'
-            onChange={(key) => {
-                setTabKey(key);
-            }}
-            items={[
-                {
-                    label: 'Dịch vụ',
-                    key: 'service',
-                    children: tabKey === 'service' ? <TabServiceList /> : <></>,
-                },
-                {
-                    label: 'Gói dịch vụ',
-                    key: 'packs',
-                    children: tabKey === 'packs' ? <TabPackList /> : <></>
-                }
-            ]}
-        />
-        // </div>
+        <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
+            <Tabs
+                style={{ marginBottom: 0 }}
+                defaultActiveKey='service'
+                type='card'
+                onChange={(key) => {
+                    setTabKey(key);
+                }}
+                items={[
+                    {
+                        label: 'Dịch vụ',
+                        key: 'service',
+                        children: tabKey === 'service' ? <TabServiceList /> : <></>,
+                    },
+                    {
+                        label: 'Gói dịch vụ',
+                        key: 'packs',
+                        children: tabKey === 'packs' ? <TabPackList /> : <></>
+                    }
+                ]}
+            />
+        </div>
     )
 }
 
@@ -253,7 +254,7 @@ const TabServiceList: React.FC<any> = (props) => {
         <>
             {
                 formMode === 'display' ? <>
-                    <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
+                    <div className='__app-toolbar-container' style={{ width: '100%', padding: '8px 24px' }}>
                         <div className='__app-toolbar-left-buttons'>
                             <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                 // setShowPopupCreate(true);
@@ -278,10 +279,10 @@ const TabServiceList: React.FC<any> = (props) => {
                             />
                         </div>
                     </div>
-                    <div style={{ width: '94%' }}>
+                    <div style={{ width: '100%' }}>
                         <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
                     </div>
-                    <div className='__app-layout-container' style={{ height: 'calc(100vh - 200px)' }}>
+                    <div className='__app-layout-container' style={{ width: '100%', height: 'calc(100vh - 200px)' }}>
                         <Table
                             loading={!isDataReady}
                             tableLayout='auto'
@@ -540,7 +541,7 @@ const TabPackList: React.FC<{}> = (props) => {
     }
 
     return <>
-        <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
+        <div className='__app-toolbar-container' style={{ width: '100%', padding: '8px 24px' }}>
             <div className='__app-toolbar-left-buttons'>
                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                     // setShowPopupCreate(true);
@@ -565,10 +566,10 @@ const TabPackList: React.FC<{}> = (props) => {
                 />
             </div>
         </div>
-        <div style={{ width: '94%' }}>
+        <div style={{ width: '100%' }}>
             <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
         </div>
-        <div className='__app-layout-container' style={{ height: 'calc(100vh - 200px)' }}>
+        <div className='__app-layout-container' style={{ width: '100%', height: 'calc(100vh - 200px)' }}>
             <Table
                 loading={!isDataReady}
                 tableLayout='auto'
