@@ -535,6 +535,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                     (<Table
                                         loading={!isDataReady}
                                         tableLayout='auto'
+                                        size='middle'
                                         columns={tableUserColumns}
                                         className='__app-user-info-table'
                                         dataSource={accountsOnSearch}
@@ -542,7 +543,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                             pageSize: 7,
                                             total: accountsOnSearch.length,
                                             showTotal: (total, range) => {
-                                                return <span>{total} items</span>
+                                                return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                                             }
                                         }}
                                     ></Table>)

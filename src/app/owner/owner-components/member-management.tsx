@@ -1,9 +1,8 @@
-import { FormOutlined, LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
 import { Avatar, Button, Col, Divider, Input, Radio, Row, Select, Skeleton, Table, Tag, Upload } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { OwnerServices } from "../owner.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
@@ -19,12 +18,8 @@ interface IMemberManagementProps {
 }
 
 export const MemberManagementComponent: React.FC<IMemberManagementProps> = (props) => {
-
-    const navigate = useNavigate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const ownerServices = new OwnerServices();
 
-    // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [members, setMember] = useState<any[]>([]);
     const [membersOnSearch, setSearchMember] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
@@ -35,14 +30,21 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
 
     useEffect(() => {
         if (!isFirstInit) {
-            ownerServices.getMembers$(props.roleID).pipe(take(1)).subscribe({
-                next: data => {
-                    setMember(data);
-                    setSearchMember(data);
-                    setFirstInit(true);
-                    setDataReady(true);
-                }
-            });
+            loadData();
+        }
+    });
+
+    function loadData() {
+        setDataReady(false);
+        ownerServices.getMembers$(props.roleID).pipe(take(1)).subscribe({
+            next: data => {
+                setMember(data);
+                setSearchMember(data);
+                setDataReady(true);
+            }
+        });
+        if (!isFirstInit) {
+            setFirstInit(true);
             ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
                 next: data => {
                     const optionStore = data.reduce((acc, cur) => {
@@ -56,7 +58,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                 }
             })
         }
-    }, [isFirstInit, members, ownerServices, props.roleID, props.roleName]);
+    }
 
     const tableUserColumns: ColumnsType<IUser> = [
         {
@@ -177,18 +179,9 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                 formMode === 'display' ? <>
                     <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                         <div className='__app-toolbar-left-buttons'>
-                            {/* <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => { }}>Thêm {props.roleName}</Button> */}
                             <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>
                             <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
-                                setDataReady(false);
-                                ownerServices.getMembers$(props.roleID).pipe(take(1)).subscribe({
-                                    next: data => {
-                                        setMember(data);
-                                        setSearchMember(data);
-                                        setFirstInit(true);
-                                        setDataReady(true);
-                                    }
-                                })
+                                loadData();
                             }}>Tải Lại</Button>
                         </div>
                         <div className='__app-toolbar-right-buttons'>
@@ -213,18 +206,19 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                     <div style={{ width: '94%' }}>
                         <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
                     </div>
-                    <div className='__app-layout-container'>
+                    <div className='__app-layout-container' style={{ padding: '8px 24px' }}>
                         <Table
                             loading={!isDataReady}
                             tableLayout='auto'
+                            size='middle'
                             columns={tableUserColumns}
                             className='__app-user-info-table'
                             dataSource={membersOnSearch}
                             pagination={{
-                                pageSize: 7,
+                                pageSize: 8,
                                 total: members.length,
                                 showTotal: (total, range) => {
-                                    return <span>{total} items</span>
+                                    return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                                 }
                             }}
                         ></Table>
@@ -240,7 +234,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 setUserDetail(null);
                                 // setImageUrl('');
                             }} />
-                            <div className="__app-title-form">Chi tiết</div>
+                            <div className="__app-title-form">Chi tiết {props.roleName}</div>
                         </div>
                         <div className="__app-content-container">
                             <Row className='__app-account-info-row'>

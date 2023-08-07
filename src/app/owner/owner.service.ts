@@ -10,7 +10,11 @@ export class OwnerServices extends CoreServices {
     getBonsais$(options: any) {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/plant/getAllPlantWithInactive?pageNo=${options.pageNo ?? 1}&pageSize=${options.pageSize ?? 10}&sortBy=ID&sortAsc=false`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -23,7 +27,11 @@ export class OwnerServices extends CoreServices {
     getBonsai$(plantId: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/plant/${plantId}`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -36,7 +44,11 @@ export class OwnerServices extends CoreServices {
     getStores$(options: any) {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/store`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -49,7 +61,11 @@ export class OwnerServices extends CoreServices {
     getStore$(storeId: string) {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/store/getByID?storeID=${storeId}`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -62,7 +78,11 @@ export class OwnerServices extends CoreServices {
     getStorePlant$(storeId: string) {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/store/getStorePlant/${storeId}?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -114,8 +134,12 @@ export class OwnerServices extends CoreServices {
 
     getService$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/service?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
-            axios.get(url).then((res) => {
+            let url = this.globalSettings.domain + `/service/getAllServiceForOwner?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -128,7 +152,11 @@ export class OwnerServices extends CoreServices {
     getServicePacks$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/servicePack`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -162,8 +190,8 @@ export class OwnerServices extends CoreServices {
             }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
-            }).catch(() => {
-                obs.next(null);
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Tạo cây thất bại.'});
                 obs.complete();
             })
         })
@@ -189,7 +217,11 @@ export class OwnerServices extends CoreServices {
     getProvince$() {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/store/getAllProvince`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -202,7 +234,11 @@ export class OwnerServices extends CoreServices {
     getDistrict$(provinceID: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/store/getDistrictByProvinceID?provinceID=${provinceID}`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
@@ -258,6 +294,74 @@ export class OwnerServices extends CoreServices {
                 obs.complete();
             }).catch(() => {
                 obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getAllOrders$() {
+        return new Observable<IContractDetail[]>(obs => {
+            let url = this.globalSettings.domain + `/order/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    disablePlant$(plantID: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/plant/${plantID}`
+            axios.delete(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Huỷ bán thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
+    disableStore$(storeID: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/${storeID}`
+            axios.delete(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Huỷ bán thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
+    updatePlant(data: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/plant`
+            axios.put(url, data, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Chỉnh sửa thất bại.'});
                 obs.complete();
             })
         })

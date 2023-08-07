@@ -44,6 +44,7 @@ export const DashBoardComponent: React.FC<IDashboardProps> = (props) => {
                 </div>
                 <Table
                     tableLayout='auto'
+                    size='middle'
                     columns={props.tableReport.columns as any}
                     className='__app-user-info-table'
                     dataSource={props.tableReport.dataSource}

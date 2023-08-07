@@ -1,18 +1,15 @@
-import { FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
 import { Avatar, Button, Col, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tag } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { IPlant, PlantStatus, PlantStatusMapping } from "../../common/object-interfaces/plant.interface";
-import { NumericFormat } from "react-number-format";
 import { OwnerServices } from "../owner.service";
 import { switchMap, take } from "rxjs";
 import { cloneDeep } from "lodash";
 import { IStore, StoreStatus, StoreStatusMapping } from "../../common/object-interfaces/store.interface";
 import { toast } from "react-hot-toast";
 import { CommonUtility } from "../../utils/utilities";
-import { IUser } from "../../../IApp.interface";
 
 
 interface IStoreManagementProps {
@@ -21,31 +18,37 @@ interface IStoreManagementProps {
 
 export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props) => {
 
-    const navigate = useNavigate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const ownerServices = new OwnerServices();
 
-    // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [stores, setStore] = useState<any[]>([]);
+    const [storesOnSearch, setStoreOnSearch] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [storeDetail, setStoreDetail] = useState<IStore | null>(null);
     const [isShowPopupCreate, setShowPopupCreate] = useState<boolean>(false);
-    const [storeStaff, setStoreStaff] = useState<IUser[]>([]);
-    const [plantIdIncreaseAmount, setPlantIdIncreaseAmount] = useState<string | null>(null);
+    const [popUpConfirm, setPopUpConfirm] = useState<any>({
+        isShow: false,
+        storeID: ''
+    });
 
     useEffect(() => {
         if (!isFirstInit) {
-            ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
-                next: data => {
-                    setStore(data);
-                    setFirstInit(true);
-                    setDataReady(true);
-                }
-            })
+            loadData();
         }
-    }, [isFirstInit, stores, ownerServices]);
+    });
+
+    function loadData() {
+        setDataReady(false);
+        ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
+            next: data => {
+                setStore(data);
+                setStoreOnSearch(data);
+                setFirstInit(true);
+                setDataReady(true);
+            }
+        })
+    }
 
     const tableUserColumns: ColumnsType<IStore> = [
         {
@@ -62,12 +65,6 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
             key: 'storeName',
             showSorterTooltip: false,
             ellipsis: true,
-            // render: (value, record, index) => {
-            //     return <div className='__app-column-name-container'>
-            //         <Avatar shape='square' src={record.plantIMGList[0]?.url} />
-            //         <span className='__app-column-name'>{value}</span>
-            //     </div>
-            // },
         },
         {
             title: 'Địa chỉ',
@@ -120,13 +117,36 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
             ellipsis: true,
             render: (_, record, __) => {
                 return <div>
-                    <Button className='__app-command-button' onClick={(e) => {
-                        e.preventDefault();
-                        //openDetailUser(record.Id);
-                        e.preventDefault();
-                        getStoreDetail(record.id);
-                        setFormMode('edit');
-                    }} icon={<FormOutlined />} />
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [
+                                {
+                                    key: 'detail',
+                                    label: <span
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            getStoreDetail(record.id);
+                                            setFormMode('edit');
+                                        }}
+                                    >Xem chi tiết</span>
+                                },
+                                record.status === 'ACTIVE' ?
+                                    {
+                                        key: 'disableStore',
+                                        label: <span
+                                            onClick={() => {
+                                                setPopUpConfirm({
+                                                    isShow: true,
+                                                    storeID: record.id
+                                                });
+                                            }}
+                                        >Vô hiệu hoá cửa hàng</span>
+                                    } : null]
+                        }}
+                        placement='bottom'>
+                        <MoreOutlined />
+                    </Dropdown>
                 </div>
             },
         }
@@ -193,46 +213,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                 compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
             },
             className: '__app-header-title'
-        },
-        // {
-        //     title: '',
-        //     dataIndex: 'command',
-        //     align: 'center',
-        //     width: 100,
-        //     key: 'command',
-        //     showSorterTooltip: false,
-        //     ellipsis: true,
-        //     render: (_, record, __) => {
-        //         return <div>
-        //             <Dropdown
-        //                 trigger={['click']}
-        //                 menu={{
-        //                     items: [
-        //                     // {
-        //                     //     key: 'amountIncrease',
-        //                     //     label: <span
-        //                     //         onClick={() => {
-        //                     //             setPlantIdIncreaseAmount(record.plantID)
-        //                     //         }}
-        //                     //     >Thêm số lượng cây</span>
-        //                     // },
-        //                     {
-        //                         key: 'disablePlant',
-        //                         label: 'Huỷ bán cây'
-        //                     }]
-        //                 }}
-        //                 placement='bottom'>
-        //                 <FormOutlined />
-        //             </Dropdown>
-        //             {/* <Button className='__app-command-button' onClick={(e) => {
-        //                 e.preventDefault();
-        //                 // getBonsaiDetail(record.plantID);
-        //                 // setFormMode('edit');
-        //             }} icon={<FormOutlined />} /> */}
-        //         </div>
-        //     },
-        //     className: '__app-header-title'
-        // }
+        }
     ]
 
     function getStoreDetail(storeId: string) {
@@ -267,32 +248,18 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                     CommonUtility.exportExcel(stores, tableUserColumns);
                                 }}>Xuất Tệp Excel</Button>
                                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
-                                    setDataReady(false);
-                                    ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
-                                        next: data => {
-                                            setStore(data);
-                                            setDataReady(true);
-                                        }
-                                    })
+                                    loadData();
                                 }}>Tải Lại</Button>
                             </div>
                             <div className='__app-toolbar-right-buttons'>
                                 <Search
                                     style={{ marginLeft: 10 }}
                                     className='__app-search-box'
-                                    placeholder="Tìm kiếm"
+                                    placeholder="ID, Chi Nhánh"
                                     onSearch={(value) => {
-                                        // const accountSearched = accounts.reduce((acc, cur) => {
-                                        //     if (cur.fullName.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                                        //         acc.push(cur);
-                                        //     } else if (cur.phone.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                                        //         acc.push(cur);
-                                        //     } else if (cur.email.toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                                        //         acc.push(cur);
-                                        //     }
-                                        //     return acc;
-                                        // }, []);
-                                        // setAccountsOnSearch(accountSearched);
+                                        const columnsSearch = ['id', 'storeName']
+                                        const data = CommonUtility.onTableSearch(value, stores, columnsSearch);
+                                        setStoreOnSearch(data);
                                     }}
                                 />
                             </div>
@@ -307,12 +274,12 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                 size="middle"
                                 columns={tableUserColumns}
                                 className='__app-user-info-table'
-                                dataSource={stores}
+                                dataSource={storesOnSearch}
                                 pagination={{
-                                    pageSize: 7,
+                                    pageSize: 9,
                                     total: stores.length,
                                     showTotal: (total, range) => {
-                                        return <span>{total} items</span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                                     }
                                 }}
                             ></Table>
@@ -419,7 +386,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                         pageSize: 4,
                                         total: storeDetail ? storeDetail['storePlant']?.length : 0,
                                         showTotal: (total, range) => {
-                                            return <span>{total} items</span>
+                                            return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                                         }
                                     }}
                                 />
@@ -440,15 +407,54 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                         onSave={(data: any) => {
                             toast.success('Thêm chi nhánh thành công');
                             setShowPopupCreate(false);
-                            setDataReady(false);
-                            ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
-                                next: data => {
-                                    setStore(data);
-                                    setDataReady(true);
-                                }
-                            })
+                            loadData();
                         }}
                     /> : <></>
+            }
+            {
+                popUpConfirm.isShow ?
+                    <Modal
+                        width={500}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Xác nhận
+                            </span>
+                        )}
+                        footer={[
+                            <Button type="default" onClick={() => {
+                                setPopUpConfirm({
+                                    isShow: false,
+                                    storeID: ''
+                                })
+                            }}>Huỷ</Button>,
+                            <Button type="primary" onClick={() => {
+                                ownerServices.disableStore$(popUpConfirm.storeID).pipe(take(1)).subscribe({
+                                    next: (res) => {
+                                        if (res.error) {
+                                            toast.error(res.error);
+                                            setPopUpConfirm({
+                                                isShow: false,
+                                                storeID: ''
+                                            })
+                                        } else {
+                                            setPopUpConfirm({
+                                                isShow: false,
+                                                storeID: ''
+                                            })
+                                            toast.success('Vô hiệu cửa hàng thành công.');
+                                            loadData();
+                                        }
+                                    }
+                                })
+
+                            }}>Xác Nhận</Button>
+                        ]}
+                        centered
+                    >
+                        <span>Vui lòng nhấn xác nhận để vô hiệu hoá cửa hàng trong hệ thống.</span>
+                    </Modal> : <></>
             }
         </>
 
@@ -499,28 +505,62 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
         );
         nodes.push(
             <Button key='save' type='primary' onClick={() => {
-                const dataPost = {
-                    storeName: storeDetail.storeName,
-                    phone: storeDetail.phone,
-                    address: `${storeDetail.address}, ${storeDetail.districtName}, ${storeDetail.provinceName}, Việt Nam`,
-                    districtID: storeDetail.districtID,
-                }
-                ownerServices.createStore$(dataPost).pipe(take(1)).subscribe({
-                    next: (res) => {
-                        if (res) {
-                            if (props.onSave) {
-                                props.onSave(res);
-                            }
-                        } else {
-                            toast.error('Tạo chi nhánh thất bại.');
-                        }
-
+                const validation = validateFormCreate();
+                if (validation.invalid === false) {
+                    const dataPost = {
+                        storeName: storeDetail.storeName,
+                        phone: storeDetail.phone,
+                        address: `${storeDetail.address}, ${storeDetail.districtName}, ${storeDetail.provinceName}, Việt Nam`,
+                        districtID: storeDetail.districtID,
                     }
-                })
-
+                    ownerServices.createStore$(dataPost).pipe(take(1)).subscribe({
+                        next: (res) => {
+                            if (res) {
+                                if (props.onSave) {
+                                    props.onSave(res);
+                                }
+                            } else {
+                                toast.error('Tạo chi nhánh thất bại.');
+                            }
+                        }
+                    })
+                } else {
+                    toast.error(`Vui lòng nhập thông tin ${validation.fields.join(', ')}`);
+                }
             }}>Lưu</Button>
         );
         return nodes;
+    }
+
+    function validateFormCreate() {
+        let temp = cloneDeep(storeDetail);
+        let result = {
+            invalid: false,
+            fields: [] as string[]
+        }
+
+        if (CommonUtility.isNullOrEmpty(temp.storeName)) {
+            result.invalid = true;
+            result.fields.push('Tên chi nhánh');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.phone)) {
+            result.invalid = true;
+            result.fields.push('Số điện thoại');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.address)) {
+            result.invalid = true;
+            result.fields.push('Địa chỉ');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.provinceName)) {
+            result.invalid = true;
+            result.fields.push('Tỉnh/ Thành');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.districtName)) {
+            result.invalid = true;
+            result.fields.push('Quận/ Huyện');
+        }
+
+        return result;
     }
 
     return (

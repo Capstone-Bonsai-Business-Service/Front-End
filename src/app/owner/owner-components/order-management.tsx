@@ -5,7 +5,7 @@ import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NumericFormat } from "react-number-format";
-import { ManagerServices } from "../manager.service";
+import { OwnerServices } from "../owner.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
 import { CommonUtility } from "../../utils/utilities";
@@ -17,7 +17,6 @@ import { cloneDeep } from "lodash";
 
 
 interface IOrderManagementProps {
-    roleID: string;
 }
 
 interface IOrderTabProps extends IOrderManagementProps {
@@ -39,42 +38,42 @@ export const OrderManagementComponent: React.FC<IOrderManagementProps> = (props)
                     {
                         label: 'Đơn mới',
                         key: 'waiting',
-                        children: tabKey === 'waiting' ? <OrderTabComponent orderStatus='WAITING' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'waiting' ? <OrderTabComponent orderStatus='WAITING' /> : <></>,
                     },
                     {
                         label: 'Đã duyệt',
                         key: 'approved',
-                        children: tabKey === 'approved' ? <OrderTabComponent orderStatus='APPROVED' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'approved' ? <OrderTabComponent orderStatus='APPROVED' /> : <></>,
                     },
                     {
                         label: 'Đang chuẩn bị',
                         key: 'packaging',
-                        children: tabKey === 'packaging' ? <OrderTabComponent orderStatus='PACKAGING' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'packaging' ? <OrderTabComponent orderStatus='PACKAGING' /> : <></>,
                     },
                     {
                         label: 'Đã từ chối',
                         key: 'denied',
-                        children: tabKey === 'denied' ? <OrderTabComponent orderStatus='DENIED' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'denied' ? <OrderTabComponent orderStatus='DENIED' /> : <></>,
                     },
                     {
                         label: 'Đang giao',
                         key: 'delivering',
-                        children: tabKey === 'delivering' ? <OrderTabComponent orderStatus='DELIVERING' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'delivering' ? <OrderTabComponent orderStatus='DELIVERING' /> : <></>,
                     },
                     {
                         label: 'Đã giao',
                         key: 'received',
-                        children: tabKey === 'received' ? <OrderTabComponent orderStatus='RECEIVED' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'received' ? <OrderTabComponent orderStatus='RECEIVED' /> : <></>,
                     },
                     {
                         label: 'Đã huỷ',
                         key: 'reject',
-                        children: tabKey === 'reject' ? <OrderTabComponent orderStatus='STAFFCANCELED' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'reject' ? <OrderTabComponent orderStatus='STAFFCANCELED' /> : <></>,
                     },
                     {
                         label: 'Bị huỷ',
                         key: 'cancel',
-                        children: tabKey === 'cancel' ? <OrderTabComponent orderStatus='CUSTOMERCANCELED' roleID={props.roleID} /> : <></>,
+                        children: tabKey === 'cancel' ? <OrderTabComponent orderStatus='CUSTOMERCANCELED' /> : <></>,
                     },
                 ]}
             />
@@ -85,7 +84,7 @@ export const OrderManagementComponent: React.FC<IOrderManagementProps> = (props)
 
 export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
 
-    const managerServices = new ManagerServices();
+    const ownerServices = new OwnerServices();
 
     const [orders, setOrder] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
@@ -107,7 +106,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
 
     function loadData() {
         setDataReady(false);
-        managerServices.getStoreOrders$().pipe(take(1)).subscribe({
+        ownerServices.getAllOrders$().pipe(take(1)).subscribe({
             next: data => {
                 const result = data.reduce((acc: any[], cur: any) => {
                     if (cur.progressStatus === props.orderStatus) {
@@ -120,27 +119,27 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                 setDataReady(true);
                 if (!isFirstInit) {
                     setFirstInit(true);
-                    getListStaff();
+                    // getListStaff();
                 }
             }
         })
     }
 
-    function getListStaff() {
-        managerServices.getStaffForContract$().pipe(take(1)).subscribe({
-            next: (value) => {
-                const staffListOption = value.reduce((acc, cur) => {
-                    acc.push({
-                        value: cur.staffID,
-                        label: cur.staffName
-                    })
-                    return acc;
-                }, [] as any)
-                setStaffList(staffListOption);
-            }
-        })
+    // function getListStaff() {
+    //     ownerServices.getStaffForContract$().pipe(take(1)).subscribe({
+    //         next: (value) => {
+    //             const staffListOption = value.reduce((acc, cur) => {
+    //                 acc.push({
+    //                     value: cur.staffID,
+    //                     label: cur.staffName
+    //                 })
+    //                 return acc;
+    //             }, [] as any)
+    //             setStaffList(staffListOption);
+    //         }
+    //     })
 
-    }
+    // }
 
     const tableUserColumns: ColumnsType<IUser> = [
         {
@@ -358,16 +357,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                             Nhân viên tiếp nhận:
                                         </Col>
                                         <Col span={16}>
-                                            {
-                                                orderDetail?.progressStatus === 'WAITING' ?
-                                                    <UserPicker
-                                                        listUser={staffList}
-                                                        onChanged={(value) => {
-                                                            setStaffForOrder(value);
-                                                        }}
-                                                    />
-                                                    : orderDetail?.showStaffModel?.fullName ?? '--'
-                                            }
+                                            { orderDetail?.showStaffModel?.fullName ?? '--' }
                                         </Col>
                                     </Row>
                                     <Row>
@@ -386,25 +376,6 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                             <span>
                                                 <Tag color={orderDetail?.isPaid ? 'lime' : 'red'}>{orderDetail?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>
                                             </span>
-                                            {
-                                                orderDetail?.isPaid === false ? 
-                                                <Button size="middle" type="link" onClick={() => {
-                                                    setIsProcess(true);
-                                                    managerServices.confirmPaymentOrder$(orderDetail?.id).pipe(take(1)).subscribe({
-                                                        next: (value) => {
-                                                            if (value) {
-                                                                toast.success('Cập nhật thành công.');
-                                                                setIsProcess(false);
-                                                                const data = cloneDeep(orderDetail);
-                                                                data['isPaid'] = true;
-                                                                setOrderDetail(data);
-                                                            } else {
-                                                                toast.error('Không thể xác nhận. Vui lòng thử lại');
-                                                            }
-                                                        }
-                                                    })
-                                                }}>Xác nhận thanh toán</Button> : <></>
-                                            }
                                         </Col>
                                     </Row>
                                     {
@@ -423,80 +394,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                     }
                                 </Col>
                             </div>
-                            {
-                                orderDetail?.progressStatus === 'WAITING' ?
-                                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-                                        <Col span={18} style={{ padding: '24px 0', display: 'flex', flexDirection: 'row-reverse', gap: 8 }}>
-                                            <Button type="primary" onClick={() => {
-                                                managerServices.approveOrder$(orderDetail?.id, staffForOrder ?? 0).pipe(take(1)).subscribe({
-                                                    next: (res) => {
-                                                        if (res) {
-                                                            setFormMode('display');
-                                                            setOrderDetail(null);
-                                                            loadData();
-                                                            toast.success('Duyệt đơn hàng thành công.');
-                                                        } else {
-                                                            toast.success('Không thể duyệt đơn hàng.')
-                                                        }
-                                                    }
-                                                })
-                                            }}>Duyệt</Button>
-                                            <Button type="default" onClick={() => {
-                                                setShowPopupReason(true);
-                                            }}>Từ chối</Button>
-                                        </Col>
-                                    </div>
-                                    : <></>
-                            }
                         </div >
-                        {
-                            isShowPopupReason ?
-                                <Modal
-                                    width={600}
-                                    open={true}
-                                    closable={false}
-                                    title={(
-                                        <span className='__app-dialog-title'>
-                                            TỪ CHỐI ĐƠN HÀNG
-                                        </span>
-                                    )}
-                                    footer={[
-                                        <Button key='cancel' onClick={() => {
-                                            setShowPopupReason(false)
-                                        }}>Đóng</Button>,
-                                        <Button key='save' type='primary' style={{ backgroundColor: '#8E0000' }} onClick={() => {
-                                            managerServices.rejectOrder$(orderDetail?.id, reasonReject).pipe(take(1)).subscribe({
-                                                next: (res) => {
-                                                    if (res) {
-                                                        setFormMode('display');
-                                                        setOrderDetail(null);
-                                                        loadData();
-                                                        setShowPopupReason(false)
-                                                        toast.success('Từ chối đơn hàng thành công.');
-                                                    } else {
-                                                        toast.success('Không thể từ chối đơn hàng.')
-                                                    }
-                                                }
-                                            })
-                                        }}>Từ chối</Button>
-                                    ]}
-                                >
-                                    <Row style={{ padding: 16 }}>
-                                        <Col span={4} style={{ fontWeight: 500 }}>Lý do:</Col>
-                                        <Col span={18}>
-                                            <TextArea
-                                                rows={3}
-                                                onChange={(args) => {
-                                                    setReasonReject(args.target.value);
-                                                }}
-                                            />
-                                        </Col>
-                                    </Row>
-                                </Modal>
-                                : <></>
-                        }
-
-
                     </div >
                     : <></>
             }

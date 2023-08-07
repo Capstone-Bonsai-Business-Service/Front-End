@@ -3,7 +3,6 @@ import { Avatar, Button, Col, Divider, Input, Radio, Row, Select, Skeleton, Tabl
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ManagerServices } from "../manager.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
@@ -195,18 +194,19 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                     <div style={{ width: '94%' }}>
                         <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
                     </div>
-                    <div className='__app-layout-container'>
+                    <div className='__app-layout-container' style={{ padding: '8px 24px' }}>
                         <Table
                             loading={!isDataReady}
                             tableLayout='auto'
+                            size='middle'
                             columns={tableUserColumns}
                             className='__app-user-info-table'
                             dataSource={membersOnSearch}
                             pagination={{
-                                pageSize: 7,
+                                pageSize: 8,
                                 total: members.length,
                                 showTotal: (total, range) => {
-                                    return <span>{total} items</span>
+                                    return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                                 }
                             }}
                         ></Table>

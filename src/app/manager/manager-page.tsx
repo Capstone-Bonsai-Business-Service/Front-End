@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps } from 'antd';
+import { Avatar, Badge, Dropdown, Layout, Menu, MenuProps } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { ManagerServices } from './manager.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
 import { AiOutlineAreaChart, AiOutlineFall, AiOutlineRise } from 'react-icons/ai'
-import { LiaStoreAltSolid } from 'react-icons/lia';
 import { LuClipboardSignature } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
 import { DashBoardComponent } from '../common/components/dashboard.component';
@@ -17,6 +16,7 @@ import { ContractManagementComponent } from './manager-components/contract-manag
 import { BonsaiManagementComponent } from './manager-components/bonsai-management';
 import { MemberManagementComponent } from './manager-components/member-management';
 import { OrderManagementComponent } from './manager-components/order-management';
+import Logo from '../../assets/images/logo1.png'
 
 
 interface IManagerPageProps {
@@ -53,16 +53,6 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                 </div>
             )
         },
-        // {
-        //     key: 'stores',
-        //     className: '__app-group-menu',
-        //     icon: <LiaStoreAltSolid color='#000' />,
-        //     label: (
-        //         <div className='__app-group-menu-label'>
-        //             Thông tin cửa hàng
-        //         </div>
-        //     )
-        // },
         {
             key: 'bonsais',
             className: '__app-group-menu',
@@ -139,7 +129,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             key: 'revenues',
             width: 200,
             render: (data: any) => {
-                return <NumericFormat thousandSeparator=',' value={data ?? 0} displayType='text' suffix=" ₫" />
+                return <NumericFormat thousandSeparator=' ' value={data ?? 0} displayType='text' suffix=" ₫" />
             }
         },
         {
@@ -150,7 +140,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             render: (data: any) => {
                 return (
                     <div style={{ display: 'flex', gap: 5 }}>
-                        <NumericFormat thousandSeparator=',' value={data ? data * 100 : 0} displayType='text' suffix="%" style={{
+                        <NumericFormat thousandSeparator=' ' value={data ? data * 100 : 0} displayType='text' suffix="%" style={{
                             color: data > 0 ? '#A0D676' : '#FD6B6B'
                         }} />
                         {data > 0 ? <AiOutlineRise color='#A0D676' /> : <AiOutlineFall color='#FD6B6B' />}
@@ -282,7 +272,20 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                     }}></Menu>
                 </Layout.Sider>
                 <Layout>
-                    <Layout.Header className='__app-layout-header'>
+                    <Layout.Header className='__app-layout-header'
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            flexDirection: 'row'
+
+                        }}>
+                        <div style={{
+                            height: 64,
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}>
+                            <img src={Logo} alt='' style={{ height: 58, }} />
+                        </div>
                         <div className='__app-header-right'>
                             <div className='__app-notification-info'>
                                 <Dropdown
@@ -290,7 +293,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                     menu={{ items: bindingNotifications() }}
                                     placement='bottom'>
                                     <Badge size='default' dot={true}>
-                                        <Avatar shape='circle' size='large' icon={<PiBellRingingLight />}  />
+                                        <Avatar shape='circle' size='large' icon={<PiBellRingingLight />} />
                                     </Badge>
                                 </Dropdown>
                             </div>
@@ -302,7 +305,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                     placement='bottomRight'>
                                     {
                                         props.currentUser?.avatar ?
-                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />}/> :
+                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} /> :
                                             <Avatar className='__app-user-avatar' size={'large'} icon={<UserOutlined />}></Avatar>
                                     }
                                 </Dropdown>
@@ -335,7 +338,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                 : <></>
                         }
                         {
-                            currentMenuItem === 'orders' ? <OrderManagementComponent roleID='R004'/>
+                            currentMenuItem === 'orders' ? <OrderManagementComponent roleID='R004' />
                                 : <></>
                         }
                         { /*{

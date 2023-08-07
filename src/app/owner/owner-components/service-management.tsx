@@ -130,7 +130,7 @@ const TabServiceList: React.FC<any> = (props) => {
             ellipsis: true,
             render: (_, record, __) => {
                 return <div>
-                    <Button className='__app-command-button' onClick={(e) => {
+                    <Button className='__app-command-button' type='ghost' onClick={(e) => {
                         e.preventDefault();
                         setServiceDetail(record);
                         setImageUrl(record?.imgList[0]?.url ?? '');
@@ -269,7 +269,7 @@ const TabServiceList: React.FC<any> = (props) => {
                             <Search
                                 style={{ marginLeft: 10 }}
                                 className='__app-search-box'
-                                placeholder="Nhập ID/ Tên Cây"
+                                placeholder="Nhập ID/ Tên Dịch vụ"
                                 onSearch={(value) => {
                                     const columnsSearch = ['serviceID', 'name']
                                     const data = CommonUtility.onTableSearch(value, services, columnsSearch);
@@ -293,7 +293,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                 pageSize: 6,
                                 total: servicesOnSearch.length,
                                 showTotal: (total, range) => {
-                                    return <span>{total} items</span>
+                                    return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                                 }
                             }}
                         ></Table>
@@ -412,7 +412,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                     pageSize: 4,
                                     total: servicesOnSearch.length,
                                     showTotal: (total, range) => {
-                                        return <span>{total} items</span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                                     }
                                 }}
                             ></Table>
@@ -556,7 +556,7 @@ const TabPackList: React.FC<{}> = (props) => {
                 <Search
                     style={{ marginLeft: 10 }}
                     className='__app-search-box'
-                    placeholder="Nhập ID/ Tên Cây"
+                    placeholder="Nhập ID/ Tên Gói"
                     onSearch={(value) => {
                         const columnsSearch = ['serviceID', 'name']
                         const data = CommonUtility.onTableSearch(value, servicePacks, columnsSearch);
@@ -580,7 +580,7 @@ const TabPackList: React.FC<{}> = (props) => {
                     pageSize: 6,
                     total: servicePacksOnSearch.length,
                     showTotal: (total, range) => {
-                        return <span>{total} items</span>
+                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
                     }
                 }}
             ></Table>
