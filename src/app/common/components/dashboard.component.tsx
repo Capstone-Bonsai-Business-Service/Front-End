@@ -25,30 +25,10 @@ export const DashBoardComponent: React.FC<IDashboardProps> = (props) => {
                     ></Select>
                 </div>
                 <div className="__app-chart-widget-block">
-                    <div style={{ width: '55%' }}>
+                    <div style={{ width: '84%' }}>
                         <Chart type={props.barChart.dataSource.type} options={props.barChart.dataSource.options} data={props.barChart.dataSource.data} />
                     </div>
                 </div>
-            </div>
-            <div className='__app-widget-container'>
-                <div className='__app-widget-header'>
-                    <span className='__app-widget-title'>{props.tableReport.title}</span>
-                    <Select
-                        className='__app-widget-filter-option'
-                        defaultValue={props.tableReport.filterSelected ?? null}
-                        options={props.tableReport.filterOptions}
-                        onChange={(value) => {
-                            props.tableReport.filter(value);
-                        }}
-                    ></Select>
-                </div>
-                <Table
-                    tableLayout='auto'
-                    size='middle'
-                    columns={props.tableReport.columns as any}
-                    className='__app-user-info-table'
-                    dataSource={props.tableReport.dataSource}
-                ></Table>
             </div>
         </div>
     )

@@ -35,7 +35,9 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
     const [plantShipFee, setPlantShipFee] = useState<any[]>([]);
     const [popUpConfirm, setPopUpConfirm] = useState<any>({
         isShow: false,
-        plantID: ''
+        plantID: '',
+        message: '',
+        action: ''
     });
     const [isUpload, setIsUpload] = useState<boolean>(false);
 
@@ -180,11 +182,28 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                             onClick={() => {
                                                 setPopUpConfirm({
                                                     isShow: true,
-                                                    plantID: record.plantID
+                                                    plantID: record.plantID,
+                                                    message: 'Vui lòng xác nhận huỷ bán cây trong hệ thống.',
+                                                    action: 'disable'
                                                 });
                                             }}
                                         >Huỷ bán cây</span>
-                                    } : null]
+                                    } : null,
+                                record.status === 'INACTIVE' ?
+                                    {
+                                        key: 'activePlant',
+                                        label: <span
+                                            onClick={() => {
+                                                setPopUpConfirm({
+                                                    isShow: true,
+                                                    plantID: record.plantID,
+                                                    message: 'Vui lòng xác nhận bán lại cây trong hệ thống.',
+                                                    action: 'active'
+                                                });
+                                            }}
+                                        >Bán lại</span>
+                                    } : null,
+                            ]
                         }}
                         placement='bottom'>
                         <MoreOutlined />
@@ -379,7 +398,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             result.invalid = true;
             result.fields.push('Phí giao hàng');
         }
-        if (CommonUtility.isNullOrEmpty(temp.categoryIDList)) {
+        if (CommonUtility.isNullOrEmpty(temp.plantCategoryList)) {
             result.invalid = true;
             result.fields.push('Loại cây');
         }
@@ -806,7 +825,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                 return acc;
                                             }, []),
                                         }
-                                        ownerServices.updatePlant(formEdit).pipe(take(1)).subscribe({
+                                        ownerServices.updatePlant$(formEdit).pipe(take(1)).subscribe({
                                             next: (res) => {
                                                 if (res.error) {
                                                     toast.error(res.error);
@@ -840,7 +859,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             {
                 popUpConfirm.isShow ?
                     <Modal
-                        width={500}
+                        width={300}
                         open={true}
                         closable={false}
                         title={(
@@ -852,33 +871,42 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                             <Button type="default" onClick={() => {
                                 setPopUpConfirm({
                                     isShow: false,
-                                    plantID: ''
+                                    plantID: '',
+                                    message: '',
+                                    action: ''
                                 })
                             }}>Huỷ</Button>,
-                            <Button type="primary" onClick={() => {
-                                ownerServices.disablePlant$(popUpConfirm.plantID).pipe(take(1)).subscribe({
-                                    next: (res) => {
-                                        if (res.error) {
-                                            toast.error(res.error);
-                                            setPopUpConfirm({
-                                                isShow: false,
-                                                plantID: ''
-                                            })
-                                        } else {
-                                            setPopUpConfirm({
-                                                isShow: false,
-                                                plantID: ''
-                                            })
-                                            toast.success('Huỷ bán cây thành công.');
+                            <Button type="primary"
+                                style={{ backgroundColor: '#8E0000' }}
+                                onClick={() => {
+                                    ownerServices.disablePlant$(popUpConfirm.plantID).pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    plantID: '',
+                                                    message: '',
+                                                    action: ''
+                                                })
+                                            } else {
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    plantID: '',
+                                                    message: '',
+                                                    action: ''
+                                                })
+                                                loadData();
+                                                toast.success('Cập nhật thành công');
+                                            }
                                         }
-                                    }
-                                })
+                                    })
 
-                            }}>Xác Nhận</Button>
+                                }}>Xác Nhận</Button>
                         ]}
                         centered
                     >
-                        <span>Vui lòng nhấn xác nhận để huỷ bán cây trong hệ thống.</span>
+                        <span>{popUpConfirm.message}</span>
                     </Modal> : <></>
             }
         </>
@@ -1202,6 +1230,7 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                                             />
                                             <Select
                                                 defaultValue={'cm'}
+                                                onDropdownVisibleChange={(visble) => { setDisplayHeightSelect(true) }}
                                                 options={[
                                                     {
                                                         label: 'cm',
@@ -1231,6 +1260,7 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                                             />
                                             <Select
                                                 defaultValue={'cm'}
+                                                onDropdownVisibleChange={(visble) => { setDisplayHeightSelect(true) }}
                                                 options={[
                                                     {
                                                         label: 'cm',
@@ -1252,24 +1282,41 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                                                 type="text"
                                                 icon={<PlusOutlined />} disabled={newHeight.to === null || newHeight.to === '' || newHeight.from === null || newHeight.to === ''}
                                                 onClick={(e) => {
-                                                    if (Number(newHeight.from) < Number(newHeight.to)) {
-                                                        let temp = cloneDeep(bonsaiDetail) ?? {};
-                                                        temp['height'] = `${newHeight.from}${newHeight.fromUnit} đến ${newHeight.to}${newHeight.toUnit}`;
-                                                        const _plantOps = cloneDeep(plantHeightOps);
-                                                        _plantOps.push({
-                                                            label: `${newHeight.from}${newHeight.fromUnit} đến ${newHeight.to}${newHeight.toUnit}`,
-                                                            value: `${newHeight.from}${newHeight.fromUnit} đến ${newHeight.to}${newHeight.toUnit}`
-                                                        })
-                                                        setPlantHeight(_plantOps);
-                                                        setNewHeight({
-                                                            from: null,
-                                                            to: null,
-                                                            fromUnit: 'cm',
-                                                            toUnit: 'cm'
-                                                        })
-                                                        setBonsaiDetail(temp);
-                                                        setDisplayHeightSelect(false);
+                                                    if (CommonUtility.isNullOrEmpty(newHeight.from) || CommonUtility.isNullOrEmpty(newHeight.to)) {
+                                                        toast.error('Vui lòng nhập đầy đủ thông tin chiều cao');
+                                                        return;
                                                     }
+                                                    if (newHeight.fromUnit === 'm' && newHeight.toUnit === 'cm') {
+                                                        toast.error('Dữ liệu không hợp lệ');
+                                                        return;
+                                                    }
+                                                    if (newHeight.fromUnit === newHeight.toUnit && Number(newHeight.from) >= Number(newHeight.to)) {
+                                                        toast.error('Dữ liệu không hợp lệ');
+                                                        return;
+                                                    }
+                                                    if (newHeight.fromUnit === 'cm' && newHeight.toUnit === 'm') {
+                                                        const toValueCompare = Number(newHeight.to) * 100;
+                                                        if (newHeight.from > toValueCompare) {
+                                                            toast.error('Dữ liệu không hợp lệ');
+                                                            return;
+                                                        }
+                                                    }
+                                                    let temp = cloneDeep(bonsaiDetail) ?? {};
+                                                    temp['height'] = `${newHeight.from}${newHeight.fromUnit} đến ${newHeight.to}${newHeight.toUnit}`;
+                                                    const _plantOps = cloneDeep(plantHeightOps);
+                                                    _plantOps.push({
+                                                        label: `${newHeight.from}${newHeight.fromUnit} đến ${newHeight.to}${newHeight.toUnit}`,
+                                                        value: `${newHeight.from}${newHeight.fromUnit} đến ${newHeight.to}${newHeight.toUnit}`
+                                                    })
+                                                    setPlantHeight(_plantOps);
+                                                    setNewHeight({
+                                                        from: null,
+                                                        to: null,
+                                                        fromUnit: 'cm',
+                                                        toUnit: 'cm'
+                                                    })
+                                                    setBonsaiDetail(temp);
+                                                    setDisplayHeightSelect(false);
                                                 }}>Thêm
                                             </Button>
                                         </Space>
@@ -1314,26 +1361,7 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                                 }}
                                 placeholder="Nhập giá"
                             />
-                        </Col>
-                    </Row>
-                    <Row className='__app-object-info-row'>
-                        <Col span={6} className='__app-object-field'>
-                            <span>
-                                <strong>Ngày áp dụng:</strong> <span className='__app-required-field'> *</span>
-                            </span>
-
-                        </Col>
-                        <Col span={18}>
-                            <DatePicker
-                                style={{ width: '100%' }}
-                                placeholder="Chọn ngày áp dụng"
-                                value={dayjs(bonsaiDetail.applyDate)}
-                                format={'DD-MM-YYYY'}
-                                onChange={(value) => {
-                                    let temp = cloneDeep(bonsaiDetail);
-                                    temp['applyDate'] = value?.toDate() ?? null;
-                                    setBonsaiDetail(temp);
-                                }} />
+                            <span>Giá sẽ được áp dụng ngay khi tạo cây thành công.</span>
                         </Col>
                     </Row>
                     <Row className='__app-object-info-row'>

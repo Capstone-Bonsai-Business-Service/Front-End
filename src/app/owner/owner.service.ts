@@ -115,6 +115,29 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    getMembersByStoreID$(storeID: string, managerID: number = -1) {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${storeID}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                const member = res.data.reduce((acc: any[], cur: any) => {
+                    if (managerID !== cur.id) {
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, [])
+                obs.next(member);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
     getMemberByID$(userID: number) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/user/getByID?userID=${userID}`
@@ -333,6 +356,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    activePlant$(plantID: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/plant/activatePlant?plantID=${plantID}`
+            axios.delete(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Thay đổi thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
     disableStore$(storeID: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/store/${storeID}`
@@ -350,7 +390,7 @@ export class OwnerServices extends CoreServices {
         })
     }
 
-    updatePlant(data: any) {
+    updatePlant$(data: any) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/plant`
             axios.put(url, data, {
@@ -362,6 +402,57 @@ export class OwnerServices extends CoreServices {
                 obs.complete();
             }).catch((err) => {
                 obs.next({error: JSON.stringify(err.response?.data) ?? 'Chỉnh sửa thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
+    updateStore$(data: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store`
+            axios.put(url, data, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Chỉnh sửa thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
+    addStoreEmployee$(data: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/addStoreEmployee`
+            axios.post(url, data, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Thêm thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
+    getReport$(from: string, to: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/statistic?from=${from}&to=${to}`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Lấy Report Thất bại.'});
                 obs.complete();
             })
         })

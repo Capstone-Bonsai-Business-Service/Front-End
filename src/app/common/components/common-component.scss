@@ -13,11 +13,13 @@
         gap: 12px;
         display: flex;
         flex-direction: column;
+        height: calc(100vh - 120px);
 
         .__app-widget-header {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
+            padding: 0 80px;
 
             span {
                 display: flex;
@@ -28,6 +30,7 @@
         }
 
         .__app-chart-widget-block {
+            margin-top: 24px;
             display: flex;
             flex-direction: row;
             justify-content: center;

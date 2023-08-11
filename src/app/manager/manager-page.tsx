@@ -17,6 +17,7 @@ import { BonsaiManagementComponent } from './manager-components/bonsai-managemen
 import { MemberManagementComponent } from './manager-components/member-management';
 import { OrderManagementComponent } from './manager-components/order-management';
 import Logo from '../../assets/images/logo1.png'
+import { Subject, take, takeUntil, timer } from 'rxjs';
 
 
 interface IManagerPageProps {
@@ -27,6 +28,8 @@ interface IManagerPageProps {
 export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const managerService = new ManagerServices();
+
+    let unsubscribe: Subject<void> = new Subject();
 
     const navigate = useNavigate();
 
@@ -39,8 +42,33 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
         if (!isFirstInit) {
             setFirstInit(true);
             setDataReady(true);
+            registerPingToken();
         }
-    }, [managerService, isFirstInit]);
+    }, [managerService, isFirstInit, registerPingToken]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    function registerPingToken() {
+        timer(60000, 60000).subscribe({
+            next: (time) => {
+                if (props.currentUser) {
+                    managerService.getUserInfoByToken$(props.currentUser.token).pipe(take(1)).subscribe({
+                        next: (res) => {
+                            if (res) {
+                                return time;
+                            } else {
+                                registerPingToken();
+                                props.onLogoutCallback();
+                                return navigate('/manager-login');
+                            }
+                        }
+                    })
+                } else {
+                    return time;
+                }
+
+            }
+        })
+    }
 
     const items: MenuProps['items'] = [
         {

@@ -10,7 +10,7 @@ import { LiaStoreAltSolid } from 'react-icons/lia';
 import { LuClipboardSignature } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
 import { DashBoardComponent } from '../common/components/dashboard.component';
-import { IDashboard, ITableColumn } from '../common/interfaces';
+import { IDashboard, ITableColumn, reportLabel } from '../common/interfaces';
 import { NumericFormat } from 'react-number-format';
 import { BonsaiManagementComponent } from './owner-components/bonsai-management';
 import { ServiceManagementComponent } from './owner-components/service-management';
@@ -21,6 +21,8 @@ import { OrderManagementComponent } from './owner-components/order-management';
 import Logo from '../../assets/images/logo1.png'
 import './owner.scss';
 import '../../styles/global.style.scss';
+import { Observable, forkJoin, of, take, timer } from 'rxjs';
+import { DateTime } from 'luxon';
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -37,13 +39,174 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [currentMenuItem, setCurrentMenuItem] = useState<string>('dashboard');
+    const [datasetData, setDatasetData] = useState({
+        numOfContract: [0, 0, 0, 0, 0, 0, 0],
+        numOfOrder: [0, 0, 0, 0, 0, 0, 0],
+        sumOfContract: [0, 0, 0, 0, 0, 0, 0],
+        sumOfOrder: [0, 0, 0, 0, 0, 0, 0]
+    })
+    const [datasetFilter, setDatasetFilter] = useState<'weekly' | 'quarter' | 'month'>('weekly');
 
     useEffect(() => {
         if (!isFirstInit) {
-            setFirstInit(true);
-            setDataReady(true);
+            loadData();
+            registerPingToken();
         }
-    }, [ownerService, isFirstInit]);
+    });
+
+    function loadData() {
+        setDataReady(false);
+        loadStatistic$(datasetFilter).pipe(take(1)).subscribe({
+            next: (res: any) => {
+                setDatasetData(res);
+                setFirstInit(true);
+                setDataReady(true);
+            }
+        })
+    }
+
+    function loadStatistic$(_datasetFilter: 'weekly' | 'quarter' | 'month') {
+        switch (_datasetFilter) {
+            case 'weekly': return getDataSetReportWeekly$();
+            case 'month': return getDataSetReportMonthly$();
+            case 'quarter': return getDataSetReportQuarter$();
+        }
+    }
+
+    function getDataSetReportWeekly$() {
+        return new Observable(obs => {
+            let today = DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd');
+            const request$ = [];
+            for (let i = 0; i < 7; i++) {
+                let date = new Date(today);
+                let _to = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - i))).toFormat('yyyy-MM-dd');
+                let _from = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - 1))).toFormat('yyyy-MM-dd');
+                request$.push(ownerService.getReport$(_from, _to))
+            }
+            forkJoin(request$.reverse()).subscribe({
+                next: (values) => {
+                    const datasets = values.reduce((acc, cur) => {
+                        acc['numOfContract'].push(cur.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        return acc;
+                    }, {
+                        numOfContract: [],
+                        numOfOrder: [],
+                        sumOfContract: [],
+                        sumOfOrder: []
+                    })
+                    obs.next(datasets);
+                    obs.complete();
+                }
+            })
+        })
+    }
+
+    function getDataSetReportQuarter$() {
+        return new Observable(obs => {
+            const thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
+            const currentMonth = new Date().getMonth() + 1;
+            const currentQuarter = Math.ceil(currentMonth / 3);
+
+            const request$ = [ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-03-31`)];
+
+            if (currentQuarter < 3) {
+                request$.push(ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-06-30`));
+            }
+            if (currentQuarter < 4) {
+                request$.push(ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-09-30`));
+            }
+            if (currentQuarter === 4) {
+                request$.push(ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-12-31`));
+            }
+            forkJoin([...request$]).subscribe({
+                next: (values) => {
+                    const datasets = values.reduce((acc, cur) => {
+                        acc['numOfContract'].push(cur.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        return acc;
+                    }, {
+                        numOfContract: [],
+                        numOfOrder: [],
+                        sumOfContract: [],
+                        sumOfOrder: []
+                    })
+                    obs.next(datasets);
+                    obs.complete();
+                }
+            })
+        })
+    }
+
+    function getDataSetReportMonthly$() {
+        return new Observable(obs => {
+            let thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
+            const currentMonth = new Date().getMonth() + 1;
+            const request$: Observable<any>[] = [];
+            const range = [
+                ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-01-31`),
+                ownerService.getReport$(`${thisYear}-02-01`, `${thisYear}-02-28`),
+                ownerService.getReport$(`${thisYear}-03-01`, `${thisYear}-03-31`),
+                ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-04-30`),
+                ownerService.getReport$(`${thisYear}-05-01`, `${thisYear}-05-31`),
+                ownerService.getReport$(`${thisYear}-06-01`, `${thisYear}-06-30`),
+                ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-07-31`),
+                ownerService.getReport$(`${thisYear}-08-01`, `${thisYear}-08-31`),
+                ownerService.getReport$(`${thisYear}-09-01`, `${thisYear}-09-30`),
+                ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-10-31`),
+                ownerService.getReport$(`${thisYear}-11-01`, `${thisYear}-11-30`),
+                ownerService.getReport$(`${thisYear}-12-01`, `${thisYear}-12-31`)
+            ];
+            for (let i = 0; i < currentMonth; i++) {
+                request$.push(range[i]);
+            }
+            forkJoin([...request$]).subscribe({
+                next: (values) => {
+                    const datasets = values.reduce((acc, cur) => {
+                        acc['numOfContract'].push(cur.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        return acc;
+                    }, {
+                        numOfContract: [],
+                        numOfOrder: [],
+                        sumOfContract: [],
+                        sumOfOrder: []
+                    })
+                    obs.next(datasets);
+                    obs.complete();
+                }
+            })
+        })
+    }
+
+    function registerPingToken() {
+        timer(60000, 60000).subscribe({
+            next: (time) => {
+                if (props.currentUser) {
+                    ownerService.getUserInfoByToken$(props.currentUser.token).pipe(take(1)).subscribe({
+                        next: (res) => {
+                            if (res) {
+                                return time;
+                            } else {
+                                registerPingToken();
+                                props.onLogoutCallback();
+                                return navigate('/owner-login');
+                            }
+                        }
+                    })
+                } else {
+                    return time;
+                }
+
+            }
+        })
+    }
 
     const items: MenuProps['items'] = [
         {
@@ -186,9 +349,16 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
     ]
 
     const barChart: IDashboard['barChart'] = {
-        title: 'Tổng doanh thu',
+        title: 'THỐNG KÊ',
         filter(value) {
-
+            setDatasetFilter(value);
+            loadStatistic$(value).pipe(take(1)).subscribe({
+                next: (res: any) => {
+                    setDatasetData(res);
+                    setFirstInit(true);
+                    setDataReady(true);
+                }
+            })
         },
         dataSource: {
             options: {
@@ -215,36 +385,49 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                         grid: {
                             drawOnChartArea: false,
                         },
+                        grace: 1
                     },
                 },
             },
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: reportLabel[datasetFilter],
                 datasets: [
                     {
                         type: 'bar' as const,
-                        label: 'Dataset 1',
-                        data: [
-                            10000, 15000, 8000, 20000, 18000, 17000, 27000
-                        ],
+                        label: 'Tổng thu nhập từ Hợp đồng',
+                        data: datasetData.sumOfContract,
                         backgroundColor: 'rgba(255, 99, 132, 0.5)',
                         yAxisID: 'y',
                     },
                     {
+                        type: 'bar' as const,
+                        label: 'Tổng thu nhập từ Đơn hàng',
+                        data: datasetData.sumOfOrder,
+                        backgroundColor: 'rgba(200, 99, 52, 0.5)',
+                        yAxisID: 'y',
+                    },
+                    {
                         type: 'line' as const,
-                        label: 'Dataset 2',
-                        data: [
-                            200, 500, 380, 100, 210, 100, 150
-                        ],
-                        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                        label: 'Số lượng Hợp đồng',
+                        data: datasetData.numOfContract,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgb(54, 162, 235, 0.5)',
+                        yAxisID: 'y1',
+                    },
+                    {
+                        type: 'line' as const,
+                        label: 'Số lượng đơn hàng',
+                        data: datasetData.numOfOrder,
+                        backgroundColor: 'rgba(53, 162, 25, 0.5)',
+                        borderColor: 'rgba(53, 162, 25, 0.5)',
                         yAxisID: 'y1',
                     }
                 ],
             },
             type: 'bar'
         },
-        filterOptions: [{ label: '2021', value: 2021 }, { label: '2022', value: 20222 }, { label: '2023', value: 2023 }],
-        filterSelected: 2023
+        filterOptions: [{ label: '7 ngày trước', value: 'weekly' }, { label: 'Mỗi Quý', value: 'quarter' }, { label: 'Mỗi Tháng', value: 'month' }],
+        filterSelected: 'weekly'
     }
 
     const tableReport: IDashboard['tableReport'] = {
@@ -307,18 +490,18 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     }}></Menu>
                 </Layout.Sider>
                 <Layout>
-                    <Layout.Header className='__app-layout-header' style={{ 
+                    <Layout.Header className='__app-layout-header' style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         flexDirection: 'row'
 
-                     }}>
+                    }}>
                         <div style={{
                             height: 64,
                             display: 'flex',
                             alignItems: 'center'
                         }}>
-                            <img src={Logo} alt='' style={{ height: 58, }}/>
+                            <img src={Logo} alt='' style={{ height: 58, }} />
                         </div>
                         <div className='__app-header-right'>
                             <div className='__app-notification-info'>
@@ -339,7 +522,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                                     placement='bottomRight'>
                                     {
                                         props.currentUser?.avatar ?
-                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />}/> :
+                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} /> :
                                             <Avatar className='__app-user-avatar' size={'large'}>PH</Avatar>
                                     }
                                 </Dropdown>

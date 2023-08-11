@@ -1,15 +1,17 @@
-import { LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tag } from "antd";
+import { LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tabs, Tag } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { IPlant, PlantStatus, PlantStatusMapping } from "../../common/object-interfaces/plant.interface";
 import { OwnerServices } from "../owner.service";
-import { switchMap, take } from "rxjs";
+import { Observable, concat, finalize, switchMap, take, tap } from "rxjs";
 import { cloneDeep } from "lodash";
 import { IStore, StoreStatus, StoreStatusMapping } from "../../common/object-interfaces/store.interface";
 import { toast } from "react-hot-toast";
 import { CommonUtility } from "../../utils/utilities";
+import { UserPicker } from "../../common/components/user-picker-component";
+import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
 
 
 interface IStoreManagementProps {
@@ -31,6 +33,14 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
         isShow: false,
         storeID: ''
     });
+    const [freeManagers, setFreeManagers] = useState<any[]>([]);
+    const [changeManager, setChangeManager] = useState<any>({
+        isChanged: false,
+        managerID: null
+    })
+    const [tabKey, setTabKey] = useState<'plant' | 'staff'>('plant');
+    const [isShowPopUpStaffAdd, setShowPopUpStaffAdd] = useState<boolean>(false);
+    const [freeStaff, setFreeStaff] = useState<any[]>([]);
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -216,13 +226,119 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
         }
     ]
 
+    const staffTableColumn: ColumnsType<any> = [
+        {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 80,
+            sorter: {
+                compare: (acc, cur) => acc.userID > cur.userID ? 1 : acc.userID < cur.userID ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: `Tên Nhân Viên`,
+            dataIndex: 'fullName',
+            key: 'fullName',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (value, record, index) => {
+                return <div>
+                    <Avatar src={record.avatar} icon={<UserOutlined />} />
+                    <span className='__app-column-full-name'>{value}</span>
+                </div>
+            },
+            sorter: {
+                compare: (acc, cur) => acc.fullName > cur.fullName ? 1 : acc.fullName < cur.fullName ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: 'Địa Chỉ',
+            dataIndex: 'address',
+            key: 'address',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 250,
+            sorter: {
+                compare: (acc, cur) => (acc.address ?? '') > (cur.address ?? '') ? 1 : (acc.address ?? '') < (cur.address ?? '') ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: 'Số điện thoại',
+            dataIndex: 'phone',
+            key: 'phone',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 150,
+            className: '__app-header-title'
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            key: 'status',
+            showSorterTooltip: false,
+            sorter: {
+                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+            },
+            className: '__app-header-title',
+            ellipsis: true,
+            render: (value) => {
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{AccountStatusMapping[value]}</Tag>
+            },
+            width: 200,
+        },
+    ]
+
     function getStoreDetail(storeId: string) {
         setDataReady(false);
         let tempStoreDetail = {} as IStore;
         ownerServices.getStore$(storeId).pipe(
             switchMap((res: any) => {
                 tempStoreDetail = res;
+                return ownerServices.getMembersByStoreID$(storeId, tempStoreDetail.managerID)
+            }),
+            switchMap((res) => {
+                tempStoreDetail['staff'] = res;
                 return ownerServices.getStorePlant$(storeId);
+            }),
+            finalize(() => {
+                ownerServices.getMembers$('R003').pipe(take(1)).subscribe({
+                    next: (res) => {
+                        if (res) {
+                            const newManagers = res.reduce((acc, cur) => {
+                                if (CommonUtility.isNullOrUndefined(cur.storeID)) {
+                                    acc.push({
+                                        label: cur.fullName,
+                                        value: cur.userID
+                                    })
+                                }
+                                return acc;
+                            }, []);
+                            setFreeManagers(newManagers);
+                        }
+                    }
+                });
+                ownerServices.getMembers$('R004').pipe(take(1)).subscribe({
+                    next: (res) => {
+                        if (res) {
+                            const newStaffs = res.reduce((acc, cur) => {
+                                if (CommonUtility.isNullOrUndefined(cur.storeID)) {
+                                    acc.push({
+                                        label: cur.fullName,
+                                        value: cur.userID
+                                    })
+                                }
+                                return acc;
+                            }, []);
+                            setFreeStaff(newStaffs);
+                        }
+                    }
+                })
             })
         ).subscribe({
             next: storePlants => {
@@ -231,6 +347,28 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                 setDataReady(true);
             }
         })
+    }
+
+    function validateFormEdit() {
+        let temp = cloneDeep(storeDetail);
+        let manager = cloneDeep(changeManager)
+        let result = {
+            invalid: false,
+            fields: [] as string[]
+        }
+        if (CommonUtility.isNullOrEmpty(temp?.storeName)) {
+            result.invalid = true;
+            result.fields.push('Tên cửa hàng');
+        }
+        if (CommonUtility.isNullOrEmpty(temp?.phone)) {
+            result.invalid = true;
+            result.fields.push('Số điện thoại');
+        }
+        if (CommonUtility.isNullOrEmpty(temp?.managerID) && CommonUtility.isNullOrUndefined(manager.managerID)) {
+            result.invalid = true;
+            result.fields.push('Quản lý');
+        }
+        return result;
     }
 
     return (
@@ -293,8 +431,14 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                             <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
                                 setFormMode('display');
                                 setStoreDetail(null);
+                                setChangeManager({
+                                    managerID: null,
+                                    isChanged: false
+                                });
+                                setFreeManagers([]);
+                                setFreeStaff([]);
                             }} />
-                            <div className="__app-title-form">Chi tiết</div>
+                            <div className="__app-title-form">CHI TIẾT CỬA HÀNG</div>
                         </div>
                         <div className="__app-content-container">
                             <div className="__app-main-info" style={{ flexDirection: 'column', gap: 8, paddingLeft: 40 }}>
@@ -308,12 +452,18 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                         }
                                     </Col>
                                     <Col span={12} className='__app-object-field align-center'>
-                                        <strong>Trạng thái: </strong>
-                                        {
-                                            isDataReady ?
-                                                <div style={{ marginLeft: 10 }}><Tag color={CommonUtility.statusColorMapping(storeDetail?.status ?? '')}>{StoreStatusMapping[storeDetail?.status as StoreStatus]}</Tag></div>
-                                                : <div style={{ width: '50%', marginLeft: '10%' }}><Skeleton.Input active={true} block={true} /></div>
-                                        }
+                                        <Row style={{ width: '100%' }}>
+                                            <Col span={6}>
+                                                <strong>Trạng thái: </strong>
+                                            </Col>
+                                            {
+                                                isDataReady ?
+                                                    <div><Tag color={CommonUtility.statusColorMapping(storeDetail?.status ?? '')}>{StoreStatusMapping[storeDetail?.status as StoreStatus]}</Tag></div>
+                                                    : <div style={{ width: '50%' }}><Skeleton.Input active={true} block={true} /></div>
+                                            }
+                                        </Row>
+
+
                                     </Col>
                                 </Row>
                                 <Row>
@@ -325,7 +475,13 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                             <Col span={17} >
                                                 {
                                                     isDataReady ?
-                                                        <Input defaultValue={storeDetail?.storeName} />
+                                                        <Input value={storeDetail?.storeName}
+                                                            onChange={(args) => {
+                                                                let temp = cloneDeep(storeDetail) as IStore;
+                                                                temp['storeName'] = args.target.value;
+                                                                setStoreDetail(temp);
+                                                            }}
+                                                        />
                                                         : <Skeleton.Input block={true} active={true} />
                                                 }
                                             </Col>
@@ -339,21 +495,27 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                             <Col span={14} >
                                                 {
                                                     isDataReady ?
-                                                        <Input defaultValue={storeDetail?.phone} />
+                                                        <Input value={storeDetail?.phone}
+                                                            onChange={(args) => {
+                                                                let temp = cloneDeep(storeDetail) as IStore;
+                                                                temp['phone'] = args.target.value;
+                                                                setStoreDetail(temp);
+                                                            }}
+                                                        />
                                                         : <Skeleton.Input block={true} active={true} />
                                                 }
                                             </Col>
                                         </Row>
                                     </Col>
                                 </Row>
-                                <Row>
+                                <Row style={{ height: 31.6 }}>
                                     <Col span={3} className='__app-object-field align-center'>
                                         <strong>Địa chỉ:</strong>
                                     </Col>
-                                    <Col span={19}>
+                                    <Col span={19} style={{ display: 'flex', alignItems: 'center' }}>
                                         {
                                             isDataReady ?
-                                                <Input defaultValue={storeDetail?.address} />
+                                                <span>{storeDetail?.address}</span>
                                                 : <Skeleton.Input block={true} active={true} />
                                         }
 
@@ -366,36 +528,153 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                     <Col span={19}>
                                         {
                                             isDataReady ?
-                                                <Input defaultValue={storeDetail?.managerName} />
+                                                CommonUtility.isNullOrEmpty(storeDetail?.managerID) ?
+                                                    <UserPicker
+                                                        listUser={freeManagers}
+                                                        onChanged={(value) => {
+                                                            setChangeManager({
+                                                                isChanged: true,
+                                                                managerID: value
+                                                            });
+                                                        }}
+                                                    /> : <div style={{ height: 31.6, display: 'flex', alignItems: 'center' }}>
+                                                        <span>{storeDetail?.managerName}</span>
+                                                    </div>
                                                 : <Skeleton.Input block={true} active={true} />
                                         }
 
                                     </Col>
                                 </Row>
                             </div>
-                            <Divider style={{ width: '94%', margin: '12px 0', border: '1px solid' }}></Divider>
-                            <div>
-                                <span><strong>Cây trong cửa hàng</strong></span>
-                                <Table
-                                    size='small'
-                                    tableLayout='auto'
-                                    columns={plantTableColumn}
-                                    className='__app-user-info-table'
-                                    dataSource={storeDetail ? storeDetail['storePlant'] : []}
-                                    pagination={{
-                                        pageSize: 4,
-                                        total: storeDetail ? storeDetail['storePlant']?.length : 0,
-                                        showTotal: (total, range) => {
-                                            return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
-                                        }
-                                    }}
-                                />
-                            </div>
-                            <div className="__app-action-button">
-                                <Button type="primary" onClick={() => {
+                            <Divider style={{ width: '94%', margin: '12px 0', border: '1px solid #f0f0f0' }}></Divider>
+                            <Tabs
+                                className="__app-sub-tab-custom"
+                                style={{ marginBottom: 0 }}
+                                defaultActiveKey='plant'
+                                type='card'
+                                onChange={(key: any) => {
+                                    setTabKey(key);
+                                }}
+                                items={[
+                                    {
+                                        label: 'Cây',
+                                        key: 'plant',
+                                        children: tabKey === 'plant' ? 
+                                        <div style={{
+                                            padding: '8px 12px',
+                                            border: '1px solid #000000',
+                                            borderRadius: '0px 8px 8px 8px'
+                                        }}>
+                                            <Table
+                                                size='small'
+                                                tableLayout='auto'
+                                                columns={plantTableColumn}
+                                                className='__app-user-info-table'
+                                                dataSource={storeDetail ? storeDetail['storePlant'] : []}
+                                                pagination={{
+                                                    pageSize: 3,
+                                                    total: storeDetail ? storeDetail['storePlant']?.length : 0,
+                                                    showTotal: (total, range) => {
+                                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                                    }
+                                                }}
+                                            />
+                                        </div> : <></>,
+                                    },
+                                    {
+                                        label: 'Nhân viên',
+                                        key: 'staff',
+                                        children: tabKey === 'staff' ?
+                                            <div style={{
+                                                padding: '8px 12px',
+                                                border: '1px solid #000000',
+                                                borderRadius: '0x 8px 8px 8px'
+                                            }}>
+                                                <Button type="primary" style={{ background: '#B3B3B3' }} icon={<PlusOutlined />}>Thêm nhân viên</Button>
+                                                <Table
+                                                    size='small'
+                                                    tableLayout='auto'
+                                                    columns={staffTableColumn}
+                                                    className='__app-user-info-table'
+                                                    dataSource={storeDetail ? storeDetail['staff'] : []}
+                                                    pagination={{
+                                                        pageSize: 3,
+                                                        total: storeDetail ? storeDetail['staff']?.length : 0,
+                                                        showTotal: (total, range) => {
+                                                            return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                                        }
+                                                    }}
+                                                />
+                                            </div> : <></>,
+                                    },
+                                ]}
+                            />
 
-                                }}>Lưu</Button>
-                            </div>
+                            {
+                                storeDetail?.status === 'ACTIVE' ?
+                                    <div className="__app-action-button" style={{ marginTop: 10 }}>
+                                        <Button type="primary" style={{ background: '#5D050b' }} onClick={() => {
+                                            const validation = validateFormEdit();
+                                            if (validation.invalid) {
+                                                toast.error(`Vui lòng nhập đầy đủ thông tin ${validation.fields.join(', ')}.`);
+                                                return;
+                                            }
+                                            let isCompleted = false;
+                                            let hasError = false;
+                                            const formEdit = {
+                                                "storeID": storeDetail.id,
+                                                "storeName": storeDetail.storeName,
+                                                "phone": storeDetail.phone,
+                                                "address": storeDetail.address,
+                                                "districtID": storeDetail.districtID
+                                            }
+                                            const addEmployee = {
+                                                "storeID": storeDetail.id,
+                                                "employeeIDList": [
+                                                    changeManager.managerID
+                                                ]
+                                            }
+                                            const request$: Observable<any>[] = [];
+                                            if (changeManager.isChanged !== false) {
+                                                request$.push(ownerServices.updateStore$(formEdit));
+                                                request$.push(ownerServices.addStoreEmployee$(addEmployee));
+                                            } else {
+                                                request$.push(ownerServices.updateStore$(formEdit).pipe(tap(() => isCompleted = true)));
+                                            }
+                                            concat(...request$).subscribe({
+                                                next: res => {
+                                                    if (res.error) {
+                                                        hasError = true;
+                                                    }
+                                                    if (isCompleted) {
+                                                        if (hasError) {
+                                                            setFormMode('display');
+                                                            setStoreDetail(null);
+                                                            setChangeManager({
+                                                                managerID: null,
+                                                                isChanged: false
+                                                            });
+                                                            setFreeManagers([]);
+                                                            setFreeStaff([]);
+                                                            toast.error('Cập nhật thông tin thất bại.');
+                                                        } else {
+                                                            setFormMode('display');
+                                                            setStoreDetail(null);
+                                                            setChangeManager({
+                                                                managerID: null,
+                                                                isChanged: false
+                                                            });
+                                                            setFreeManagers([]);
+                                                            setFreeStaff([]);
+                                                            toast.success('Cập nhật thành công');
+                                                        }
+                                                    }
+                                                }
+                                            })
+                                        }}>Lưu</Button>
+                                    </div> : <></>
+                            }
+
                         </div>
                     </div>
                     : <></>

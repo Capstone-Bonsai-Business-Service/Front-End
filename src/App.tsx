@@ -6,14 +6,12 @@ import {
 } from 'react-router-dom';
 import { IUser } from './IApp.interface';
 import { AdminInitLanding } from './app/administration/administration-init-landing';
-import { LoginAdmin } from './app/administration/login-administration';
 import { PageNotFound } from './app/not-found-page/not-found-page';
 import { AdminPage } from './app/administration/administration-page';
 import { Toaster } from 'react-hot-toast';
 import { AccountDetailPage } from './app/administration/administration-account-detail';
 import { OwnerPage } from './app/owner/owner-page';
 import { OwnerInitLanding } from './app/owner/owner-init-landing';
-import { LoginOwner } from './app/owner/login-owner';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -54,24 +52,12 @@ function App() {
   const [currentUser, setCurrentUser]: [IUser | undefined, any] = useState(userInStorage ? JSON.parse(userInStorage) : null);
 
   const globalSettings = new GlobalSettings();
-
-  const [isRegister, setRegister] = useState<boolean>(false);
-
+  
   const onLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('user');
   }
 
-  useEffect(() => {
-    if (!isRegister) {
-      setRegister(true);
-      registerContractChangeStatus();
-    }
-  })
-
-  function registerContractChangeStatus() {
-    
-  }
 
   const rootRouter = createBrowserRouter([
     {

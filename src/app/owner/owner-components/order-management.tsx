@@ -28,6 +28,7 @@ export const OrderManagementComponent: React.FC<IOrderManagementProps> = (props)
     return (
         <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
             <Tabs
+                className="__app-tabs-custom"
                 style={{ marginBottom: 0 }}
                 defaultActiveKey='waiting'
                 type='card'

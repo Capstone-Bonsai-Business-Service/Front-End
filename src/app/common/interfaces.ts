@@ -39,3 +39,9 @@ export interface IDashboard {
         filter: (value: any) => void;
     }
 }
+
+export const reportLabel = {
+    'month': ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+    'quarter': ['Quý 1', 'Quý 2', 'Quý 3', 'Quý 4'],
+    'weekly': ['7 ngày trước', '6 ngày trước', '5 ngày trước', '4 ngày trước', '3 ngày trước', '2 ngày trước', 'hôm qua']
+}

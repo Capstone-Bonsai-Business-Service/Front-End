@@ -26,6 +26,7 @@ export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (pr
     return (
         <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
             <Tabs
+                className="__app-tabs-custom"
                 style={{ marginBottom: 0 }}
                 defaultActiveKey='service'
                 type='card'
