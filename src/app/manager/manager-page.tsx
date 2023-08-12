@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Badge, Dropdown, Layout, Menu, MenuProps } from 'antd';
+import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { ManagerServices } from './manager.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
+import { RiFeedbackLine } from 'react-icons/ri';
 import { AiOutlineAreaChart, AiOutlineFall, AiOutlineRise } from 'react-icons/ai'
 import { LuClipboardSignature } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
 import { DashBoardComponent } from '../common/components/dashboard.component';
-import { IDashboard, ITableColumn } from '../common/interfaces';
+import { IDashboard, ITableColumn, reportLabel } from '../common/interfaces';
 import { NumericFormat } from 'react-number-format';
 import './manager.scss';
 import { ContractManagementComponent } from './manager-components/contract-management';
@@ -17,7 +18,10 @@ import { BonsaiManagementComponent } from './manager-components/bonsai-managemen
 import { MemberManagementComponent } from './manager-components/member-management';
 import { OrderManagementComponent } from './manager-components/order-management';
 import Logo from '../../assets/images/logo1.png'
-import { Subject, take, takeUntil, timer } from 'rxjs';
+import { toast } from 'react-hot-toast';
+import { FeedbackManagementComponent } from './manager-components/feedback-management';
+import { Observable, forkJoin, take, timer } from 'rxjs';
+import { DateTime } from 'luxon';
 
 
 interface IManagerPageProps {
@@ -26,17 +30,21 @@ interface IManagerPageProps {
 }
 
 export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const managerService = new ManagerServices();
-
-    let unsubscribe: Subject<void> = new Subject();
 
     const navigate = useNavigate();
 
-    // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [currentMenuItem, setCurrentMenuItem] = useState<string>('dashboard');
+    const [showModalExpiredToken, setShowModalExpiredToken] = useState<boolean>(false);
+    const [datasetData, setDatasetData] = useState({
+        numOfContract: [0, 0, 0, 0, 0, 0, 0],
+        numOfOrder: [0, 0, 0, 0, 0, 0, 0],
+        sumOfContract: [0, 0, 0, 0, 0, 0, 0],
+        sumOfOrder: [0, 0, 0, 0, 0, 0, 0]
+    })
+    const [datasetFilter, setDatasetFilter] = useState<'weekly' | 'quarter' | 'month'>('weekly');
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -44,21 +52,20 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             setDataReady(true);
             registerPingToken();
         }
-    }, [managerService, isFirstInit, registerPingToken]);
+    }, [isFirstInit, registerPingToken]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     function registerPingToken() {
-        timer(60000, 60000).subscribe({
-            next: (time) => {
+        let sub = timer(0, 120000).subscribe({
+            next: (time: any) => {
                 if (props.currentUser) {
                     managerService.getUserInfoByToken$(props.currentUser.token).pipe(take(1)).subscribe({
                         next: (res) => {
                             if (res) {
                                 return time;
                             } else {
-                                registerPingToken();
-                                props.onLogoutCallback();
-                                return navigate('/manager-login');
+                                sub.unsubscribe();
+                                setShowModalExpiredToken(true);
                             }
                         }
                     })
@@ -67,6 +74,126 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                 }
 
             }
+        })
+    }
+
+    function loadStatistic$(_datasetFilter: 'weekly' | 'quarter' | 'month') {
+        switch (_datasetFilter) {
+            case 'weekly': return getDataSetReportWeekly$();
+            case 'month': return getDataSetReportMonthly$();
+            case 'quarter': return getDataSetReportQuarter$();
+        }
+    }
+
+    function getDataSetReportWeekly$() {
+        return new Observable(obs => {
+            let today = DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd');
+            const request$ = [];
+            for (let i = 0; i < 7; i++) {
+                let date = new Date(today);
+                let _to = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - i))).toFormat('yyyy-MM-dd');
+                let _from = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - 1))).toFormat('yyyy-MM-dd');
+                request$.push(managerService.getReport$(_from, _to))
+            }
+            forkJoin(request$.reverse()).subscribe({
+                next: (values) => {
+                    const datasets = values.reduce((acc, cur) => {
+                        acc['numOfContract'].push(cur.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        return acc;
+                    }, {
+                        numOfContract: [],
+                        numOfOrder: [],
+                        sumOfContract: [],
+                        sumOfOrder: []
+                    })
+                    obs.next(datasets);
+                    obs.complete();
+                }
+            })
+        })
+    }
+
+    function getDataSetReportQuarter$() {
+        return new Observable(obs => {
+            const thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
+            const currentMonth = new Date().getMonth() + 1;
+            const currentQuarter = Math.ceil(currentMonth / 3);
+
+            const request$ = [managerService.getReport$(`${thisYear}-01-01`, `${thisYear}-03-31`)];
+
+            if (currentQuarter < 3) {
+                request$.push(managerService.getReport$(`${thisYear}-04-01`, `${thisYear}-06-30`));
+            }
+            if (currentQuarter < 4) {
+                request$.push(managerService.getReport$(`${thisYear}-07-01`, `${thisYear}-09-30`));
+            }
+            if (currentQuarter === 4) {
+                request$.push(managerService.getReport$(`${thisYear}-10-01`, `${thisYear}-12-31`));
+            }
+            forkJoin([...request$]).subscribe({
+                next: (values) => {
+                    const datasets = values.reduce((acc, cur) => {
+                        acc['numOfContract'].push(cur.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        return acc;
+                    }, {
+                        numOfContract: [],
+                        numOfOrder: [],
+                        sumOfContract: [],
+                        sumOfOrder: []
+                    })
+                    obs.next(datasets);
+                    obs.complete();
+                }
+            })
+        })
+    }
+
+    function getDataSetReportMonthly$() {
+        return new Observable(obs => {
+            let thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
+            const currentMonth = new Date().getMonth() + 1;
+            const request$: Observable<any>[] = [];
+            const range = [
+                managerService.getReport$(`${thisYear}-01-01`, `${thisYear}-01-31`),
+                managerService.getReport$(`${thisYear}-02-01`, `${thisYear}-02-28`),
+                managerService.getReport$(`${thisYear}-03-01`, `${thisYear}-03-31`),
+                managerService.getReport$(`${thisYear}-04-01`, `${thisYear}-04-30`),
+                managerService.getReport$(`${thisYear}-05-01`, `${thisYear}-05-31`),
+                managerService.getReport$(`${thisYear}-06-01`, `${thisYear}-06-30`),
+                managerService.getReport$(`${thisYear}-07-01`, `${thisYear}-07-31`),
+                managerService.getReport$(`${thisYear}-08-01`, `${thisYear}-08-31`),
+                managerService.getReport$(`${thisYear}-09-01`, `${thisYear}-09-30`),
+                managerService.getReport$(`${thisYear}-10-01`, `${thisYear}-10-31`),
+                managerService.getReport$(`${thisYear}-11-01`, `${thisYear}-11-30`),
+                managerService.getReport$(`${thisYear}-12-01`, `${thisYear}-12-31`)
+            ];
+            for (let i = 0; i < currentMonth; i++) {
+                request$.push(range[i]);
+            }
+            forkJoin([...request$]).subscribe({
+                next: (values) => {
+                    const datasets = values.reduce((acc, cur) => {
+                        acc['numOfContract'].push(cur.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        return acc;
+                    }, {
+                        numOfContract: [],
+                        numOfOrder: [],
+                        sumOfContract: [],
+                        sumOfOrder: []
+                    })
+                    obs.next(datasets);
+                    obs.complete();
+                }
+            })
         })
     }
 
@@ -118,6 +245,16 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             label: (
                 <div className='__app-group-menu-label'>
                     Nhân Viên
+                </div>
+            )
+        },
+        {
+            key: 'feedback',
+            className: '__app-group-menu',
+            icon: <RiFeedbackLine color='#000' />,
+            label: (
+                <div className='__app-group-menu-label'>
+                    Feedback
                 </div>
             )
         },
@@ -179,9 +316,16 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
     ]
 
     const barChart: IDashboard['barChart'] = {
-        title: 'Tổng doanh thu',
+        title: 'THỐNG KÊ',
         filter(value) {
-
+            setDatasetFilter(value);
+            loadStatistic$(value).pipe(take(1)).subscribe({
+                next: (res: any) => {
+                    setDatasetData(res);
+                    setFirstInit(true);
+                    setDataReady(true);
+                }
+            })
         },
         dataSource: {
             options: {
@@ -208,36 +352,49 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                         grid: {
                             drawOnChartArea: false,
                         },
+                        grace: 1
                     },
                 },
             },
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: reportLabel[datasetFilter],
                 datasets: [
                     {
                         type: 'bar' as const,
-                        label: 'Dataset 1',
-                        data: [
-                            10000, 15000, 8000, 20000, 18000, 17000, 27000
-                        ],
+                        label: 'Tổng thu nhập từ Hợp đồng',
+                        data: datasetData.sumOfContract,
                         backgroundColor: 'rgba(255, 99, 132, 0.5)',
                         yAxisID: 'y',
                     },
                     {
+                        type: 'bar' as const,
+                        label: 'Tổng thu nhập từ Đơn hàng',
+                        data: datasetData.sumOfOrder,
+                        backgroundColor: 'rgba(200, 99, 52, 0.5)',
+                        yAxisID: 'y',
+                    },
+                    {
                         type: 'line' as const,
-                        label: 'Dataset 2',
-                        data: [
-                            200, 500, 380, 100, 210, 100, 150
-                        ],
-                        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                        label: 'Số lượng Hợp đồng',
+                        data: datasetData.numOfContract,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgb(54, 162, 235, 0.5)',
+                        yAxisID: 'y1',
+                    },
+                    {
+                        type: 'line' as const,
+                        label: 'Số lượng đơn hàng',
+                        data: datasetData.numOfOrder,
+                        backgroundColor: 'rgba(53, 162, 25, 0.5)',
+                        borderColor: 'rgba(53, 162, 25, 0.5)',
                         yAxisID: 'y1',
                     }
                 ],
             },
             type: 'bar'
         },
-        filterOptions: [{ label: '2021', value: 2021 }, { label: '2022', value: 20222 }, { label: '2023', value: 2023 }],
-        filterSelected: 2023
+        filterOptions: [{ label: '7 ngày trước', value: 'weekly' }, { label: 'Mỗi Quý', value: 'quarter' }, { label: 'Mỗi Tháng', value: 'month' }],
+        filterSelected: 'weekly'
     }
 
     const tableReport: IDashboard['tableReport'] = {
@@ -369,13 +526,41 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                             currentMenuItem === 'orders' ? <OrderManagementComponent roleID='R004' />
                                 : <></>
                         }
-                        { /*{
-                            currentMenuItem === 'contracts' ? <ContractManagementComponent />
+                        {
+                            currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
                                 : <></>
-                        } */}
+                        }
                     </Layout.Content>
                 </Layout>
             </Layout>
+            {
+                showModalExpiredToken ?
+                    <Modal
+                        width={500}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Vô hiệu cửa hàng
+                            </span>
+                        )}
+                        footer={[
+                            <Button type="default" onClick={() => {
+                                setShowModalExpiredToken(false)
+                            }}>Huỷ</Button>,
+                            <Button type="primary"
+                                style={{ background: '#0D6368' }}
+                                onClick={() => {
+                                    props.onLogoutCallback();
+                                    toast.loading(`Phiên đăng nhập đã hết hạn.`);
+                                    return navigate('/manager-login');
+                                }}>Xác nhận</Button>
+                        ]}
+                        centered
+                    >
+                        <span>Phiên đăng nhập đã hết hạn.</span>
+                    </Modal> : <></>
+            }
         </>
     )
 }

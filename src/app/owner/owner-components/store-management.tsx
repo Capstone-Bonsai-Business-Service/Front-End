@@ -152,7 +152,26 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                                 });
                                             }}
                                         >Vô hiệu hoá cửa hàng</span>
-                                    } : null]
+                                    } : null,
+                                record.status === 'INACTIVE' ?
+                                    {
+                                        key: 'reactive',
+                                        label: <span
+                                            onClick={() => {
+                                                ownerServices.changeStatusStore$(record.id, 'ACTIVE').pipe(take(1)).subscribe({
+                                                    next: (res) => {
+                                                        if (res.error) {
+                                                            toast.error(res.error);
+                                                        } else {
+                                                            toast.success('Hoạt động lại cửa hàng thành công.');
+                                                            loadData();
+                                                        }
+                                                    }
+                                                })
+                                            }}
+                                        >Hoạt động lại</span>
+                                    } : null
+                            ]
                         }}
                         placement='bottom'>
                         <MoreOutlined />
@@ -559,27 +578,27 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                     {
                                         label: 'Cây',
                                         key: 'plant',
-                                        children: tabKey === 'plant' ? 
-                                        <div style={{
-                                            padding: '8px 12px',
-                                            border: '1px solid #000000',
-                                            borderRadius: '0px 8px 8px 8px'
-                                        }}>
-                                            <Table
-                                                size='small'
-                                                tableLayout='auto'
-                                                columns={plantTableColumn}
-                                                className='__app-user-info-table'
-                                                dataSource={storeDetail ? storeDetail['storePlant'] : []}
-                                                pagination={{
-                                                    pageSize: 3,
-                                                    total: storeDetail ? storeDetail['storePlant']?.length : 0,
-                                                    showTotal: (total, range) => {
-                                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
-                                                    }
-                                                }}
-                                            />
-                                        </div> : <></>,
+                                        children: tabKey === 'plant' ?
+                                            <div style={{
+                                                padding: '8px 12px',
+                                                border: '1px solid #000000',
+                                                borderRadius: '0px 8px 8px 8px'
+                                            }}>
+                                                <Table
+                                                    size='small'
+                                                    tableLayout='auto'
+                                                    columns={plantTableColumn}
+                                                    className='__app-user-info-table'
+                                                    dataSource={storeDetail ? storeDetail['storePlant'] : []}
+                                                    pagination={{
+                                                        pageSize: 3,
+                                                        total: storeDetail ? storeDetail['storePlant']?.length : 0,
+                                                        showTotal: (total, range) => {
+                                                            return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                                        }
+                                                    }}
+                                                />
+                                            </div> : <></>,
                                     },
                                     {
                                         label: 'Nhân viên',
@@ -613,7 +632,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                             {
                                 storeDetail?.status === 'ACTIVE' ?
                                     <div className="__app-action-button" style={{ marginTop: 10 }}>
-                                        <Button type="primary" style={{ background: '#5D050b' }} onClick={() => {
+                                        <Button type="primary" style={{ background: '#0D6368' }} onClick={() => {
                                             const validation = validateFormEdit();
                                             if (validation.invalid) {
                                                 toast.error(`Vui lòng nhập đầy đủ thông tin ${validation.fields.join(', ')}.`);
@@ -698,7 +717,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                         closable={false}
                         title={(
                             <span className='__app-dialog-title'>
-                                Xác nhận
+                                Vô hiệu cửa hàng
                             </span>
                         )}
                         footer={[
@@ -708,27 +727,29 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                     storeID: ''
                                 })
                             }}>Huỷ</Button>,
-                            <Button type="primary" onClick={() => {
-                                ownerServices.disableStore$(popUpConfirm.storeID).pipe(take(1)).subscribe({
-                                    next: (res) => {
-                                        if (res.error) {
-                                            toast.error(res.error);
-                                            setPopUpConfirm({
-                                                isShow: false,
-                                                storeID: ''
-                                            })
-                                        } else {
-                                            setPopUpConfirm({
-                                                isShow: false,
-                                                storeID: ''
-                                            })
-                                            toast.success('Vô hiệu cửa hàng thành công.');
-                                            loadData();
+                            <Button type="primary"
+                                style={{ background: '#5D050b' }}
+                                onClick={() => {
+                                    ownerServices.changeStatusStore$(popUpConfirm.storeID, 'INACTIVE').pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    storeID: ''
+                                                })
+                                            } else {
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    storeID: ''
+                                                })
+                                                toast.success('Vô hiệu cửa hàng thành công.');
+                                                loadData();
+                                            }
                                         }
-                                    }
-                                })
+                                    })
 
-                            }}>Xác Nhận</Button>
+                                }}>Vô hiệu</Button>
                         ]}
                         centered
                     >
@@ -783,7 +804,7 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
             }}>Đóng</Button>
         );
         nodes.push(
-            <Button key='save' type='primary' onClick={() => {
+            <Button key='save' style={{ background: '#0D6368' }} type='primary' onClick={() => {
                 const validation = validateFormCreate();
                 if (validation.invalid === false) {
                     const dataPost = {
@@ -967,3 +988,4 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
         </>
     )
 }
+

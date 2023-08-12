@@ -419,7 +419,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                 }}
                             ></Table>
                             <div className="__app-action-button">
-                                <Button type="primary" onClick={() => {
+                                <Button type="primary" style={{ background: '#0D6368' }} onClick={() => {
                                     //todo
                                     setFormMode('display');
                                     setServiceDetail(null);

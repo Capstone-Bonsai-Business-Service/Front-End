@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Badge, Dropdown, Layout, Menu, MenuProps } from 'antd';
+import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { OwnerServices } from './owner.service';
 import { GiTreehouse } from 'react-icons/gi';
@@ -23,6 +23,9 @@ import './owner.scss';
 import '../../styles/global.style.scss';
 import { Observable, forkJoin, of, take, timer } from 'rxjs';
 import { DateTime } from 'luxon';
+import toast from 'react-hot-toast';
+import { RiFeedbackLine } from 'react-icons/ri';
+import { FeedbackManagementComponent } from './owner-components/feedback-management';
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -39,6 +42,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [currentMenuItem, setCurrentMenuItem] = useState<string>('dashboard');
+    const [showModalExpiredToken, setShowModalExpiredToken] = useState<boolean>(false);
     const [datasetData, setDatasetData] = useState({
         numOfContract: [0, 0, 0, 0, 0, 0, 0],
         numOfOrder: [0, 0, 0, 0, 0, 0, 0],
@@ -186,7 +190,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
     }
 
     function registerPingToken() {
-        timer(60000, 60000).subscribe({
+        let sub = timer(0, 60000).subscribe({
             next: (time) => {
                 if (props.currentUser) {
                     ownerService.getUserInfoByToken$(props.currentUser.token).pipe(take(1)).subscribe({
@@ -194,9 +198,8 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                             if (res) {
                                 return time;
                             } else {
-                                registerPingToken();
-                                props.onLogoutCallback();
-                                return navigate('/owner-login');
+                                sub.unsubscribe();
+                                setShowModalExpiredToken(true);
                             }
                         }
                     })
@@ -288,6 +291,16 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
             label: (
                 <div className='__app-group-menu-label'>
                     Đơn hàng
+                </div>
+            )
+        },
+        {
+            key: 'feedback',
+            className: '__app-group-menu',
+            icon: <RiFeedbackLine color='#000' />,
+            label: (
+                <div className='__app-group-menu-label'>
+                    Feedback
                 </div>
             )
         }
@@ -566,9 +579,41 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                             currentMenuItem === 'orders' ? <OrderManagementComponent />
                                 : <></>
                         }
+                        {
+                            currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
+                                : <></>
+                        }
                     </Layout.Content>
                 </Layout>
             </Layout>
+            {
+                showModalExpiredToken ?
+                    <Modal
+                        width={500}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Vô hiệu cửa hàng
+                            </span>
+                        )}
+                        footer={[
+                            <Button type="default" onClick={() => {
+                                setShowModalExpiredToken(false)
+                            }}>Huỷ</Button>,
+                            <Button type="primary"
+                                style={{ background: '#0D6368' }}
+                                onClick={() => {
+                                    props.onLogoutCallback();
+                                    toast.loading(`Phiên đăng nhập đã hết hạn.`);
+                                    return navigate('/manager-login');
+                                }}>Xác nhận</Button>
+                        ]}
+                        centered
+                    >
+                        <span>Phiên đăng nhập đã hết hạn.</span>
+                    </Modal> : <></>
+            }
         </>
     )
 }

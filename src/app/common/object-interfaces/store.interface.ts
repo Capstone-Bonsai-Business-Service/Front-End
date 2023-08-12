@@ -10,7 +10,7 @@ export interface IStore {
     managerName: string;
 }
 
-export type StoreStatus = 'ACTIVE';
+export type StoreStatus = 'ACTIVE' | 'INACTIVE';
 
 export enum StoreStatusMapping {
     'ACTIVE' = 'Đang hoạt động',

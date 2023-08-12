@@ -4,6 +4,7 @@ import accounts from '../../mock/accounts.json';
 import { CoreServices } from "../../service.core";
 import { IUser } from "../../IApp.interface";
 import { IContractDetail } from "../common/object-interfaces/contract.interface";
+import { StoreStatus } from "../common/object-interfaces/store.interface";
 
 
 export class OwnerServices extends CoreServices {
@@ -390,6 +391,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    changeStatusStore$(storeID: string, status: StoreStatus) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/changeStoreStatus?storeID=${storeID}&status=${status}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Thay đổi thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
     updatePlant$(data: any) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/plant`
@@ -453,6 +471,40 @@ export class OwnerServices extends CoreServices {
                 obs.complete();
             }).catch((err) => {
                 obs.next({error: JSON.stringify(err.response?.data) ?? 'Lấy Report Thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
+    getStoreOrderFeedbacks$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/feedback/getFeedbackOwnerManager?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    getStoreContractFeedbacks$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/feedback/contractFeedback?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
                 obs.complete();
             })
         })

@@ -427,17 +427,17 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                         </Row> :
                                         <></>
                             }
-                            {
+                            {/* {
                                 isDataReady ?
                                     <div style={{ height: 210, display: 'flex', flexDirection: 'column-reverse', padding: 24 }}>
                                         <div className="__app-action-button" style={{ paddingRight: 115 }}>
-                                            <Button type="primary" onClick={() => {
+                                            <Button type="primary" style={{ background: '#0D6368' }} onClick={() => {
                                                 //todo
                                                 setFormMode('display');
                                             }}>Lưu</Button>
                                         </div>
                                     </div> : <></>
-                            }
+                            } */}
                         </div>
                     </div>
                 </> : <></>

@@ -513,7 +513,8 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                             {
                                 contractDetail[0]?.showContractModel?.status === 'WAITING' ?
                                     <div className="__app-action-button">
-                                        <Button type="primary" onClick={() => {
+                                        <Button type="primary" 
+                                        style={{ background: '#0D6368' }} onClick={() => {
                                             const dataPost = {
                                                 "contractID": contractDetail[0]?.showContractModel?.id,
                                                 "deposit": contractDetail[0]?.showContractModel?.deposit,
@@ -555,7 +556,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                     <div className="__app-action-button">
                                         {
                                             contractDetail[0]?.showContractModel?.status === 'APPROVED' ?
-                                                <Button type="primary" onClick={() => {
+                                                <Button type="primary" style={{ background: '#0D6368' }} onClick={() => {
                                                     if (imageScanUrls.length > 0) {
                                                         managerServices.activeContract$(imageScanUrls, contractDetail[0]?.showContractModel?.id as string, signedForm['paymentTypeID'], signedForm['deposit']).pipe(take(1)).subscribe({
                                                             next: (res) => {
@@ -576,7 +577,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                                 }}>Lưu</Button> : <></>
                                         }
 
-                                        <Button style={{ width: 200, backgroundColor: '#8E0000' }} type="primary" onClick={() => {
+                                        <Button style={{ width: 200, backgroundColor: '#5D050b' }} type="primary" onClick={() => {
                                             managerServices.rejectContract$(contractDetail[0]?.showContractModel?.id as string, 'STAFFCANCELED').pipe(take(1)).subscribe({
                                                 next: (res) => {
                                                     if (res) {
@@ -645,7 +646,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
             }}>Đóng</Button>
         );
         nodes.push(
-            <Button key='save' type='primary' onClick={() => {
+            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
                 const dataPost = {
                     "title": `Contract ${DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd')}`,
                     "fullName": contractDetail['fullName'],

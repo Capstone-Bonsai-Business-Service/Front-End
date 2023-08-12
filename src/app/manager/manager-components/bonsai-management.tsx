@@ -682,7 +682,7 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
             }}>Đóng</Button>
         );
         nodes.push(
-            <Button key='save' type='primary' onClick={() => {
+            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
                 const body = listPlant.reduce((acc, cur, index) => {
                     const dataPost = {
                         "storeID": managerServices.storeId,

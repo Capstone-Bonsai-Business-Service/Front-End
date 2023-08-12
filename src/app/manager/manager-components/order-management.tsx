@@ -428,7 +428,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                 orderDetail?.progressStatus === 'WAITING' ?
                                     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
                                         <Col span={18} style={{ padding: '24px 0', display: 'flex', flexDirection: 'row-reverse', gap: 8 }}>
-                                            <Button type="primary" onClick={() => {
+                                            <Button type="primary" style={{ background: '#0D6368' }} onClick={() => {
                                                 managerServices.approveOrder$(orderDetail?.id, staffForOrder ?? 0).pipe(take(1)).subscribe({
                                                     next: (res) => {
                                                         if (res) {
@@ -465,7 +465,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                         <Button key='cancel' onClick={() => {
                                             setShowPopupReason(false)
                                         }}>Đóng</Button>,
-                                        <Button key='save' type='primary' style={{ backgroundColor: '#8E0000' }} onClick={() => {
+                                        <Button key='save' type='primary' style={{ background: '#5D050b' }} onClick={() => {
                                             managerServices.rejectOrder$(orderDetail?.id, reasonReject).pipe(take(1)).subscribe({
                                                 next: (res) => {
                                                     if (res) {

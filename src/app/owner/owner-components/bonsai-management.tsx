@@ -804,43 +804,45 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                 </div>
                             </div>
                             <div className="__app-action-button">
-                                <Button type="primary" onClick={() => {
-                                    const validation = validateFormEdit();
-                                    if (validation.invalid === false) {
-                                        const formEdit = {
-                                            "plantID": bonsaiDetail?.plantID,
-                                            "name": bonsaiDetail?.name !== bonsaiDetail?.defaultName ? bonsaiDetail?.name : null,
-                                            "description": bonsaiDetail?.description,
-                                            "careNote": bonsaiDetail?.careNote,
-                                            "height": bonsaiDetail?.height,
-                                            "withPot": bonsaiDetail?.withPot,
-                                            "shipPriceID": bonsaiDetail?.showPlantShipPriceModel.id,
-                                            "categoryIDList": bonsaiDetail?.plantCategoryList.reduce((acc: string[], cur: any) => {
-                                                acc.push(cur.categoryID);
-                                                return acc;
-                                            }, []),
-                                            "price": bonsaiDetail?.showPlantPriceModel.price,
-                                            "listURL": bonsaiDetail?.plantIMGList.reduce((acc: string[], cur: any) => {
-                                                acc.push(cur.url);
-                                                return acc;
-                                            }, []),
-                                        }
-                                        ownerServices.updatePlant$(formEdit).pipe(take(1)).subscribe({
-                                            next: (res) => {
-                                                if (res.error) {
-                                                    toast.error(res.error);
-                                                } else {
-                                                    setFormMode('display');
-                                                    setBonsaiDetail(null);
-                                                    setImageUrl('');
-                                                    toast.success('Lưu thông tin thành công.')
-                                                }
+                                <Button type="primary"
+                                    style={{ background: '#0D6368' }}
+                                    onClick={() => {
+                                        const validation = validateFormEdit();
+                                        if (validation.invalid === false) {
+                                            const formEdit = {
+                                                "plantID": bonsaiDetail?.plantID,
+                                                "name": bonsaiDetail?.name !== bonsaiDetail?.defaultName ? bonsaiDetail?.name : null,
+                                                "description": bonsaiDetail?.description,
+                                                "careNote": bonsaiDetail?.careNote,
+                                                "height": bonsaiDetail?.height,
+                                                "withPot": bonsaiDetail?.withPot,
+                                                "shipPriceID": bonsaiDetail?.showPlantShipPriceModel.id,
+                                                "categoryIDList": bonsaiDetail?.plantCategoryList.reduce((acc: string[], cur: any) => {
+                                                    acc.push(cur.categoryID);
+                                                    return acc;
+                                                }, []),
+                                                "price": bonsaiDetail?.showPlantPriceModel.price,
+                                                "listURL": bonsaiDetail?.plantIMGList.reduce((acc: string[], cur: any) => {
+                                                    acc.push(cur.url);
+                                                    return acc;
+                                                }, []),
                                             }
-                                        })
-                                    } else {
-                                        toast.error(`Vui lòng nhập thông tin ${validation.fields.join(', ')}`);
-                                    }
-                                }}>Lưu</Button>
+                                            ownerServices.updatePlant$(formEdit).pipe(take(1)).subscribe({
+                                                next: (res) => {
+                                                    if (res.error) {
+                                                        toast.error(res.error);
+                                                    } else {
+                                                        setFormMode('display');
+                                                        setBonsaiDetail(null);
+                                                        setImageUrl('');
+                                                        toast.success('Lưu thông tin thành công.')
+                                                    }
+                                                }
+                                            })
+                                        } else {
+                                            toast.error(`Vui lòng nhập thông tin ${validation.fields.join(', ')}`);
+                                        }
+                                    }}>Lưu</Button>
                             </div>
                         </div>
                     </div>
@@ -877,7 +879,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                 })
                             }}>Huỷ</Button>,
                             <Button type="primary"
-                                style={{ backgroundColor: '#8E0000' }}
+                                style={{ backgroundColor: '#5D050b' }}
                                 onClick={() => {
                                     ownerServices.disablePlant$(popUpConfirm.plantID).pipe(take(1)).subscribe({
                                         next: (res) => {
@@ -974,7 +976,7 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
             }}>Huỷ</Button>
         );
         nodes.push(
-            <Button key='save' type='primary' onClick={() => {
+            <Button key='save' style={{ background: '#0D6368' }} type='primary' onClick={() => {
                 const validation = validateFormBonsaiDetail();
                 if (validation.invalid === false) {
                     onCreateBonsai();
