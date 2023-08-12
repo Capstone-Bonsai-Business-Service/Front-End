@@ -720,7 +720,7 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
                             style={{ width: '90%' }}
                             options={props.listPlant}
                             placeholder='Chọn loại cây'
-                            defaultValue={cur.plantID}
+                            value={cur.plantID}
                             onChange={(value) => {
                                 let temp = cloneDeep(listPlant) ?? [];
                                 temp[index]['plantID'] = value;
@@ -733,7 +733,7 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
                             style={{ width: '90%' }}
                             className="app-numeric-input"
                             placeholder="Nhập số lượng"
-                            defaultValue={cur.quantity}
+                            value={cur.quantity}
                             onChange={(value) => {
                                 let temp = cloneDeep(listPlant) ?? [];
                                 temp[index]['quantity'] = Number(value.target.value);

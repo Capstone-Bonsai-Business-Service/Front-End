@@ -953,13 +953,14 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                         <Col span={13}>
                                             <Select
                                                 style={{ width: '100%' }}
-                                                options={serviceList.reduce((acc, cur) => {
-                                                    acc.push({
-                                                        value: cur.serviceID,
-                                                        label: cur.name
+                                                options={serviceList.reduce((acc_, cur_) => {
+                                                    acc_.push({
+                                                        value: cur_.serviceID,
+                                                        label: cur_.name
                                                     })
-                                                    return acc;
+                                                    return acc_;
                                                 }, [])}
+                                                value={cur.serviceID}
                                                 placeholder='Dịch vụ'
                                                 onChange={(value) => {
                                                     const temp = cloneDeep(servicesForm) ?? [];
@@ -991,6 +992,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                                 style={{ width: '100%' }}
                                                 options={cur?.serviceTypeList ?? []}
                                                 placeholder='Loại dịch vụ'
+                                                value={cur.serviceTypeID}
                                                 onChange={(value) => {
                                                     let temp = cloneDeep(servicesForm) ?? [];
                                                     temp[currentIndex]['serviceTypeID'] = value;
@@ -1023,6 +1025,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                             return acc;
                                         }, [] as any)}
                                         placeholder='Loại dịch vụ'
+                                        value={cur.servicePackID}
                                         onChange={(value) => {
                                             let temp = cloneDeep(servicesForm) ?? [];
                                             temp[currentIndex]['servicePackID'] = value;
@@ -1042,6 +1045,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                     <DatePicker
                                         style={{ width: '100%' }}
                                         placeholder="Chọn ngày bắt đầu"
+                                        value={cur.startDate}
                                         onChange={(value) => {
                                             let temp = cloneDeep(servicesForm) ?? [];
                                             temp[currentIndex]['startDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
@@ -1060,7 +1064,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                     <Select
                                         style={{ width: '100%' }}
                                         mode='multiple'
-                                        // disabled={cur?.timeWorking?.length >= 3}
+                                        value={cur.timeWorking}
                                         options={[
                                             { value: 'Thứ 2', label: 'Thứ 2' },
                                             { value: 'Thứ 3', label: 'Thứ 3' },
@@ -1106,6 +1110,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                     <TextArea
                                         placeholder="Nhập ghi chú"
                                         rows={2}
+                                        value={cur.note}
                                         onChange={(value) => {
                                             let temp = cloneDeep(servicesForm) ?? [];
                                             temp[currentIndex]['note'] = value.target.value;
