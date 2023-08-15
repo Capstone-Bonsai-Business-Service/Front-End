@@ -1,5 +1,5 @@
-import { LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Row, Table, Tabs, Tag } from "antd";
+import { CloseOutlined, LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, Divider, Modal, Row, Table, Tabs, Tag } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
@@ -9,6 +9,8 @@ import { CommonUtility } from "../../utils/utilities";
 import { DateTime } from "luxon";
 import { StoreStatus, StoreStatusMapping } from "../../common/object-interfaces/store.interface";
 import { LuPalmtree } from "react-icons/lu";
+import { NumericFormat } from "react-number-format";
+import { OrderStatusMapping } from "../../common/object-interfaces/order.interface";
 
 
 interface IFeedbackManagementProps {
@@ -58,6 +60,7 @@ export const FeedbackTabComponent: React.FC<IFeedbackTabProps> = (props) => {
     const [feedbackOnSearch, setFeedbackOnSearch] = useState<any[]>([]);
     const [feedbackDetail, setFeedbackDetail] = useState<any>(null);
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
+    const [showOrderDetail, setShowOrderDetail] = useState(false);
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -208,7 +211,7 @@ export const FeedbackTabComponent: React.FC<IFeedbackTabProps> = (props) => {
                                     pageSize: 7,
                                     total: feedbackOnSearch.length,
                                     showTotal: (total, range) => {
-                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }
                                 }}
                             ></Table>
@@ -281,6 +284,23 @@ export const FeedbackTabComponent: React.FC<IFeedbackTabProps> = (props) => {
                                         props.feedbackType === 'order' ?
                                             <>
                                                 <Row>
+                                                    <Col span={4} style={{ fontWeight: 500 }}>Đơn hàng:</Col>
+                                                    <Col span={16}>
+                                                        <div style={{
+                                                            display: 'flex', gap: 4, alignItems: 'center'
+                                                        }}>
+                                                            <span
+                                                                onClick={() => {
+                                                                    setShowOrderDetail(true);
+                                                                }}
+                                                                style={{ fontWeight: 600, textDecoration: 'underline', fontStyle: 'italic', color: 'blue', cursor: 'pointer' }}
+                                                                className='__app-column-full-name'>
+                                                                {feedbackDetail.showOrderModel.id}
+                                                            </span>
+                                                        </div>
+                                                    </Col>
+                                                </Row>
+                                                <Row>
                                                     <Col span={4} style={{ fontWeight: 500 }}>Sản phẩm:</Col>
                                                     <Col span={16}>
                                                         <div style={{
@@ -327,11 +347,201 @@ export const FeedbackTabComponent: React.FC<IFeedbackTabProps> = (props) => {
                                 </Col>
                             </div>
                         </div >
+                        {
+                            showOrderDetail ?
+                                <Modal
+                                    width={800}
+                                    open={true}
+                                    closable={true}
+                                    title={(
+                                        <span className='__app-dialog-title'>
+                                            Đơn hàng được feedback
+                                        </span>
+                                    )}
+                                    footer={null}
+                                    centered
+                                    closeIcon={
+                                        <CloseOutlined onClick={() => {
+                                            setShowOrderDetail(false);
+                                        }}/>
+                                    }
+                                >
+
+                                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                        <Col span={18} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 8, borderRadius: 4, backgroundColor: '#f0f0f0' }}>
+                                            <Row>
+                                                <Col span={12}>
+                                                    <Row>
+                                                        <Col span={8} style={{ fontWeight: 500 }}>
+                                                            Mã đơn hàng:
+                                                        </Col>
+                                                        <Col span={16} style={{ fontWeight: 500 }}>{feedbackDetail?.showOrderModel?.id}</Col>
+                                                    </Row>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Row>
+                                                        <Col span={1}></Col>
+                                                        <Col span={7} style={{ fontWeight: 500 }}>Trạng thái:</Col>
+                                                        <Col span={16}>
+                                                            <Tag color={CommonUtility.statusColorMapping(feedbackDetail?.showOrderModel?.progressStatus)} >
+                                                                {OrderStatusMapping[feedbackDetail?.showOrderModel?.progressStatus]}
+                                                            </Tag>
+                                                        </Col>
+                                                    </Row>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col span={12}>
+                                                    <Row>
+                                                        <Col span={8} style={{ fontWeight: 500 }}>
+                                                            Khách hàng:
+                                                        </Col>
+                                                        <Col span={16} >{feedbackDetail?.showOrderModel?.fullName}</Col>
+                                                    </Row>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Row>
+                                                        <Col span={1}></Col>
+                                                        <Col span={7} style={{ fontWeight: 500 }}>Số điện thoại:</Col>
+                                                        <Col span={16}>
+                                                            {feedbackDetail?.showOrderModel?.phone}
+                                                        </Col>
+                                                    </Row>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col span={4} style={{ fontWeight: 500 }}>
+                                                    Địa chỉ giao:
+                                                </Col>
+                                                <Col span={18}>
+                                                    {feedbackDetail?.showOrderModel?.address}
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col style={{ fontWeight: 500 }}>Đơn hàng:</Col>
+                                            </Row>
+                                            <Row>
+                                                <Col span={1}></Col>
+                                                <Col span={2} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>STT</Col>
+                                                <Col span={6} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>Tên cây</Col>
+                                                <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>Số lượng</Col>
+                                                <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>Đơn giá</Col>
+                                                <Col span={4} style={{ textAlign: 'center' }}>Thành tiền</Col>
+                                                <Col span={1}></Col>
+                                            </Row>
+                                            <Divider className="__app-divider-no-margin" />
+                                            {
+                                                renderBillOrder()
+                                            }
+                                            <Row>
+                                                <Col span={1}></Col>
+                                                <Col span={2} style={{ textAlign: 'center' }}>Phí ship:</Col>
+                                                <Col span={14}></Col>
+                                                <Col span={4} style={{ textAlign: 'center' }}>
+                                                    <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={feedbackDetail?.showOrderModel?.totalShipCost + (feedbackDetail?.showOrderModel?.distance * feedbackDetail?.showOrderModel?.showDistancePriceModel?.pricePerKm)} />
+                                                </Col>
+                                                <Col span={1}></Col>
+                                            </Row>
+                                            <Divider className="__app-divider-no-margin" />
+                                            <Row>
+                                                <Col span={1}></Col>
+                                                <Col span={2} style={{ textAlign: 'center', fontWeight: 500 }}>Tổng:</Col>
+                                                <Col span={14}></Col>
+                                                <Col span={4} style={{ textAlign: 'center', fontWeight: 500 }}>
+                                                    <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={feedbackDetail?.showOrderModel?.total} />
+                                                </Col>
+                                                <Col span={1}></Col>
+                                            </Row>
+                                            <Row></Row>
+                                            <Row>
+                                                <Col span={6} style={{ fontWeight: 500 }}>
+                                                    Nhân viên tiếp nhận:
+                                                </Col>
+                                                <Col span={16}>
+                                                    {
+                                                        feedbackDetail?.showOrderModel?.showStaffModel?.fullName ?? '--'
+                                                    }
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col span={6} style={{ fontWeight: 500 }}>
+                                                    Hình thức thanh toán:
+                                                </Col>
+                                                <Col span={16}>
+                                                    {feedbackDetail?.showOrderModel?.paymentMethod ?? '--'}
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col span={6} style={{ fontWeight: 500 }}>
+                                                    Đã Thanh Toán:
+                                                </Col>
+                                                <Col span={16}>
+                                                    <span>
+                                                        <Tag color={feedbackDetail?.showOrderModel?.isPaid ? 'lime' : 'red'}>{feedbackDetail?.showOrderModel?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>
+                                                    </span>
+                                                </Col>
+                                            </Row>
+                                            {
+                                                feedbackDetail?.showOrderModel?.receiptIMG ?
+                                                    <Row>
+                                                        <Col span={6} style={{ fontWeight: 500 }}>
+                                                            Ảnh hoá đơn:
+                                                        </Col>
+                                                        <Col span={16}>
+                                                            <img src={feedbackDetail?.showOrderModel.receiptIMG} alt="" style={{ width: 100, cursor: 'pointer' }} onClick={() => {
+                                                                window.open(feedbackDetail?.showOrderModel.receiptIMG);
+                                                            }} />
+                                                        </Col>
+                                                    </Row>
+                                                    : <></>
+                                            }
+                                        </Col>
+                                    </div>
+                                </Modal> : <></>
+                        }
                     </div >
                     : <></>
             }
         </>
     )
+
+    function renderBillOrder() {
+        if (feedbackDetail?.showOrderModel?.showPlantModel && feedbackDetail.showOrderModel?.showPlantModel.length > 0) {
+            const elem = feedbackDetail.showOrderModel?.showPlantModel.reduce((acc: any[], cur: any, index: number) => {
+                acc.push(
+                    <Row key={`bill_item_${index}`}>
+                        <Col span={1}></Col>
+                        <Col span={2} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>{index + 1}</Col>
+                        <Col span={6} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>{cur.plantName}</Col>
+                        <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                            {cur.quantity}
+                        </Col>
+                        <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                            <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={(cur.plantPrice ?? 0)} />
+                        </Col>
+                        <Col span={4} style={{ textAlign: 'center' }}>
+                            <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={(cur.quantity ?? 0) * (cur.plantPrice ?? 0)} />
+                        </Col>
+                        <Col span={1}></Col>
+                    </Row>
+                )
+                return acc;
+            }, []);
+            return elem;
+        } else {
+            return (
+                <Row key={`bill_item_${1}`}>
+                    <Col span={1}></Col>
+                    <Col span={2} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>--</Col>
+                    <Col span={6} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>--</Col>
+                    <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>--</Col>
+                    <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>--</Col>
+                    <Col span={4} style={{ textAlign: 'left' }}>--</Col>
+                    <Col span={1}></Col>
+                </Row>
+            )
+        }
+    }
 
     function bindingImgFeedback() {
         if (feedbackDetail?.imgList?.length > 0) {

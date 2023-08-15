@@ -29,27 +29,27 @@ export const LoginPage: React.FC<ILoginProps> = (props) => {
         setProcessing(true);
         coreService.login$(username, password).pipe(take(1)).pipe(
             switchMap(token => {
-                if (token) {
+                if (token.error) {
+                    return of(token.error);
+                } else {
                     user['token'] = token;
                     return coreService.getUserInfoByToken$(token);
-                } else {
-                    return of(null);
                 }
             })
         ).subscribe({
             next: (res) => {
-                if (res) {
+                if (res.error) {
+                    setProcessing(false);
+                    toast.error(res.error);
+                    return;
+                } else {
                     for (let prop in res) {
                         user[prop] = res[prop];
                     }
-                    toast.success('Login successful');
+                    toast.success('Đăng nhập thành công');
                     props.onSaveUserLogin(user);
                     setProcessing(false);
                     return navigate(`/${props.navigatePage}`);
-                } else {
-                    setProcessing(false);
-                    toast.error('Incorrect username or password');
-                    return;
                 }
             }
         })
@@ -63,12 +63,12 @@ export const LoginPage: React.FC<ILoginProps> = (props) => {
                         <img src={loginImg} width='300' style={{ position: 'relative' }} alt='login' />
                     </div>
                     <div className='__login-form'>
-                        <h2>Login</h2>
+                        <h2>Đăng nhập</h2>
                         <Form className='__form-controls'>
                             <Form.Item>
                                 <Input
                                     prefix={<UserOutlined color='rgba(0,0,0,.25)' />}
-                                    placeholder='Username'
+                                    placeholder='Tài khoản'
                                     onChange={(args) => {
                                         changedUsername(args.target.value)
                                     }}
@@ -78,7 +78,7 @@ export const LoginPage: React.FC<ILoginProps> = (props) => {
                                 <Input
                                     prefix={<LockOutlined color='rgba(0,0,0,.25)' />}
                                     type='password'
-                                    placeholder='Password'
+                                    placeholder='Mật khẩu'
                                     onChange={(args) => {
                                         changedPassword(args.target.value)
                                     }}
@@ -98,7 +98,7 @@ export const LoginPage: React.FC<ILoginProps> = (props) => {
                                                 submitLogin();
                                             }}
                                         >
-                                            Log in
+                                            Đăng nhập
                                         </Button>
                                 }
 

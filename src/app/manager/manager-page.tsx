@@ -48,13 +48,18 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
 
     useEffect(() => {
         if (!isFirstInit) {
-            setFirstInit(true);
-            setDataReady(true);
-            registerPingToken();
-        }
-    }, [isFirstInit, registerPingToken]);
+            loadStatistic$(datasetFilter).pipe(take(1)).subscribe({
+                next: (res: any) => {
+                    setFirstInit(true);
+                    setDataReady(true);
+                    setDatasetData(res);
+                    registerPingToken();
+                }
+            })
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        }
+    });
+
     function registerPingToken() {
         let sub = timer(0, 120000).subscribe({
             next: (time: any) => {
@@ -541,7 +546,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                         closable={false}
                         title={(
                             <span className='__app-dialog-title'>
-                                Vô hiệu cửa hàng
+                                Thông báo
                             </span>
                         )}
                         footer={[

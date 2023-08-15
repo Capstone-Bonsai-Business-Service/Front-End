@@ -105,6 +105,7 @@
         }
     }
 }
+
 .__app-sub-tab-custom {
     .ant-tabs-nav {
         margin: 0 !important;
@@ -126,4 +127,11 @@
             }
         }
     }
+}
+
+.__app-widget-loader {
+    height: 280px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

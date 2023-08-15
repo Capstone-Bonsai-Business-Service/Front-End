@@ -28,8 +28,8 @@ export class CoreServices {
                 this.globalSettings.userToken = res.data.token;
                 obs.next(res.data.token);
                 obs.complete();
-            }).catch(() => {
-                obs.next();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Sai tài khoản hoặc mật khẩu.'});
                 obs.complete();
             })
         })
@@ -45,8 +45,8 @@ export class CoreServices {
             }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
-            }).catch(() => {
-                obs.next();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Lỗi truy vấn người dùng.'});
                 obs.complete();
             });
         })

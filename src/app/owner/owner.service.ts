@@ -476,6 +476,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    getReportAllStore$(from: string, to: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/statistic/getStatisticWithAllStore?from=${from}&to=${to}`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Lấy Report Thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
     getStoreOrderFeedbacks$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/feedback/getFeedbackOwnerManager?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`

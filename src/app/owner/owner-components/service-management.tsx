@@ -295,7 +295,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                 pageSize: 6,
                                 total: servicesOnSearch.length,
                                 showTotal: (total, range) => {
-                                    return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                    return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                 }
                             }}
                         ></Table>
@@ -414,7 +414,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                     pageSize: 4,
                                     total: servicesOnSearch.length,
                                     showTotal: (total, range) => {
-                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }
                                 }}
                             ></Table>
@@ -582,7 +582,7 @@ const TabPackList: React.FC<{}> = (props) => {
                     pageSize: 6,
                     total: servicePacksOnSearch.length,
                     showTotal: (total, range) => {
-                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                     }
                 }}
             ></Table>

@@ -1,5 +1,5 @@
 import { CameraOutlined, CloudUploadOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Space, Dropdown, Spin, DatePicker } from "antd";
+import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Space, Dropdown, Spin, DatePicker, Rate } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
@@ -13,7 +13,6 @@ import { CommonUtility } from "../../utils/utilities";
 import { toast } from "react-hot-toast";
 import notFoundImage from '../../../assets/images/Image_not_available.png';
 import { PlantStatusMapping, PlantStatus } from '../../common/object-interfaces/plant.interface';
-import dayjs from 'dayjs';
 
 interface IBonsaiManagementProps {
 
@@ -118,7 +117,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                     <NumericFormat displayType='text' value={record.showPlantPriceModel.price} thousandSeparator=' ' suffix=" ₫" />
                 </div>
             },
-            width: 200,
+            width: 150,
             sorter: {
                 compare: (acc, cur) => acc.showPlantPriceModel.price > cur.showPlantPriceModel.price ? 1 : acc.showPlantPriceModel.price < cur.showPlantPriceModel.price ? -1 : 0
             },
@@ -137,6 +136,33 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             className: '__app-header-title'
         },
         {
+            title: 'Tống số cây',
+            dataIndex: 'totalPlant',
+            key: 'totalPlant',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 120,
+            sorter: {
+                compare: (acc, cur) => acc.totalPlant > cur.totalPlant ? 1 : acc.totalPlant < cur.totalPlant ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
+        {
+            title: 'Rating',
+            dataIndex: 'totalRating',
+            key: 'totalRating',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 180,
+            sorter: {
+                compare: (acc, cur) => acc.totalRating > cur.totalRating ? 1 : acc.totalRating < cur.totalRating ? -1 : 0
+            },
+            render: (value) => {
+                return <Rate disabled value={value}/>
+            },
+            className: '__app-header-title'
+        },
+        {
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
@@ -145,7 +171,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             render: (value) => {
                 return <Tag color={CommonUtility.statusColorMapping(value)}>{PlantStatusMapping[value as PlantStatus]}</Tag>
             },
-            width: 150,
+            width: 120,
             sorter: {
                 compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
             },
@@ -155,7 +181,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             title: '',
             dataIndex: 'command',
             align: 'center',
-            width: 100,
+            width: 50,
             key: 'command',
             showSorterTooltip: false,
             ellipsis: true,
@@ -348,6 +374,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
     function onUpdateDataSource(data: any[]) {
         for (let item of data) {
             item['price'] = item.showPlantPriceModel.price;
+            item['totalPlant'] = item['totalPlant'] ?? 0;
         }
         return data;
     }
@@ -466,7 +493,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     pageSize: 8,
                                     total: bonsais.length,
                                     showTotal: (total, range) => {
-                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }
                                 }}
                             ></Table>

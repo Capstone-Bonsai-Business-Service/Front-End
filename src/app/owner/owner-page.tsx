@@ -5,13 +5,10 @@ import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { OwnerServices } from './owner.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
-import { AiOutlineAreaChart, AiOutlineFall, AiOutlineRise } from 'react-icons/ai'
+import { AiOutlineAreaChart } from 'react-icons/ai'
 import { LiaStoreAltSolid } from 'react-icons/lia';
 import { LuClipboardSignature } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
-import { DashBoardComponent } from '../common/components/dashboard.component';
-import { IDashboard, ITableColumn, reportLabel } from '../common/interfaces';
-import { NumericFormat } from 'react-number-format';
 import { BonsaiManagementComponent } from './owner-components/bonsai-management';
 import { ServiceManagementComponent } from './owner-components/service-management';
 import { StoreManagementComponent } from './owner-components/store-management';
@@ -21,11 +18,11 @@ import { OrderManagementComponent } from './owner-components/order-management';
 import Logo from '../../assets/images/logo1.png'
 import './owner.scss';
 import '../../styles/global.style.scss';
-import { Observable, forkJoin, of, take, timer } from 'rxjs';
-import { DateTime } from 'luxon';
+import { take, timer } from 'rxjs';
 import toast from 'react-hot-toast';
 import { RiFeedbackLine } from 'react-icons/ri';
 import { FeedbackManagementComponent } from './owner-components/feedback-management';
+import { IncomStatisticComponent } from './owner-components/income.component';
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -40,166 +37,27 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
-    const [isDataReady, setDataReady] = useState<boolean>(false);
-    const [currentMenuItem, setCurrentMenuItem] = useState<string>('dashboard');
+    const [currentMenuItem, setCurrentMenuItem] = useState<string>('income');
     const [showModalExpiredToken, setShowModalExpiredToken] = useState<boolean>(false);
-    const [datasetData, setDatasetData] = useState({
-        numOfContract: [0, 0, 0, 0, 0, 0, 0],
-        numOfOrder: [0, 0, 0, 0, 0, 0, 0],
-        sumOfContract: [0, 0, 0, 0, 0, 0, 0],
-        sumOfOrder: [0, 0, 0, 0, 0, 0, 0]
-    })
-    const [datasetFilter, setDatasetFilter] = useState<'weekly' | 'quarter' | 'month'>('weekly');
 
     useEffect(() => {
         if (!isFirstInit) {
-            loadData();
             registerPingToken();
+            setFirstInit(true);
         }
     });
 
-    function loadData() {
-        setDataReady(false);
-        loadStatistic$(datasetFilter).pipe(take(1)).subscribe({
-            next: (res: any) => {
-                setDatasetData(res);
-                setFirstInit(true);
-                setDataReady(true);
-            }
-        })
-    }
-
-    function loadStatistic$(_datasetFilter: 'weekly' | 'quarter' | 'month') {
-        switch (_datasetFilter) {
-            case 'weekly': return getDataSetReportWeekly$();
-            case 'month': return getDataSetReportMonthly$();
-            case 'quarter': return getDataSetReportQuarter$();
-        }
-    }
-
-    function getDataSetReportWeekly$() {
-        return new Observable(obs => {
-            let today = DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd');
-            const request$ = [];
-            for (let i = 0; i < 7; i++) {
-                let date = new Date(today);
-                let _to = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - i))).toFormat('yyyy-MM-dd');
-                let _from = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - 1))).toFormat('yyyy-MM-dd');
-                request$.push(ownerService.getReport$(_from, _to))
-            }
-            forkJoin(request$.reverse()).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
-                        return acc;
-                    }, {
-                        numOfContract: [],
-                        numOfOrder: [],
-                        sumOfContract: [],
-                        sumOfOrder: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
-                }
-            })
-        })
-    }
-
-    function getDataSetReportQuarter$() {
-        return new Observable(obs => {
-            const thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
-            const currentMonth = new Date().getMonth() + 1;
-            const currentQuarter = Math.ceil(currentMonth / 3);
-
-            const request$ = [ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-03-31`)];
-
-            if (currentQuarter < 3) {
-                request$.push(ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-06-30`));
-            }
-            if (currentQuarter < 4) {
-                request$.push(ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-09-30`));
-            }
-            if (currentQuarter === 4) {
-                request$.push(ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-12-31`));
-            }
-            forkJoin([...request$]).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
-                        return acc;
-                    }, {
-                        numOfContract: [],
-                        numOfOrder: [],
-                        sumOfContract: [],
-                        sumOfOrder: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
-                }
-            })
-        })
-    }
-
-    function getDataSetReportMonthly$() {
-        return new Observable(obs => {
-            let thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
-            const currentMonth = new Date().getMonth() + 1;
-            const request$: Observable<any>[] = [];
-            const range = [
-                ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-01-31`),
-                ownerService.getReport$(`${thisYear}-02-01`, `${thisYear}-02-28`),
-                ownerService.getReport$(`${thisYear}-03-01`, `${thisYear}-03-31`),
-                ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-04-30`),
-                ownerService.getReport$(`${thisYear}-05-01`, `${thisYear}-05-31`),
-                ownerService.getReport$(`${thisYear}-06-01`, `${thisYear}-06-30`),
-                ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-07-31`),
-                ownerService.getReport$(`${thisYear}-08-01`, `${thisYear}-08-31`),
-                ownerService.getReport$(`${thisYear}-09-01`, `${thisYear}-09-30`),
-                ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-10-31`),
-                ownerService.getReport$(`${thisYear}-11-01`, `${thisYear}-11-30`),
-                ownerService.getReport$(`${thisYear}-12-01`, `${thisYear}-12-31`)
-            ];
-            for (let i = 0; i < currentMonth; i++) {
-                request$.push(range[i]);
-            }
-            forkJoin([...request$]).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
-                        return acc;
-                    }, {
-                        numOfContract: [],
-                        numOfOrder: [],
-                        sumOfContract: [],
-                        sumOfOrder: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
-                }
-            })
-        })
-    }
-
     function registerPingToken() {
-        let sub = timer(0, 60000).subscribe({
+        let sub = timer(0, 100000).subscribe({
             next: (time) => {
                 if (props.currentUser) {
                     ownerService.getUserInfoByToken$(props.currentUser.token).pipe(take(1)).subscribe({
                         next: (res) => {
-                            if (res) {
-                                return time;
-                            } else {
+                            if (res.error) {
                                 sub.unsubscribe();
                                 setShowModalExpiredToken(true);
+                            } else {
+                                return time;
                             }
                         }
                     })
@@ -211,99 +69,125 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
         })
     }
 
-    const items: MenuProps['items'] = [
+    const ownerSession: MenuProps['items'] = [
         {
-            key: 'dashboard',
+            key: 'statistic',
             className: '__app-group-menu',
             icon: <AiOutlineAreaChart color='#000' />,
             label: (
                 <div className='__app-group-menu-label'>
-                    Bảng thống kê
-                </div>
-            )
-        },
-        {
-            key: 'bonsais',
-            className: '__app-group-menu',
-            icon: <GiTreehouse color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Cây cảnh
-                </div>
-            )
-        },
-        {
-            key: 'services',
-            className: '__app-group-menu',
-            icon: <PiHandshake color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Dịch vụ
-                </div>
-            )
-        },
-        {
-            key: 'stores',
-            className: '__app-group-menu',
-            icon: <LiaStoreAltSolid color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Chi nhánh
-                </div>
-            )
-        },
-        {
-            key: 'members',
-            className: '__app-group-menu',
-            icon: <PiUserList color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Thành viên
+                    Thống kê
                 </div>
             ),
             children: [
                 {
-                    key: 'manager',
+                    key: 'income',
+                    icon: <AiOutlineAreaChart color='#000' />,
                     className: '__app-children-menu-divider',
-                    label: 'Quản lý',
+                    label: 'Doanh thu',
                 },
                 {
-                    key: 'staff',
+                    key: 'storeRating',
+                    icon: <AiOutlineAreaChart color='#000' />,
                     className: '__app-children-menu-divider',
-                    label: 'Nhân viên',
+                    label: 'Thống kê theo cửa hàng',
                 },
             ]
         },
         {
-            key: 'contracts',
+            key: 'management',
             className: '__app-group-menu',
             icon: <LuClipboardSignature color='#000' />,
             label: (
                 <div className='__app-group-menu-label'>
-                    Hợp đồng
+                    Quản lý hệ thống
                 </div>
-            )
+            ),
+            children: [
+                {
+                    key: 'bonsais',
+                    className: '__app-group-menu',
+                    icon: <GiTreehouse color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Cây cảnh
+                        </div>
+                    )
+                },
+                {
+                    key: 'services',
+                    className: '__app-group-menu',
+                    icon: <PiHandshake color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Dịch vụ
+                        </div>
+                    )
+                },
+                {
+                    key: 'stores',
+                    className: '__app-group-menu',
+                    icon: <LiaStoreAltSolid color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Chi nhánh
+                        </div>
+                    )
+                },
+                {
+                    key: 'members',
+                    className: '__app-group-menu',
+                    icon: <PiUserList color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Thành viên
+                        </div>
+                    ),
+                    children: [
+                        {
+                            key: 'manager',
+                            className: '__app-children-menu-divider',
+                            label: 'Quản lý',
+                        },
+                        {
+                            key: 'staff',
+                            className: '__app-children-menu-divider',
+                            label: 'Nhân viên',
+                        },
+                    ]
+                },
+                {
+                    key: 'contracts',
+                    className: '__app-group-menu',
+                    icon: <LuClipboardSignature color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Hợp đồng
+                        </div>
+                    )
+                },
+                {
+                    key: 'orders',
+                    className: '__app-group-menu',
+                    icon: <PiHandshake color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Đơn hàng
+                        </div>
+                    )
+                },
+                {
+                    key: 'feedback',
+                    className: '__app-group-menu',
+                    icon: <RiFeedbackLine color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Feedback
+                        </div>
+                    )
+                }
+            ]
         },
-        {
-            key: 'orders',
-            className: '__app-group-menu',
-            icon: <PiHandshake color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Đơn hàng
-                </div>
-            )
-        },
-        {
-            key: 'feedback',
-            className: '__app-group-menu',
-            icon: <RiFeedbackLine color='#000' />,
-            label: (
-                <div className='__app-group-menu-label'>
-                    Feedback
-                </div>
-            )
-        }
     ]
 
     const userMenuItems: MenuProps['items'] = [
@@ -321,163 +205,6 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
             icon: <LogoutOutlined />
         }
     ]
-
-    const tableColumns: ITableColumn[] = [
-        {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
-            width: 100
-        },
-        {
-            title: 'Chi Nhánh',
-            dataIndex: 'store',
-            key: 'store',
-        },
-        {
-            title: 'Doanh thu (vnđ)',
-            dataIndex: 'revenues',
-            key: 'revenues',
-            width: 200,
-            render: (data: any) => {
-                return <NumericFormat thousandSeparator=' ' value={data ?? 0} displayType='text' suffix=" ₫" />
-            }
-        },
-        {
-            title: 'Tăng trưởng',
-            dataIndex: 'profit',
-            key: 'profit',
-            width: 200,
-            render: (data: any) => {
-                return (
-                    <div style={{ display: 'flex', gap: 5 }}>
-                        <NumericFormat thousandSeparator=' ' value={data ? data * 100 : 0} displayType='text' suffix="%" style={{
-                            color: data > 0 ? '#A0D676' : '#FD6B6B'
-                        }} />
-                        {data > 0 ? <AiOutlineRise color='#A0D676' /> : <AiOutlineFall color='#FD6B6B' />}
-                    </div>
-                )
-            }
-        },
-    ]
-
-    const barChart: IDashboard['barChart'] = {
-        title: 'THỐNG KÊ',
-        filter(value) {
-            setDatasetFilter(value);
-            loadStatistic$(value).pipe(take(1)).subscribe({
-                next: (res: any) => {
-                    setDatasetData(res);
-                    setFirstInit(true);
-                    setDataReady(true);
-                }
-            })
-        },
-        dataSource: {
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom' as const,
-                    },
-                    title: {
-                        display: false,
-                        text: '',
-                    },
-                },
-                scales: {
-                    y: {
-                        type: 'linear' as const,
-                        display: true,
-                        position: 'left' as const,
-                    },
-                    y1: {
-                        type: 'linear' as const,
-                        display: true,
-                        position: 'right' as const,
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                        grace: 1
-                    },
-                },
-            },
-            data: {
-                labels: reportLabel[datasetFilter],
-                datasets: [
-                    {
-                        type: 'bar' as const,
-                        label: 'Tổng thu nhập từ Hợp đồng',
-                        data: datasetData.sumOfContract,
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        yAxisID: 'y',
-                    },
-                    {
-                        type: 'bar' as const,
-                        label: 'Tổng thu nhập từ Đơn hàng',
-                        data: datasetData.sumOfOrder,
-                        backgroundColor: 'rgba(200, 99, 52, 0.5)',
-                        yAxisID: 'y',
-                    },
-                    {
-                        type: 'line' as const,
-                        label: 'Số lượng Hợp đồng',
-                        data: datasetData.numOfContract,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgb(54, 162, 235, 0.5)',
-                        yAxisID: 'y1',
-                    },
-                    {
-                        type: 'line' as const,
-                        label: 'Số lượng đơn hàng',
-                        data: datasetData.numOfOrder,
-                        backgroundColor: 'rgba(53, 162, 25, 0.5)',
-                        borderColor: 'rgba(53, 162, 25, 0.5)',
-                        yAxisID: 'y1',
-                    }
-                ],
-            },
-            type: 'bar'
-        },
-        filterOptions: [{ label: '7 ngày trước', value: 'weekly' }, { label: 'Mỗi Quý', value: 'quarter' }, { label: 'Mỗi Tháng', value: 'month' }],
-        filterSelected: 'weekly'
-    }
-
-    const tableReport: IDashboard['tableReport'] = {
-        title: 'Doanh thu các chi nhánh',
-        columns: tableColumns,
-        dataSource: [
-            {
-                id: 'R001',
-                store: 'Chi Nhánh 1',
-                revenues: 60500000,
-                profit: 0.85
-            },
-            {
-                id: 'R002',
-                store: 'Chi Nhánh 2',
-                revenues: 73700000,
-                profit: 1.35
-            },
-            {
-                id: 'R003',
-                store: 'Chi Nhánh 3',
-                revenues: 40500000,
-                profit: 0.35
-            },
-            {
-                id: 'R004',
-                store: 'Chi Nhánh 4',
-                revenues: 30500000,
-                profit: 0.25
-            }
-        ],
-        filter(value) {
-
-        },
-        filterOptions: [{ label: '2021', value: 2021 }, { label: '2022', value: 20222 }, { label: '2023', value: 2023 }],
-        filterSelected: 2023
-    }
 
     function onChangeMenuSelect(key: any) {
         setCurrentMenuItem(key);
@@ -498,7 +225,13 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
         <>
             <Layout className='__owner-layout ant-layout-has-sider'>
                 <Layout.Sider className='__app-layout-slider' trigger={null}>
-                    <Menu className='__app-slider-menu' mode='inline' items={items} defaultSelectedKeys={[currentMenuItem]} onSelect={(args) => {
+                    <Menu 
+                    className='__app-slider-menu' 
+                    mode='inline' 
+                    items={ownerSession} 
+                    defaultSelectedKeys={[currentMenuItem]} 
+                    defaultOpenKeys={['statistic', 'management']}
+                    onSelect={(args) => {
                         onChangeMenuSelect(args.key);
                     }}></Menu>
                 </Layout.Sider>
@@ -545,11 +278,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     </Layout.Header>
                     <Layout.Content className='__app-layout-content'>
                         {
-                            currentMenuItem === 'dashboard' ? <DashBoardComponent
-                                key='dashboard-owner'
-                                barChart={barChart}
-                                tableReport={tableReport}
-                            /> : <></>
+                            currentMenuItem === 'income' ? <IncomStatisticComponent/> : <></>
                         }
                         {
                             currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
@@ -594,7 +323,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                         closable={false}
                         title={(
                             <span className='__app-dialog-title'>
-                                Vô hiệu cửa hàng
+                                Thông báo
                             </span>
                         )}
                         footer={[

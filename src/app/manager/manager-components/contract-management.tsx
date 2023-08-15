@@ -1,23 +1,20 @@
-import { CloudUploadOutlined, EyeOutlined, FormOutlined, LeftOutlined, LoadingOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, DatePicker, Divider, Dropdown, Input, Modal, Row, Select, Skeleton, Table, Tabs, Tag, Upload } from "antd";
+import { CloudUploadOutlined, LeftOutlined, LoadingOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Button, Col, DatePicker, Divider, Input, Modal, Row, Select, Skeleton, Table, Tabs, Tag, Upload } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { NumericFormat } from "react-number-format";
 import { ManagerServices } from "../manager.service";
 import { forkJoin, take } from "rxjs";
-import { IUser } from "../../../IApp.interface";
 import { ContractStatus, ContractStatusMapping, IContract, IContractDetail } from "../../common/object-interfaces/contract.interface";
 import { cloneDeep } from "lodash";
-import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import { CommonUtility } from "../../utils/utilities";
 import toast from "react-hot-toast";
 import '../manager.scss';
 import { UserPicker } from "../../common/components/user-picker-component";
 import { DateTime } from "luxon";
 import TextArea from "antd/es/input/TextArea";
-
+import dayjs from 'dayjs';
 
 interface IContractManagementProps {
     contractStatus: ContractStatus;
@@ -251,7 +248,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                     pageSize: 6,
                                     total: contractsOnSearch.length,
                                     showTotal: (total, range) => {
-                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }
                                 }}
                             ></Table>
@@ -1045,7 +1042,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                     <DatePicker
                                         style={{ width: '100%' }}
                                         placeholder="Chọn ngày bắt đầu"
-                                        value={cur.startDate}
+                                        value={cur.startDate !== '' ? dayjs(new Date(cur.startDate)) : null}
                                         onChange={(value) => {
                                             let temp = cloneDeep(servicesForm) ?? [];
                                             temp[currentIndex]['startDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
@@ -1077,9 +1074,11 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                         optionFilterProp='label'
                                         placeholder='Chọn Lịch'
                                         onChange={(values) => {
-                                            let temp = cloneDeep(servicesForm) ?? [];
-                                            temp[currentIndex]['timeWorking'] = values;
-                                            setServiceForm(temp);
+                                            if (values.length <= 3) {
+                                                let temp = cloneDeep(servicesForm) ?? [];
+                                                temp[currentIndex]['timeWorking'] = values;
+                                                setServiceForm(temp);
+                                            }
                                         }}
                                     />
                                 </Col>

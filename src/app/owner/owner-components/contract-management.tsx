@@ -218,7 +218,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                     pageSize: 6,
                                     total: contractsOnSearch.length,
                                     showTotal: (total, range) => {
-                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }
                                 }}
                             ></Table>

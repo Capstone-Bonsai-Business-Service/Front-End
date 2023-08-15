@@ -543,7 +543,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                             pageSize: 7,
                                             total: accountsOnSearch.length,
                                             showTotal: (total, range) => {
-                                                return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                                return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                             }
                                         }}
                                     ></Table>)

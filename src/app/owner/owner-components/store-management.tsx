@@ -436,7 +436,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                     pageSize: 9,
                                     total: stores.length,
                                     showTotal: (total, range) => {
-                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }
                                 }}
                             ></Table>
@@ -594,7 +594,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                                         pageSize: 3,
                                                         total: storeDetail ? storeDetail['storePlant']?.length : 0,
                                                         showTotal: (total, range) => {
-                                                            return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                                            return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                                         }
                                                     }}
                                                 />
@@ -620,7 +620,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                                         pageSize: 3,
                                                         total: storeDetail ? storeDetail['staff']?.length : 0,
                                                         showTotal: (total, range) => {
-                                                            return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                                            return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                                         }
                                                     }}
                                                 />

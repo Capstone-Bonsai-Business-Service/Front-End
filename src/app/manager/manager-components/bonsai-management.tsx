@@ -308,7 +308,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     pageSize: 8,
                                     total: bonsais.length,
                                     showTotal: (total, range) => {
-                                        return <span>{range[0]} - {range[1]} / <strong>{total} Items</strong></span>
+                                        return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }
                                 }}
                             ></Table>
