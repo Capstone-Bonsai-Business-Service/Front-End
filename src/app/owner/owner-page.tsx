@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { RiFeedbackLine } from 'react-icons/ri';
 import { FeedbackManagementComponent } from './owner-components/feedback-management';
 import { IncomStatisticComponent } from './owner-components/income.component';
+import { StoreStatisticComponent } from './owner-components/store-revenue.component';
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -280,6 +281,10 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                         {
                             currentMenuItem === 'income' ? <IncomStatisticComponent/> : <></>
                         }
+                        {
+                            currentMenuItem === 'storeRating' ? <StoreStatisticComponent/> : <></>
+                        }
+                        
                         {
                             currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
                             /> : <></>

@@ -459,9 +459,12 @@ export class OwnerServices extends CoreServices {
         })
     }
 
-    getReport$(from: string, to: string) {
+    getReport$(from: string, to: string, storeId?: String) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/statistic?from=${from}&to=${to}`
+            if (storeId) {
+                url += `&storeID=${storeId}`;
+            }
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

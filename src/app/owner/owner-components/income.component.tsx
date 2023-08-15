@@ -246,6 +246,7 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
         }
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (!isFirstInit) {
             setFirstInit(true);

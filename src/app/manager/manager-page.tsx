@@ -103,10 +103,10 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             forkJoin(request$.reverse()).subscribe({
                 next: (values) => {
                     const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
                         return acc;
                     }, {
                         numOfContract: [],
@@ -141,10 +141,10 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             forkJoin([...request$]).subscribe({
                 next: (values) => {
                     const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
                         return acc;
                     }, {
                         numOfContract: [],
@@ -184,10 +184,10 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             forkJoin([...request$]).subscribe({
                 next: (values) => {
                     const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.sumOfOrder ?? 0));
+                        acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
+                        acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
+                        acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
+                        acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
                         return acc;
                     }, {
                         numOfContract: [],
