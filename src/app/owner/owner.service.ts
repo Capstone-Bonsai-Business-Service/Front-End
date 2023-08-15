@@ -173,6 +173,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    createService$(datapost: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/service`
+            axios.post(url, datapost, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Tạo dịch vụ thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
     getServicePacks$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/servicePack`

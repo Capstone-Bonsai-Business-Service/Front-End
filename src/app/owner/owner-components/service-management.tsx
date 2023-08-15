@@ -1,10 +1,9 @@
-import { FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
-import { Image, Button, Divider, Skeleton, Table, Tabs, Tag, Row, Col, Input, Select } from 'antd';
+import { CloudUploadOutlined, FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
+import { Image, Button, Divider, Skeleton, Table, Tabs, Tag, Row, Col, Input, Modal, Switch } from 'antd';
 import Search from 'antd/es/input/Search';
 import { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import notFoundImage from '../../../assets/images/Image_not_available.png';
-import { IPlant } from '../../common/object-interfaces/plant.interface';
 import { NumericFormat } from 'react-number-format';
 import { OwnerServices } from '../owner.service';
 import { take } from 'rxjs';
@@ -12,12 +11,17 @@ import '../owner.scss';
 import { CommonUtility } from '../../utils/utilities';
 import { ServiceStatusMapping } from '../../common/object-interfaces/service.interface';
 import TextArea from 'antd/es/input/TextArea';
+import { cloneDeep } from 'lodash';
+import toast from 'react-hot-toast';
 
 interface IServiceManagementProps {
 
 }
 
-
+interface ICreateServiceProps {
+    onCancel: () => void;
+    onSave: () => void;
+}
 
 export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (props) => {
 
@@ -50,8 +54,329 @@ export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (pr
     )
 }
 
-const CreateServiceDialog: React.FC<{}> = (props) => {
-    return <></>
+const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateServiceProps) => {
+    const ownerServices = new OwnerServices();
+    const [serviceForm, setServiceForm] = useState<{
+        name: string,
+        price: number,
+        description: string,
+        createServiceTypeModel: {
+            name: string;
+            size: string;
+            unit: string;
+            percentage: number;
+            key: string;
+        }[],
+        listURL: string[],
+        atHome: boolean
+    }>({
+        name: '',
+        price: 0,
+        description: '',
+        createServiceTypeModel: [],
+        listURL: [],
+        atHome: true
+    });
+    const [isUpload, setIsUpload] = useState<boolean>(false);
+    const [images, setImages] = useState<string[]>([]);
+
+    return (
+        <>
+            <Modal
+                width={700}
+                open={true}
+                closable={false}
+                title={(
+                    <span className='__app-dialog-title'>
+                        Thêm dịch vụ mới
+                    </span>
+                )}
+                footer={[
+                    <Button type="default" onClick={() => {
+                        props.onCancel();
+                    }}>Huỷ</Button>,
+                    <Button type="primary"
+                        style={{ backgroundColor: '#0D6368' }}
+                        onClick={() => {
+                            const validation = validateFormCreate();
+                            if (validation.invalid === false) {
+                                onCreateService();
+                            } else {
+                                toast.error(`Không được để trống ${validation.fields.join(', ')}`);
+                            }
+
+                        }}>Tạo</Button>
+                ]}
+                centered
+            >
+                <div className='__app-dialog-create-object'>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Tên dịch vụ: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Input onChange={(args) => {
+                                let temp = cloneDeep(serviceForm) ?? {};
+                                temp['name'] = args.target.value;
+                                setServiceForm(temp);
+                            }}
+                                placeholder="Nhập tên dịch vụ"
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Mô tả:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <TextArea rows={4} onChange={(args) => {
+                                let temp = cloneDeep(serviceForm) ?? {};
+                                temp['description'] = args.target.value;
+                                setServiceForm(temp);
+                            }}
+                                placeholder="Nhập mô tả"
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Chăm sóc tại nhà:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Switch
+                                onChange={(value) => {
+                                    let temp = cloneDeep(serviceForm) ?? {};
+                                    temp['atHome'] = value;
+                                    setServiceForm(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Giá:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+
+                        </Col>
+                        <Col span={18}>
+                            <NumericFormat
+                                className="app-numeric-input"
+                                thousandSeparator=' '
+                                onValueChange={(values) => {
+                                    let temp = cloneDeep(serviceForm) ?? {};
+                                    temp['price'] = values.floatValue as number;
+                                    setServiceForm(temp);
+                                }}
+                                placeholder="Nhập giá"
+                            />
+                            <span>Giá sẽ được áp dụng ngay khi tạo dịch vụ thành công.</span>
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Loại dịch vụ:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+
+                        </Col>
+                        <Col span={18}>
+                            {
+                                serviceForm.createServiceTypeModel.reduce((acc, cur, currentIndex) => {
+                                    acc.push(
+                                        <Row
+                                            id={`serviceType_${currentIndex}`}
+                                            key={`serviceType_${currentIndex}`}
+                                            className='__app-service-form'
+                                            style={{ padding: 10, border: '1px solid #a5a5a5', borderRadius: 4, margin: '8px 0' }}
+                                        >
+                                            <Col span={23} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                <Row>
+                                                    <Col span={6}>Tên loại dịch vụ: </Col>
+                                                    <Col span={16}>
+                                                        <Input value={cur.name}
+                                                            placeholder='Nhập tên loại dịch vụ'
+                                                            onChange={(args) => {
+                                                                let temp = cloneDeep(serviceForm);
+                                                                temp.createServiceTypeModel[currentIndex].name = args.target.value;
+                                                                setServiceForm(temp);
+                                                            }}></Input>
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col span={6}>Kích thước (m): </Col>
+                                                    <Col span={16}>
+                                                        <Input value={cur.size}
+                                                            placeholder='Nhập kích thước'
+                                                            onChange={(args) => {
+                                                                let temp = cloneDeep(serviceForm);
+                                                                temp.createServiceTypeModel[currentIndex].size = args.target.value;
+                                                                setServiceForm(temp);
+                                                            }}></Input>
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col span={6}>Phụ thu (%): </Col>
+                                                    <Col span={16}>
+                                                        <NumericFormat
+                                                            className="app-numeric-input"
+                                                            thousandSeparator=' '
+                                                            value={cur.percentage}
+                                                            onValueChange={(values) => {
+                                                                let temp = cloneDeep(serviceForm);
+                                                                temp.createServiceTypeModel[currentIndex].percentage = values.floatValue as number;
+                                                                setServiceForm(temp);
+                                                            }}
+                                                            placeholder="Nhập giá"
+                                                        />
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col span={1}>
+                                                <RestOutlined style={{ width: 18, height: 18, fontSize: 18 }} onClick={(e) => {
+                                                    e.preventDefault();
+                                                    let temp = cloneDeep(serviceForm);
+                                                    temp.createServiceTypeModel = temp.createServiceTypeModel.filter(item => { return item.key !== cur.key })
+                                                    setServiceForm(temp);
+                                                }} />
+                                            </Col>
+                                        </Row>
+                                    )
+                                    return acc;
+                                }, [] as React.ReactNode[])
+                            }
+                            <Button type='default' onClick={() => {
+                                let temp = cloneDeep(serviceForm);
+                                temp.createServiceTypeModel.push({
+                                    key: new Date().getTime().toString(),
+                                    name: '',
+                                    percentage: 0,
+                                    size: '',
+                                    unit: 'm'
+                                })
+                                setServiceForm(temp);
+                            }}>Thêm loại dịch vụ</Button>
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Ảnh đính kèm:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <div className="__app-images-upload-container">
+                                <div className="__app-list-images" style={{ flexDirection: 'row' }}>
+                                    {renderImages()}
+                                </div>
+                                <div className="__app-button-upload">
+                                    {
+                                        !isUpload ? <Button key='upload' icon={<CloudUploadOutlined />} onClick={() => {
+                                            document.getElementById('upload')?.click();
+                                        }}>Tải ảnh</Button> : <Skeleton.Button active={true}></Skeleton.Button>
+                                    }
+
+                                </div>
+                                <input
+                                    id='upload'
+                                    type="file"
+                                    accept="*"
+                                    multiple={false}
+                                    hidden={true}
+                                    onChange={(args) => {
+                                        setIsUpload(true);
+                                        const file = Array.from(args.target.files as FileList);
+                                        ownerServices.uploadImageToFireBase$(file[0]).pipe(take(1)).subscribe({
+                                            next: url => {
+                                                const img = images;
+                                                img.push(url as string);
+                                                setImages(img);
+                                                setIsUpload(false);
+                                            }
+                                        });
+                                    }}
+                                />
+                            </div>
+                        </Col>
+                    </Row>
+                </div>
+            </Modal>
+        </>
+    )
+
+    function validateFormCreate() {
+        const temp = cloneDeep(serviceForm);
+        let result = {
+            invalid: false,
+            fields: [] as string[],
+        }
+        if (CommonUtility.isNullOrEmpty(temp.name)) {
+            result.invalid = true;
+            result.fields.push('Tên dịch vụ');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.description)) {
+            result.invalid = true;
+            result.fields.push('Mô tả');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.createServiceTypeModel)) {
+            result.invalid = true;
+            result.fields.push('Loại dịch vụ');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.price) || temp.price === 0) {
+            result.invalid = true;
+            result.fields.push('Giá');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.listURL)) {
+            result.invalid = true;
+            result.fields.push('Ảnh dịch vụ');
+        }
+        return result;
+    }
+
+    function onCreateService() {
+        const formData = {
+            "name": serviceForm.name,
+            "price": serviceForm.price,
+            "description": serviceForm.description,
+            "createServiceTypeModel": serviceForm.createServiceTypeModel.reduce((acc, cur) => {
+                acc.push({
+                    "name": cur.name,
+                    "size": cur.size,
+                    "unit": cur.unit,
+                    "percentage": cur.percentage
+                })
+                return acc;
+            }, [] as any[]),
+            "listURL": serviceForm.listURL,
+            "atHome": serviceForm.atHome
+        }
+        ownerServices.createService$(formData).pipe(take(1)).subscribe({
+            next: (res) => {
+                if (res.error) {
+                    toast.error(res.error);
+                } else {
+                    toast.success('Thêm cây thành công');
+                    props.onSave();
+                }
+            }
+        })
+    }
+
+    function renderImages() {
+        const elements: JSX.Element[] = images.reduce((acc, cur) => {
+            acc.push(
+                <img style={{ width: 100 }} src={cur} alt='img' />
+            )
+            return acc;
+        }, [] as JSX.Element[]);
+        return elements;
+    }
 }
 
 const TabServiceList: React.FC<any> = (props) => {
@@ -65,6 +390,7 @@ const TabServiceList: React.FC<any> = (props) => {
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [serviceDetail, setServiceDetail] = useState<any>(null);
     const [imageUrl, setImageUrl] = useState<string>('');
+    const [showPopupCreate, setShowPopupCreate] = useState<boolean>(false);
 
     const tableUserColumns: ColumnsType<any> = [
         {
@@ -258,7 +584,7 @@ const TabServiceList: React.FC<any> = (props) => {
                     <div className='__app-toolbar-container' style={{ width: '100%', padding: '8px 24px' }}>
                         <div className='__app-toolbar-left-buttons'>
                             <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
-                                // setShowPopupCreate(true);
+                                setShowPopupCreate(true);
                             }}>Thêm dịch vụ</Button>
                             <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                 CommonUtility.exportExcel(services, tableUserColumns);
@@ -299,7 +625,19 @@ const TabServiceList: React.FC<any> = (props) => {
                                 }
                             }}
                         ></Table>
-
+                        {
+                            showPopupCreate ?
+                                <FormCreateServiceDialog
+                                    onCancel={() => {
+                                        setShowPopupCreate(false);
+                                    }}
+                                    onSave={() => {
+                                        setShowPopupCreate(false);
+                                        loadData();
+                                    }}
+                                />
+                                : <></>
+                        }
                     </div>
                 </> : <></>
             }
@@ -412,7 +750,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                 dataSource={serviceDetail?.typeList}
                                 pagination={{
                                     pageSize: 4,
-                                    total: servicesOnSearch.length,
+                                    total: serviceDetail?.typeList.length,
                                     showTotal: (total, range) => {
                                         return <span>{range[0]} - {range[1]} / <strong>{total}</strong></span>
                                     }

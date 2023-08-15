@@ -208,15 +208,6 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
                         display: true,
                         position: 'left' as const,
                     },
-                    y1: {
-                        type: 'linear' as const,
-                        display: true,
-                        position: 'right' as const,
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                        grace: 1
-                    },
                 },
             },
             data: {
@@ -478,7 +469,7 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
                             </div>
                         </> :
                         <div className='__app-widget-loader'>
-                            <Spin indicator={<LoadingOutlined style={{ fontSize: 64, color: '#74060E' }} spin />} />
+                            <Spin indicator={<LoadingOutlined style={{ fontSize: 64, color: '#0D6368' }} spin />} />
                         </div>
                 }
             </div>

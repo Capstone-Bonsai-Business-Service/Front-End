@@ -93,7 +93,7 @@ export const LoginAdmin: React.FC<ILoginAdminProps> = (props) => {
                                 {
                                     isProccess ?
                                         <div className="__loading-icon">
-                                            <LoadingOutlined style={{ fontSize: 24, color: '#74060E' }} />
+                                            <LoadingOutlined style={{ fontSize: 24, color: '#0D6368' }} />
                                         </div> :
                                         <Button
                                             type='primary'
