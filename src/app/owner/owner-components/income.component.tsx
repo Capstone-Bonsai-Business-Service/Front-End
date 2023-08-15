@@ -189,12 +189,16 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'bottom' as const,
-                    },
-                    title: {
-                        display: true,
+                        position: 'right' as const,
+                        align: 'center',
+                        labels: {
+                            padding: 8
+                        }
                     },
                 },
+                layout: {
+                    padding: 0
+                }
             },
             data: {
                 labels: dataSetStoreOrderIncome.label,
@@ -217,12 +221,16 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'bottom' as const,
-                    },
-                    title: {
-                        display: true,
+                        position: 'right' as const,
+                        align: 'center',
+                        labels: {
+                            padding: 8
+                        }
                     },
                 },
+                layout: {
+                    padding: 0
+                }
             },
             data: {
                 labels: dataSetStoreContractIncome.label,
