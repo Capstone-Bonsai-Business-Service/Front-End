@@ -1,5 +1,5 @@
 import { CloudUploadOutlined, FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
-import { Image, Button, Divider, Skeleton, Table, Tabs, Tag, Row, Col, Input, Modal, Switch } from 'antd';
+import { Image, Button, Divider, Skeleton, Table, Tabs, Tag, Row, Col, Input, Modal, Switch, Select } from 'antd';
 import Search from 'antd/es/input/Search';
 import { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
@@ -21,6 +21,12 @@ interface IServiceManagementProps {
 interface ICreateServiceProps {
     onCancel: () => void;
     onSave: () => void;
+}
+
+interface IEditServicePackProps {
+    onCancel: () => void;
+    onSave: () => void;
+    servicePackData: any;
 }
 
 export const ServiceManagementComponent: React.FC<IServiceManagementProps> = (props) => {
@@ -379,6 +385,468 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
     }
 }
 
+const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICreateServiceProps) => {
+    const ownerServices = new OwnerServices();
+    const [servicePackForm, setServicePackForm] = useState<{
+        range: string | null;
+        unit: 'năm' | 'tháng';
+        percentage: number;
+    }>({
+        range: null,
+        unit: 'tháng',
+        percentage: 0
+    });
+
+    return (
+        <>
+            <Modal
+                width={700}
+                open={true}
+                closable={false}
+                title={(
+                    <span className='__app-dialog-title'>
+                        Thêm gói dịch vụ mới
+                    </span>
+                )}
+                footer={[
+                    <Button type="default" onClick={() => {
+                        props.onCancel();
+                    }}>Huỷ</Button>,
+                    <Button type="primary"
+                        style={{ backgroundColor: '#0D6368' }}
+                        onClick={() => {
+                            const validation = validateFormCreate();
+                            if (validation.invalid === false) {
+                                onCreateService();
+                            } else {
+                                toast.error(`Không được để trống ${validation.fields.join(', ')}`);
+                            }
+
+                        }}>Tạo</Button>
+                ]}
+                centered
+            >
+                <div className='__app-dialog-create-object'>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Thời hạn: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                value={servicePackForm.unit}
+                                options={[
+                                    {
+                                        value: 'tháng',
+                                        label: 'tháng'
+                                    },
+                                    {
+                                        value: 'năm',
+                                        label: 'năm'
+                                    }
+                                ]}
+                                placeholder='Chọn thời hạn'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(servicePackForm) ?? {};
+                                    temp['unit'] = value;
+                                    temp['range'] = null;
+                                    setServicePackForm(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Khoản thời gian: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                value={servicePackForm.range}
+                                options={
+                                    servicePackForm.unit === 'năm' ? [
+                                        {
+                                            value: '1',
+                                            label: '1'
+                                        },
+                                        {
+                                            value: '2',
+                                            label: '2'
+                                        },
+                                        {
+                                            value: '3',
+                                            label: '3'
+                                        }
+                                    ] : [
+                                        {
+                                            value: '1',
+                                            label: '1'
+                                        },
+                                        {
+                                            value: '2',
+                                            label: '2'
+                                        },
+                                        {
+                                            value: '3',
+                                            label: '3'
+                                        },
+                                        {
+                                            value: '4',
+                                            label: '4'
+                                        },
+                                        {
+                                            value: '5',
+                                            label: '5'
+                                        },
+                                        {
+                                            value: '6',
+                                            label: '6'
+                                        },
+                                        {
+                                            value: '7',
+                                            label: '7'
+                                        },
+                                        {
+                                            value: '8',
+                                            label: '8'
+                                        },
+                                        {
+                                            value: '9',
+                                            label: '9'
+                                        },
+                                        {
+                                            value: '10',
+                                            label: '10'
+                                        },
+                                        {
+                                            value: '11',
+                                            label: '11'
+                                        },
+                                    ]
+                                }
+                                placeholder='Chọn thời hạn'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(servicePackForm) ?? {};
+                                    temp['range'] = value;
+                                    setServicePackForm(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Khuyến mãi (%):</strong> <span className='__app-required-field'> *</span>
+                            </span>
+
+                        </Col>
+                        <Col span={18}>
+                            <NumericFormat
+                                className="app-numeric-input"
+                                thousandSeparator=' '
+                                value={servicePackForm.percentage}
+                                onValueChange={(values) => {
+                                    let temp = cloneDeep(servicePackForm) ?? {};
+                                    temp['percentage'] = (values.floatValue as number);
+                                    setServicePackForm(temp);
+                                }}
+                                placeholder="Nhập khuyến mãi"
+                                decimalScale={0}
+                                suffix=' %'
+                            />
+                        </Col>
+                    </Row>
+                </div>
+            </Modal>
+        </>
+    )
+
+    function validateFormCreate() {
+        const temp = cloneDeep(servicePackForm);
+        let result = {
+            invalid: false,
+            fields: [] as string[],
+        }
+        if (CommonUtility.isNullOrEmpty(temp.unit)) {
+            result.invalid = true;
+            result.fields.push('Loại thời hạn');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.range)) {
+            result.invalid = true;
+            result.fields.push('Thời hạn');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.percentage)) {
+            result.invalid = true;
+            result.fields.push('Khuyến mãi');
+        }
+        return result;
+    }
+
+    function onCreateService() {
+        // const formData = {
+        //     "name": serviceForm.name,
+        //     "price": serviceForm.price,
+        //     "description": serviceForm.description,
+        //     "createServiceTypeModel": serviceForm.createServiceTypeModel.reduce((acc, cur) => {
+        //         acc.push({
+        //             "name": cur.name,
+        //             "size": cur.size,
+        //             "unit": cur.unit,
+        //             "percentage": cur.percentage
+        //         })
+        //         return acc;
+        //     }, [] as any[]),
+        //     "listURL": serviceForm.listURL,
+        //     "atHome": serviceForm.atHome
+        // }
+        // ownerServices.createService$(formData).pipe(take(1)).subscribe({
+        //     next: (res) => {
+        //         if (res.error) {
+        //             toast.error(res.error);
+        //         } else {
+        //             toast.success('Thêm cây thành công');
+        //             props.onSave();
+        //         }
+        //     }
+        // })
+    }
+}
+
+const FormEditServicePackDialog: React.FC<IEditServicePackProps> = (props: IEditServicePackProps) => {
+    const ownerServices = new OwnerServices();
+    const [servicePackForm, setServicePackForm] = useState<{
+        range: string | null;
+        unit: 'năm' | 'tháng';
+        percentage: number;
+    }>({
+        range: props.servicePackData.range,
+        unit: props.servicePackData.unit,
+        percentage: props.servicePackData.percentage
+    });
+
+    return (
+        <>
+            <Modal
+                width={700}
+                open={true}
+                closable={false}
+                title={(
+                    <span className='__app-dialog-title'>
+                        Chỉnh sửa gói dịch vụ
+                    </span>
+                )}
+                footer={[
+                    <Button type="default" onClick={() => {
+                        props.onCancel();
+                    }}>Huỷ</Button>,
+                    <Button type="primary"
+                        style={{ backgroundColor: '#0D6368' }}
+                        onClick={() => {
+                            const validation = validateFormCreate();
+                            if (validation.invalid === false) {
+                                onCreateService();
+                            } else {
+                                toast.error(`Không được để trống ${validation.fields.join(', ')}`);
+                            }
+
+                        }}>Lưu</Button>
+                ]}
+                centered
+            >
+                <div className='__app-dialog-create-object'>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Thời hạn: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                value={servicePackForm.unit}
+                                options={[
+                                    {
+                                        value: 'tháng',
+                                        label: 'tháng'
+                                    },
+                                    {
+                                        value: 'năm',
+                                        label: 'năm'
+                                    }
+                                ]}
+                                placeholder='Chọn thời hạn'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(servicePackForm) ?? {};
+                                    temp['unit'] = value;
+                                    temp['range'] = null;
+                                    setServicePackForm(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Khoản thời gian: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                style={{ width: '100%' }}
+                                value={servicePackForm.range}
+                                options={
+                                    servicePackForm.unit === 'năm' ? [
+                                        {
+                                            value: '1',
+                                            label: '1'
+                                        },
+                                        {
+                                            value: '2',
+                                            label: '2'
+                                        },
+                                        {
+                                            value: '3',
+                                            label: '3'
+                                        }
+                                    ] : [
+                                        {
+                                            value: '1',
+                                            label: '1'
+                                        },
+                                        {
+                                            value: '2',
+                                            label: '2'
+                                        },
+                                        {
+                                            value: '3',
+                                            label: '3'
+                                        },
+                                        {
+                                            value: '4',
+                                            label: '4'
+                                        },
+                                        {
+                                            value: '5',
+                                            label: '5'
+                                        },
+                                        {
+                                            value: '6',
+                                            label: '6'
+                                        },
+                                        {
+                                            value: '7',
+                                            label: '7'
+                                        },
+                                        {
+                                            value: '8',
+                                            label: '8'
+                                        },
+                                        {
+                                            value: '9',
+                                            label: '9'
+                                        },
+                                        {
+                                            value: '10',
+                                            label: '10'
+                                        },
+                                        {
+                                            value: '11',
+                                            label: '11'
+                                        },
+                                    ]
+                                }
+                                placeholder='Chọn thời hạn'
+                                onChange={(value) => {
+                                    let temp = cloneDeep(servicePackForm) ?? {};
+                                    temp['range'] = value;
+                                    setServicePackForm(temp);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Khuyến mãi (%):</strong> <span className='__app-required-field'> *</span>
+                            </span>
+
+                        </Col>
+                        <Col span={18}>
+                            <NumericFormat
+                                className="app-numeric-input"
+                                thousandSeparator=' '
+                                value={servicePackForm.percentage}
+                                onValueChange={(values) => {
+                                    let temp = cloneDeep(servicePackForm) ?? {};
+                                    temp['percentage'] = (values.floatValue as number);
+                                    setServicePackForm(temp);
+                                }}
+                                placeholder="Nhập khuyến mãi"
+                                decimalScale={0}
+                                suffix=' %'
+                            />
+                        </Col>
+                    </Row>
+                </div>
+            </Modal>
+        </>
+    )
+
+    function validateFormCreate() {
+        const temp = cloneDeep(servicePackForm);
+        let result = {
+            invalid: false,
+            fields: [] as string[],
+        }
+        if (CommonUtility.isNullOrEmpty(temp.unit)) {
+            result.invalid = true;
+            result.fields.push('Loại thời hạn');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.range)) {
+            result.invalid = true;
+            result.fields.push('Thời hạn');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.percentage)) {
+            result.invalid = true;
+            result.fields.push('Khuyến mãi');
+        }
+        return result;
+    }
+
+    function onCreateService() {
+        // const formData = {
+        //     "name": serviceForm.name,
+        //     "price": serviceForm.price,
+        //     "description": serviceForm.description,
+        //     "createServiceTypeModel": serviceForm.createServiceTypeModel.reduce((acc, cur) => {
+        //         acc.push({
+        //             "name": cur.name,
+        //             "size": cur.size,
+        //             "unit": cur.unit,
+        //             "percentage": cur.percentage
+        //         })
+        //         return acc;
+        //     }, [] as any[]),
+        //     "listURL": serviceForm.listURL,
+        //     "atHome": serviceForm.atHome
+        // }
+        // ownerServices.createService$(formData).pipe(take(1)).subscribe({
+        //     next: (res) => {
+        //         if (res.error) {
+        //             toast.error(res.error);
+        //         } else {
+        //             toast.success('Thêm cây thành công');
+        //             props.onSave();
+        //         }
+        //     }
+        // })
+    }
+}
+
 const TabServiceList: React.FC<any> = (props) => {
     const ownerServices = new OwnerServices();
 
@@ -433,21 +901,21 @@ const TabServiceList: React.FC<any> = (props) => {
             },
             className: '__app-header-title'
         },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            showSorterTooltip: false,
-            ellipsis: true,
-            render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
-            },
-            width: 200,
-            sorter: {
-                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
-            },
-            className: '__app-header-title'
-        },
+        // {
+        //     title: 'Trạng thái',
+        //     dataIndex: 'status',
+        //     key: 'status',
+        //     showSorterTooltip: false,
+        //     ellipsis: true,
+        //     render: (value) => {
+        //         return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
+        //     },
+        //     width: 200,
+        //     sorter: {
+        //         compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+        //     },
+        //     className: '__app-header-title'
+        // },
         {
             title: '',
             dataIndex: 'command',
@@ -780,6 +1248,9 @@ const TabPackList: React.FC<{}> = (props) => {
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [servicePacks, setServicePacks] = useState<any[]>([]);
     const [servicePacksOnSearch, setServicePacksOnSearch] = useState<any[]>([]);
+    const [isShowPopUpCreate, setShowPopUpCreate] = useState<boolean>(false);
+    const [isShowPopUpEdit, setShowPopUpEdit] = useState<boolean>(false);
+    const [servicePackEdit, setServicePackEdit] = useState<any>(null);
 
     const tableUserColumns: ColumnsType<any> = [
         {
@@ -825,21 +1296,21 @@ const TabPackList: React.FC<{}> = (props) => {
             },
             className: '__app-header-title'
         },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            showSorterTooltip: false,
-            ellipsis: true,
-            render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
-            },
-            width: 200,
-            sorter: {
-                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
-            },
-            className: '__app-header-title'
-        },
+        // {
+        //     title: 'Trạng thái',
+        //     dataIndex: 'status',
+        //     key: 'status',
+        //     showSorterTooltip: false,
+        //     ellipsis: true,
+        //     render: (value) => {
+        //         return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
+        //     },
+        //     width: 200,
+        //     sorter: {
+        //         compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+        //     },
+        //     className: '__app-header-title'
+        // },
         {
             title: '',
             dataIndex: 'command',
@@ -850,11 +1321,13 @@ const TabPackList: React.FC<{}> = (props) => {
             ellipsis: true,
             render: (_, record, __) => {
                 return <div>
-                    <Button className='__app-command-button' onClick={(e) => {
-                        e.preventDefault();
-                        // getserviceDetail(record.plantID);
-                        // setFormMode('edit');
-                    }} icon={<FormOutlined />} />
+                    <Button className='__app-command-button'
+                        type='ghost'
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowPopUpEdit(true);
+                            setServicePackEdit(record);
+                        }} icon={<FormOutlined />} />
                 </div>
             },
             className: '__app-header-title'
@@ -883,7 +1356,7 @@ const TabPackList: React.FC<{}> = (props) => {
         <div className='__app-toolbar-container' style={{ width: '100%', padding: '8px 24px' }}>
             <div className='__app-toolbar-left-buttons'>
                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
-                    // setShowPopupCreate(true);
+                    setShowPopUpCreate(true);
                 }}>Thêm gói dịch vụ</Button>
                 <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                     CommonUtility.exportExcel(servicePacks, tableUserColumns);
@@ -926,5 +1399,32 @@ const TabPackList: React.FC<{}> = (props) => {
             ></Table>
 
         </div>
+        {
+            isShowPopUpCreate ?
+                <FormCreateServicePackDialog
+                    onCancel={() => {
+                        setShowPopUpCreate(false);
+                    }}
+                    onSave={() => {
+                        setShowPopUpCreate(false);
+                        loadData();
+                    }}
+                /> : <></>
+        }
+        {
+            isShowPopUpEdit ?
+                <FormEditServicePackDialog
+                    servicePackData={servicePackEdit}
+                    onCancel={() => {
+                        setShowPopUpEdit(false);
+                        setServicePackEdit(null);
+                    }}
+                    onSave={() => {
+                        setShowPopUpEdit(false);
+                        setServicePackEdit(null);
+                        loadData();
+                    }}
+                /> : <></>
+        }
     </>
 }
