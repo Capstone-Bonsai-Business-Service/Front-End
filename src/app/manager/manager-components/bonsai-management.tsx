@@ -439,7 +439,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                         <Col span={17} style={{ display: 'flex', alignItems: 'center' }}>
                                             {
                                                 isDataReady ?
-                                                    // <Input defaultValue={bonsaiDetail?.name} />
                                                     <span>{bonsaiDetail?.name ?? '--'}</span>
                                                     : <Skeleton.Input block={true} active={true} />
                                             }
@@ -453,18 +452,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                             {
                                                 isDataReady ?
                                                     <span>{bonsaiDetail?.height ?? '--'} (cm)</span>
-                                                    // <NumericFormat
-                                                    //     readOnly
-                                                    //     className="app-numeric-input"
-                                                    //     value={bonsaiDetail?.height}
-                                                    //     onValueChange={(values) => {
-                                                    //         // let temp = cloneDeep(bonsaiDetail) ?? {};
-                                                    //         // temp['height'] = values.floatValue as number;
-                                                    //         // setBonsaitDetail(temp);
-                                                    //     }}
-                                                    //     placeholder="Nhập chiều cao"
-                                                    //     thousandSeparator=" "
-                                                    // />
                                                     : <Skeleton.Input block={true} active={true} />
                                             }
 
@@ -480,11 +467,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                     <Switch
                                                         defaultChecked={bonsaiDetail?.withPot}
                                                         disabled
-                                                        onChange={(value) => {
-                                                            // let temp = cloneDeep(bonsaiDetail) ?? {};
-                                                            // temp['withPot'] = value;
-                                                            // setBonsaitDetail(temp);
-                                                        }}
                                                     />
                                                     : <>
                                                         <Skeleton.Button active={true} />
@@ -505,27 +487,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                             return <span> - {item.categoryName}</span>
                                                         })
                                                     }</span>
-                                                    // <Select
-                                                    //     mode='multiple'
-                                                    //     defaultValue={
-                                                    //         bonsaiDetail?.plantCategoryList.map(item => {
-                                                    //             return item.categoryID
-                                                    //         })
-                                                    //     }
-                                                    //     disabled
-                                                    //     optionFilterProp='label'
-                                                    //     style={{ width: '100%' }}
-                                                    //     options={categories}
-                                                    //     onChange={(values: any[]) => {
-                                                    //         // let temp = cloneDeep(bonsaiDetail) ?? {};
-                                                    //         // temp['categoryIDList'] = values.reduce((acc, cur) => {
-                                                    //         //     acc.push(cur.value);
-                                                    //         //     return acc;
-                                                    //         // }, []);
-                                                    //         // setBonsaitDetail(temp);
-                                                    //     }}
-                                                    //     placeholder='Chọn loại cây'
-                                                    // />
                                                     : <>
                                                         <Skeleton.Input block={true} active={true} />
                                                     </>
@@ -540,27 +501,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                             {
                                                 isDataReady ?
                                                     <span>{`${bonsaiDetail?.showPlantShipPriceModel.pricePerPlant}/km (${bonsaiDetail?.showPlantShipPriceModel.potSize})`}</span>
-                                                    // <Select
-                                                    //     disabled
-                                                    //     defaultValue={bonsaiDetail?.showPlantShipPriceModel.id}
-                                                    //     optionFilterProp='label'
-                                                    //     style={{ width: '100%' }}
-                                                    //     options={[
-                                                    //         { value: 'PS001', label: '10000/km (< 20cm)' },
-                                                    //         { value: 'PS002', label: '11000/km (~ 40cm)' },
-                                                    //         { value: 'PS003', label: '13000/km (~ 70cm)' },
-                                                    //         { value: 'PS004', label: '15000/km (> 100cm)' },
-                                                    //     ]}
-                                                    //     onChange={(values) => {
-                                                    //         // let temp = cloneDeep(bonsaiDetail) ?? {};
-                                                    //         // temp['categoryIDList'] = values.reduce((acc, cur) => {
-                                                    //         //     acc.push(cur.value);
-                                                    //         //     return acc;
-                                                    //         // }, []);
-                                                    //         // setBonsaitDetail(temp);
-                                                    //     }}
-                                                    //     placeholder='Chọn giá giao'
-                                                    // />
                                                     : <>
                                                         <Skeleton.Input block={true} active={true} />
                                                     </>
@@ -574,7 +514,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                         <Col span={17} style={{ display: 'flex', alignItems: 'center' }}>
                                             {
                                                 isDataReady ?
-                                                    // <span>{bonsaiDetail?.showPlantPriceModel.price ?? '--'} vnđ</span>
                                                     <NumericFormat
                                                         displayType='text'
                                                         value={bonsaiDetail?.showPlantPriceModel.price}
@@ -664,7 +603,11 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
 export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) => {
     const managerServices = new ManagerServices();
 
-    const [listPlant, setListPlant] = useState<any[]>([
+    const [listPlant, setListPlant] = useState<{
+        id: string;
+        plantID: string | null,
+        quantity: number,
+    }[]>([
         {
             id: new Date().getTime().toString(),
             plantID: null,
@@ -683,7 +626,8 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
         );
         nodes.push(
             <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
-                const body = listPlant.reduce((acc, cur, index) => {
+                const data = formatDataBeforePost();
+                const body = data.reduce((acc, cur, index) => {
                     const dataPost = {
                         "storeID": managerServices.storeId,
                         "plantID": cur.plantID,
@@ -691,7 +635,7 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
                     }
                     acc.push(dataPost);
                     return acc;
-                }, []);
+                }, [] as any[]);
                 managerServices.addStorePlantQuantity$(body).pipe(take(1)).subscribe({
                     next: (res) => {
                         if (res) {
@@ -708,8 +652,26 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
         return nodes;
     }
 
+    function formatDataBeforePost() {
+        return listPlant.reduce((acc, cur) => {
+            if (cur.quantity > 0 && cur.plantID) {
+                const includePlantIdIndex = acc.findIndex(item => item.plantID === cur.plantID);
+                if (includePlantIdIndex === -1) {
+                    acc.push(cur);
+                } else {
+                    acc[includePlantIdIndex].quantity += cur.quantity;
+                }
+            }
+            return acc;
+        }, [] as {
+            id: string;
+            plantID: string | null;
+            quantity: number;
+        }[])
+    }
+
     function renderListPlantQuantity(): React.ReactNode[] {
-        const elem = listPlant.reduce((acc, cur, index) => {
+        const elem = listPlant.reduce((acc, cur, index, list) => {
             acc.push(
                 <Row key={`plant_quantity_${index}`}>
                     <Col span={2} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
@@ -734,6 +696,7 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
                             className="app-numeric-input"
                             placeholder="Nhập số lượng"
                             value={cur.quantity}
+                            allowNegative={false}
                             onChange={(value) => {
                                 let temp = cloneDeep(listPlant) ?? [];
                                 temp[index]['quantity'] = Number(value.target.value);
@@ -750,7 +713,7 @@ export const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) =>
                 </Row>
             )
             return acc;
-        }, []);
+        }, [] as any[]);
         return elem;
     }
 

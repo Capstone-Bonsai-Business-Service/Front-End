@@ -10,6 +10,7 @@ import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import { CommonUtility } from "../../utils/utilities";
 import toast from "react-hot-toast";
 import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
+import { PatternFormat } from "react-number-format";
 
 
 interface IMemberManagementProps {
@@ -241,52 +242,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 <Col span={3} className='__app-account-field'>
                                 </Col>
                                 <Col span={4}>
-                                    <Upload
-                                        name="avatar"
-                                        listType="picture-circle"
-                                        className="avatar-uploader"
-                                        showUploadList={false}
-                                        // action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                                        action={(file: RcFile) => {
-                                            return new Promise<string>(resolve => {
-                                                console.log(file);
-                                                resolve('https://www.mocky.io/v2/5cc8019d300000980a055e76');
-                                            })
-                                        }}
-                                        beforeUpload={() => {
-
-                                        }}
-                                        onChange={(info: UploadChangeParam<UploadFile>) => {
-                                            if (info.file.status === 'uploading') {
-                                                return;
-                                            }
-                                            if (info.file.status === 'done') {
-                                                // Get this url from response in real world.
-                                                CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
-                                                    // setLoading(false);
-                                                    // setImageUrl(url);
-                                                });
-                                            }
-                                            if (info.file.status === 'error') {
-                                                // Get this url from response in real world.
-                                                CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
-                                                    // setLoading(false);
-                                                    // setImageUrl(url);
-                                                });
-                                                // setLoading(false);
-                                                toast.error('Tải ảnh thất bại. Vui lòng thử lại sau.');
-                                            }
-                                        }}
-                                    >
-                                        {
-                                            userDetail?.avatar ?
-                                                <Avatar shape="circle" size={100} src={userDetail?.avatar} icon={<UserOutlined />} /> :
-                                                // <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> 
-                                                <div>
-                                                    <div style={{ marginTop: 8 }}>Upload</div>
-                                                </div>
-                                        }
-                                    </Upload>
+                                    <Avatar shape="circle" size={100} src={userDetail?.avatar} icon={<UserOutlined />} />
                                 </Col>
                                 <Col span={16}>
                                     <Row className='__app-account-info-row'>
@@ -361,7 +317,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 <Col span={15}>
                                     {
                                         isDataReady ?
-                                            <Input value={userDetail?.fullName ?? ''} />
+                                            <span>{userDetail?.fullName ?? ''}</span>
                                             : <Skeleton.Input block={true} active={true} />
                                     }
                                 </Col>
@@ -377,7 +333,11 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 <Col span={15}>
                                     {
                                         isDataReady ?
-                                            <Input value={userDetail?.phone ?? ''} />
+                                            <PatternFormat
+                                                displayType='text'
+                                                format='#### ### ###'
+                                                value={userDetail?.phone ?? ''}
+                                            />
                                             : <Skeleton.Input block={true} active={true} />
                                     }
                                 </Col>
@@ -393,9 +353,9 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 <Col span={15}>
                                     {
                                         isDataReady ?
-                                            <Radio.Group onChange={(value) => {
-
-                                            }} defaultValue={userDetail?.gender}>
+                                            <Radio.Group
+                                                disabled
+                                                value={userDetail?.gender}>
                                                 <Radio value={true}>Nam</Radio>
                                                 <Radio value={false}>Nữ</Radio>
                                             </Radio.Group>
@@ -419,27 +379,13 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                             </Col>
                                             <Col span={15}>
                                                 {
-                                                    userDetail?.storeID ? <span>{userDetail?.storeName}</span> : <></>
+                                                    userDetail?.storeID ? <span>{userDetail?.storeName}</span> : <>--</>
                                                 }
-                                                {
-                                                    userDetail?.storeID === null ?
-                                                        <Select
-                                                            defaultValue={userDetail?.storeID}
-                                                            style={{ width: '100%' }}
-                                                            options={stores}
-                                                            onChange={(value) => {
-                                                                // let temp = cloneDeep(accountDetail) ?? {};
-                                                                // temp['storeId'] = value;
-                                                                // setAccountDetail(temp);
-                                                            }}
-                                                        /> : <></>
-                                                }
-
                                             </Col>
                                         </Row> :
                                         <></>
                             }
-                            {
+                            {/* {
                                 isDataReady ?
                                     <div style={{ height: 210, display: 'flex', flexDirection: 'column-reverse', padding: 24 }}>
                                         <div className="__app-action-button" style={{ paddingRight: 115 }}>
@@ -449,7 +395,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                             }}>Lưu</Button>
                                         </div>
                                     </div> : <></>
-                            }
+                            } */}
                         </div>
                     </div>
                 </> : <></>

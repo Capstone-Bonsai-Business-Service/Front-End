@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { CoreServices } from '../../../service.core';
 import { IUser } from '../../../IApp.interface';
+import { CommonUtility } from '../../utils/utilities';
 
 interface ILoginProps {
     onSaveUserLogin: (obj: IUser) => any;
@@ -23,6 +24,11 @@ export const LoginPage: React.FC<ILoginProps> = (props) => {
     const navigate = useNavigate();
 
     function submitLogin() {
+        if (CommonUtility.isNullOrEmpty(username) || CommonUtility.isNullOrEmpty(password)) {
+            toast.error('Vui lòng nhập đủ thông tin username & password');
+            setProcessing(false);
+            return;
+        }
         let user: IUser = {
             username: username,
         } as IUser;
@@ -30,7 +36,9 @@ export const LoginPage: React.FC<ILoginProps> = (props) => {
         coreService.login$(username, password).pipe(take(1)).pipe(
             switchMap(token => {
                 if (token.error) {
-                    return of(token.error);
+                    return of({
+                        error: token.error
+                    });
                 } else {
                     user['token'] = token;
                     return coreService.getUserInfoByToken$(token);

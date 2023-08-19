@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast";
 import { CommonUtility } from "../../utils/utilities";
 import { UserPicker } from "../../common/components/user-picker-component";
 import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
+import { NumericFormat, PatternFormat } from "react-number-format";
 
 
 interface IStoreManagementProps {
@@ -901,11 +902,15 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                            <Input onChange={(args) => {
-                                let temp = cloneDeep(storeDetail) ?? {};
-                                temp['phone'] = args.target.value;
-                                setBonsaitDetail(temp);
-                            }}
+                            <PatternFormat 
+                                className="app-numeric-input"
+                                format='#### ### ###'
+                                value={storeDetail.phone}
+                                onValueChange={(values) => {
+                                    let temp = cloneDeep(storeDetail) ?? {};
+                                    temp['phone'] = values.value;
+                                    setBonsaitDetail(temp);
+                                }}
                                 placeholder="Nhập số điện thoại"
                             />
                         </Col>

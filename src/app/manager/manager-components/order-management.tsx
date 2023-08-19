@@ -128,7 +128,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
     }
 
     function getListStaff() {
-        managerServices.getStaffForContract$().pipe(take(1)).subscribe({
+        managerServices.getMembers$().pipe(take(1)).subscribe({
             next: (value) => {
                 const staffListOption = value.reduce((acc, cur) => {
                     acc.push({

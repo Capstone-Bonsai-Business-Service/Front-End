@@ -187,7 +187,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
 
     function getContractDetail(id: string) {
         setDataReady(false);
-        forkJoin([managerServices.getContractDetail$(id), managerServices.getStaffForContract$()]).subscribe({
+        forkJoin([managerServices.getContractDetail$(id), managerServices.getMembers$()]).subscribe({
             next: (values) => {
                 const staffListOption = values[1].reduce((acc, cur) => {
                     acc.push({
@@ -614,7 +614,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
 
     useEffect(() => {
         if (!isFirstInit) {
-            forkJoin([managerServices.getStaffForContract$(), managerServices.getService$(), managerServices.getServicePacks$()]).subscribe({
+            forkJoin([managerServices.getMembers$(), managerServices.getService$(), managerServices.getServicePacks$()]).subscribe({
                 next: values => {
                     const staffListOption = values[0].reduce((acc, cur) => {
                         acc.push({

@@ -338,7 +338,7 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
             result.invalid = true;
             result.fields.push('Giá');
         }
-        if (CommonUtility.isNullOrEmpty(temp.listURL)) {
+        if (CommonUtility.isNullOrEmpty(images)) {
             result.invalid = true;
             result.fields.push('Ảnh dịch vụ');
         }
@@ -359,7 +359,7 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                 })
                 return acc;
             }, [] as any[]),
-            "listURL": serviceForm.listURL,
+            "listURL": images,
             "atHome": serviceForm.atHome
         }
         ownerServices.createService$(formData).pipe(take(1)).subscribe({

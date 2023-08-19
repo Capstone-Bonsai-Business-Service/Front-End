@@ -259,7 +259,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             icon: <RiFeedbackLine color='#000' />,
             label: (
                 <div className='__app-group-menu-label'>
-                    Feedback
+                    Phản hồi
                 </div>
             )
         },
@@ -477,7 +477,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                             <img src={Logo} alt='' style={{ height: 58, }} />
                         </div>
                         <div className='__app-header-right'>
-                            <div className='__app-notification-info'>
+                            {/* <div className='__app-notification-info'>
                                 <Dropdown
                                     trigger={['click']}
                                     menu={{ items: bindingNotifications() }}
@@ -486,7 +486,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                         <Avatar shape='circle' size='large' icon={<PiBellRingingLight />} />
                                     </Badge>
                                 </Dropdown>
-                            </div>
+                            </div> */}
 
                             <div className='__app-user-info'>
                                 <Dropdown

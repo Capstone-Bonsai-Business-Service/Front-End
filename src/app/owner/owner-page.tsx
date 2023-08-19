@@ -156,36 +156,6 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                             label: 'Nhân viên',
                         },
                     ]
-                },
-                {
-                    key: 'contracts',
-                    className: '__app-group-menu',
-                    icon: <LuClipboardSignature color='#000' />,
-                    label: (
-                        <div className='__app-group-menu-label'>
-                            Hợp đồng
-                        </div>
-                    )
-                },
-                {
-                    key: 'orders',
-                    className: '__app-group-menu',
-                    icon: <PiHandshake color='#000' />,
-                    label: (
-                        <div className='__app-group-menu-label'>
-                            Đơn hàng
-                        </div>
-                    )
-                },
-                {
-                    key: 'feedback',
-                    className: '__app-group-menu',
-                    icon: <RiFeedbackLine color='#000' />,
-                    label: (
-                        <div className='__app-group-menu-label'>
-                            Feedback
-                        </div>
-                    )
                 }
             ]
         },
@@ -251,7 +221,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                             <img src={Logo} alt='' style={{ height: 58, }} />
                         </div>
                         <div className='__app-header-right'>
-                            <div className='__app-notification-info'>
+                            {/* <div className='__app-notification-info'>
                                 <Dropdown
                                     trigger={['click']}
                                     menu={{ items: bindingNotifications() }}
@@ -260,7 +230,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                                         <Avatar shape='circle' size='large' icon={<PiBellRingingLight />} />
                                     </Badge>
                                 </Dropdown>
-                            </div>
+                            </div> */}
 
                             <div className='__app-user-info'>
                                 <Dropdown

@@ -121,7 +121,7 @@ export class ManagerServices extends CoreServices {
 
     getContracts$() {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/contract?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/contract?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -343,7 +343,7 @@ export class ManagerServices extends CoreServices {
 
     getStoreOrders$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
