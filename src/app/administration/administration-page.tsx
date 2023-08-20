@@ -131,7 +131,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
             ellipsis: true,
             render: (value, record, index) => {
                 return <div>
-                    <Avatar src={record.avatar} />
+                    <Avatar src={record.avatar} icon={<UserOutlined />}/>
                     <span className='__app-column-full-name'>{value}</span>
                 </div>
             },
@@ -205,7 +205,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                 return <div>
                     <Button className='__app-command-button' onClick={(e) => {
                         e.preventDefault();
-                        openDetailUser(record.Id);
+                        openDetailUser(record.userID);
                     }} icon={<FormOutlined />} />
                 </div>
             },
@@ -249,10 +249,10 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
         const arrAccounts = accountsOnSearch.reduce((acc, cur) => {
             acc.push(
                 <div className='__app-user-frame-container' key={cur.Id} onClick={() => {
-                    openDetailUser(cur.Id);
+                    openDetailUser(cur.userID);
                 }}>
                     <div className='__app-avatar-block'>
-                        <Avatar size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }} src={cur.avatar} />
+                        <Avatar size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }} src={cur.avatar} icon={<UserOutlined />}/>
                     </div>
                     <div className='__app-account-info-block-container'>
                         <div className='__app-account-info-top-block'>
@@ -459,18 +459,18 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                 trigger={['click']}
                                 menu={{ items: userMenuItems }}
                                 placement='bottomRight'>
-                                {
-                                    props.currentUser?.avatar ?
-                                        <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} /> :
-                                        <Avatar className='__app-user-avatar' size={'large'}>PH</Avatar>
-                                }
+                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} />
                             </Dropdown>
                         </div>
                     </Layout.Header>
                     <Layout.Content className='__app-layout-content'>
-                        <div className='__app-toolbar-container'>
+                        <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                             <div className='__app-toolbar-left-buttons'>
-                                <Button shape='default' icon={<PlusOutlined />} type='text' onClick={openCreateAccount}>Thêm tài khoản</Button>
+                                {
+                                    currentMenu === 'allAccounts' || currentMenu === 'managerAccounts' || currentMenu === 'staffAccounts' ?
+                                        <Button shape='default' icon={<PlusOutlined />} type='text' onClick={openCreateAccount}>Thêm tài khoản</Button> : <></>
+                                }
+
                                 <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(accounts, tableUserColumns);
                                 }}>Xuất Tệp Excel</Button>
@@ -552,6 +552,11 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                         {
                             isShowDialogCreate ?
                                 <CreateAccountDialog
+                                    role={
+                                        currentMenu === 'allAccounts' ? ['staff', 'manager'] :
+                                            currentMenu === 'managerAccounts' ? ['manager'] :
+                                                currentMenu === 'staffAccounts' ? ['staff'] : []
+                                    }
                                     onCancel={closeDialogCreateAccount}
                                     onSave={onCreateAccount}
                                     key='createAccountDialog'

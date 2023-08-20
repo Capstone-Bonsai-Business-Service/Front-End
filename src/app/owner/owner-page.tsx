@@ -218,7 +218,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                             display: 'flex',
                             alignItems: 'center'
                         }}>
-                            <img src={Logo} alt='' style={{ height: 58, }} />
+                            {/* <img src={Logo} alt='' style={{ height: 58, }} /> */}
                         </div>
                         <div className='__app-header-right'>
                             {/* <div className='__app-notification-info'>

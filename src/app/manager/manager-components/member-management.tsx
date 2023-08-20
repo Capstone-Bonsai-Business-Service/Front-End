@@ -10,6 +10,7 @@ import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import { CommonUtility } from "../../utils/utilities";
 import toast from "react-hot-toast";
 import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
+import { PatternFormat } from "react-number-format";
 
 
 interface IMemberManagementProps {
@@ -349,7 +350,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 <Col span={15}>
                                     {
                                         isDataReady ?
-                                            <Input value={userDetail?.fullName ?? ''} />
+                                            <span>{userDetail?.fullName ?? ''}</span>
                                             : <Skeleton.Input block={true} active={true} />
                                     }
                                 </Col>
@@ -365,7 +366,11 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 <Col span={15}>
                                     {
                                         isDataReady ?
-                                            <Input value={userDetail?.phone ?? ''} />
+                                            <PatternFormat
+                                                displayType='text'
+                                                format='#### ### ###'
+                                                value={userDetail?.phone ?? ''}
+                                            />
                                             : <Skeleton.Input block={true} active={true} />
                                     }
                                 </Col>
@@ -381,9 +386,9 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 <Col span={15}>
                                     {
                                         isDataReady ?
-                                            <Radio.Group onChange={(value) => {
-
-                                            }} defaultValue={userDetail?.gender}>
+                                            <Radio.Group
+                                                disabled
+                                                value={userDetail?.gender}>
                                                 <Radio value={true}>Nam</Radio>
                                                 <Radio value={false}>Nữ</Radio>
                                             </Radio.Group>

@@ -92,6 +92,13 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
             showSorterTooltip: false,
             ellipsis: true,
             width: 150,
+            render: (value) => {
+                return <PatternFormat
+                    displayType="text"
+                    format='#### ### ###'
+                    value={value ?? ''}
+                />
+            }
         },
         {
             title: 'Quản lý',
@@ -515,12 +522,23 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                             <Col span={14} >
                                                 {
                                                     isDataReady ?
-                                                        <Input value={storeDetail?.phone}
-                                                            onChange={(args) => {
-                                                                let temp = cloneDeep(storeDetail) as IStore;
-                                                                temp['phone'] = args.target.value;
+                                                        // <Input value={storeDetail?.phone}
+                                                        //     onChange={(args) => {
+                                                        //         let temp = cloneDeep(storeDetail) as IStore;
+                                                        //         temp['phone'] = args.target.value;
+                                                        //         setStoreDetail(temp);
+                                                        //     }}
+                                                        // />
+                                                        <PatternFormat
+                                                            className="app-numeric-input"
+                                                            format='#### ### ###'
+                                                            value={storeDetail?.phone ?? ''}
+                                                            onValueChange={(values) => {
+                                                                let temp: IStore = cloneDeep(storeDetail as IStore);
+                                                                temp['phone'] = values.value;
                                                                 setStoreDetail(temp);
                                                             }}
+                                                            placeholder="Nhập số điện thoại"
                                                         />
                                                         : <Skeleton.Input block={true} active={true} />
                                                 }
@@ -902,7 +920,7 @@ const FormCreateStoreDialog: React.FC<any> = (props: any) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                            <PatternFormat 
+                            <PatternFormat
                                 className="app-numeric-input"
                                 format='#### ### ###'
                                 value={storeDetail.phone}

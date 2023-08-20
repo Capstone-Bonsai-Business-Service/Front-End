@@ -66,13 +66,14 @@ export class adminServices extends CoreServices {
 
     getAccount$(accountId: string) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/api/v1/accounts/${accountId}`
+            let url = this.globalSettings.domain + `/user/getByID?userID=${accountId}`
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
-            }).catch(() => {
-                let data = accounts.find(item => item.Id === accountId);
-                obs.next(data);
+            }).catch((err) => {
+                obs.next({
+                    error: err
+                });
                 obs.complete();
             })
         })

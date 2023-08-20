@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { CoreServices } from '../../../service.core';
 import { IUser } from '../../../IApp.interface';
 import { CommonUtility } from '../../utils/utilities';
+import Logo from '../../../assets/images/logo2.png';
 
 interface ILoginProps {
     onSaveUserLogin: (obj: IUser) => any;
@@ -64,8 +65,8 @@ export const LoginPage: React.FC<ILoginProps> = (props) => {
     }
 
     return (
-        <div className='__app-login'>
-            <div className='__app-login-container'>
+        <div className='__app-login' >
+            <div className='__app-login-container' >
                 <div className='__login-form-item'>
                     <div className='__login-image'>
                         <img src={loginImg} width='300' style={{ position: 'relative' }} alt='login' />

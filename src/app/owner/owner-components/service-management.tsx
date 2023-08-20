@@ -1146,7 +1146,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                             <strong>ID: </strong>
                                             {
                                                 isDataReady ?
-                                                    <div style={{ marginLeft: 10 }}><strong>{serviceDetail?.id}</strong></div>
+                                                    <div style={{ marginLeft: 10 }}><strong>{serviceDetail?.serviceID}</strong></div>
                                                     : <div style={{ width: '50%', marginLeft: '10%' }}><Skeleton.Input active={true} block={true} /></div>
                                             }
                                         </Col>
@@ -1179,7 +1179,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                             {
                                                 isDataReady ?
                                                     <NumericFormat
-                                                        className="app-numeric-input"
+                                                        displayType='text'
                                                         defaultValue={serviceDetail?.price}
                                                         onValueChange={(values) => {
                                                             // let temp = cloneDeep(serviceDetail) ?? {};
@@ -1187,6 +1187,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                                             // setBonsaitDetail(temp);
                                                         }}
                                                         placeholder="Nhập chiều cao"
+                                                        suffix=' vnđ'
                                                         thousandSeparator=" "
                                                     />
                                                     : <Skeleton.Input block={true} active={true} />

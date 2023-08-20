@@ -29,10 +29,13 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
         if (!isFirstInit) {
             adminService.getAccount$(params.id ?? '').subscribe({
                 next: (res) => {
-                    setAccount(res);
-                    setImageUrl(res.avatar ?? '');
-                    setFirstInit(true);
-                    setDataReady(true);
+                    if (res.error) {
+                        toast.error(res.error);
+                    } else {
+                        setAccount(res);
+                        setFirstInit(true);
+                        setDataReady(true);
+                    }
                 }
             })
         }
@@ -147,7 +150,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                     <Layout.Content className='__app-layout-content'>
                         <div className='__app-toolbar-container'>
                             <div className='__app-toolbar-left-buttons'>
-                                <Button shape='default' type='ghost' onClick={() => { 
+                                <Button shape='default' type='ghost' onClick={() => {
                                     navigate('/administration');
                                 }} icon={<LeftOutlined />}></Button>
                             </div>
@@ -160,54 +163,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                 <Col span={3} className='__app-account-field'>
                                 </Col>
                                 <Col span={21}>
-                                    <Upload
-                                        name="avatar"
-                                        listType="picture-circle"
-                                        className="avatar-uploader"
-                                        showUploadList={false}
-                                        // action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                                        action={(file: RcFile) => {
-                                            return new Promise<string>(resolve => {
-                                                console.log(file);
-                                                resolve('https://www.mocky.io/v2/5cc8019d300000980a055e76');
-                                            })
-                                        }}
-                                        beforeUpload={() => {
-
-                                        }}
-                                        onChange={(info: UploadChangeParam<UploadFile>) => {
-                                            if (info.file.status === 'uploading') {
-                                                setLoading(true);
-                                                return;
-                                            }
-                                            if (info.file.status === 'done') {
-                                                // Get this url from response in real world.
-                                                CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
-                                                    setLoading(false);
-                                                    setImageUrl(url);
-                                                });
-                                            }
-                                            if (info.file.status === 'error') {
-                                                // Get this url from response in real world.
-                                                CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
-                                                    setLoading(false);
-                                                    setImageUrl(url);
-                                                });
-                                                setLoading(false);
-                                                toast.error('Tải ảnh thất bại. Vui lòng thử lại sau.');
-                                            }
-                                        }}
-                                    >
-                                        {
-                                            imageUrl ?
-                                                <Avatar shape="circle" size={100} src={imageUrl} /> :
-                                                // <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> 
-                                                <div>
-                                                    {loading ? <LoadingOutlined /> : <PlusOutlined />}
-                                                    <div style={{ marginTop: 8 }}>Upload</div>
-                                                </div>
-                                        }
-                                    </Upload>
+                                    <Avatar shape="circle" size={100} src={imageUrl} />
                                 </Col>
                             </Row>
                             <Row className='__app-account-info-row'>

@@ -353,38 +353,39 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                     <Row>
                                         <Col span={8} style={{ fontWeight: 500 }}>Loại thanh toán:</Col>
                                         <Col>{
-                                            contractDetail[0]?.showContractModel?.status === 'APPROVED' ?
-                                                <Select
-                                                    style={{ width: '100%' }}
-                                                    options={[
-                                                        { value: 'PT001', label: 'Thanh toán trước 50%' },
-                                                        { value: 'PT002', label: 'Thanh toán trước 80%' },
-                                                        { value: 'PT003', label: 'Thanh toán hoàn toàn' },
-                                                    ]}
-                                                    placeholder='Chọn phương thức thanh toán'
-                                                    onChange={(value) => {
-                                                        let _dep = 0
-                                                        switch (value) {
-                                                            case 'PT001':
-                                                                _dep = (contractDetail[0]?.showContractModel?.total ?? 0) * 0.5;
-                                                                break;
-                                                            case 'PT002':
-                                                                _dep = (contractDetail[0]?.showContractModel?.total ?? 0) * 0.8;
-                                                                break;
-                                                            case 'PT003':
-                                                                _dep = (contractDetail[0]?.showContractModel?.total ?? 0);
-                                                                break;
-                                                        }
-                                                        setSignedForm({
-                                                            deposit: _dep,
-                                                            paymentTypeID: value
-                                                        })
-                                                    }}
-                                                />
-                                                : contractDetail[0]?.showContractModel?.showPaymentTypeModel?.name ?? ''
+                                            // contractDetail[0]?.showContractModel?.status === 'APPROVED' ?
+                                            //     <Select
+                                            //         style={{ width: '100%' }}
+                                            //         options={[
+                                            //             { value: 'PT001', label: 'Thanh toán trước 50%' },
+                                            //             { value: 'PT002', label: 'Thanh toán trước 80%' },
+                                            //             { value: 'PT003', label: 'Thanh toán hoàn toàn' },
+                                            //         ]}
+                                            //         placeholder='Chọn phương thức thanh toán'
+                                            //         onChange={(value) => {
+                                            //             let _dep = 0
+                                            //             switch (value) {
+                                            //                 case 'PT001':
+                                            //                     _dep = (contractDetail[0]?.showContractModel?.total ?? 0) * 0.5;
+                                            //                     break;
+                                            //                 case 'PT002':
+                                            //                     _dep = (contractDetail[0]?.showContractModel?.total ?? 0) * 0.8;
+                                            //                     break;
+                                            //                 case 'PT003':
+                                            //                     _dep = (contractDetail[0]?.showContractModel?.total ?? 0);
+                                            //                     break;
+                                            //             }
+                                            //             setSignedForm({
+                                            //                 deposit: _dep,
+                                            //                 paymentTypeID: value
+                                            //             })
+                                            //         }}
+                                            //     />
+                                            //     : contractDetail[0]?.showContractModel?.showPaymentTypeModel?.name ?? ''
+                                            contractDetail[0]?.showContractModel?.paymentMethod ?? '--'
                                         }</Col>
                                     </Row>
-                                    <Row>
+                                    {/* <Row>
                                         <Col span={8} style={{ fontWeight: 500 }}>Đặt cọc:</Col>
                                         <Col>
                                             <NumericFormat
@@ -396,7 +397,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                                     signedForm.deposit : contractDetail[0]?.showContractModel?.deposit
                                                 } />
                                         </Col>
-                                    </Row>
+                                    </Row> */}
                                     <Row>
                                         <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
                                         <Col span={16}>
@@ -491,7 +492,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                             contractDetail[0]?.showContractModel?.status !== 'APPROVED' ?
                                             <>
                                                 <Row>
-                                                    <Col span={8} style={{ fontWeight: 500 }}>Ảnh Đính Kèm:</Col>
+                                                    <Col span={8} style={{ fontWeight: 500 }}>Ảnh hợp đồng:</Col>
                                                     <Col span={16}>
                                                         {
                                                             contractDetail[0]?.showContractModel?.imgList.reduce((acc, cur) => {

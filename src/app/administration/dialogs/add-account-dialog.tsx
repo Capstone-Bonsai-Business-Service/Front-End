@@ -7,19 +7,39 @@ import toast from 'react-hot-toast';
 import { CommonUtility } from '../../utils/utilities';
 import { adminServices } from '../administration.service';
 import { take } from 'rxjs';
+import { PatternFormat } from 'react-number-format';
 
 interface IAccountDetailProps {
     onCancel: () => void;
     onSave: (data: any) => void;
+    role: string[];
 }
 
 export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
 
     const adminService = new adminServices();
 
-    const [accountDetail, setAccountDetail] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string>();
+    const [accountDetail, setAccountDetail] = useState<{
+        username: string;
+        password: string;
+        fullName: string;
+        email: string;
+        phone: string;
+        address: string;
+        role: string;
+        gender: string;
+    }>({
+        username: '',
+        password: '',
+        fullName: '',
+        email: '',
+        phone: '',
+        address: '',
+        gender: '',
+        role: props.role[0] ?? ''
+    });
+    // const [loading, setLoading] = useState(false);
+    // const [imageUrl, setImageUrl] = useState<string>();
 
     function getRenderFooterButton(): React.ReactNode[] {
         let nodes: React.ReactNode[] = []
@@ -39,8 +59,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                     "email": accountDetail.email,
                     "phone": accountDetail.phone,
                     "address": accountDetail.address,
-                    "gender": accountDetail.gender,
-                    "avatar": accountDetail.avatar
+                    "gender": accountDetail.gender
                 }
                 adminService.createAccount$(accountInfo).pipe(take(1)).subscribe({
                     next: (res) => {
@@ -110,21 +129,23 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                         </Col>
                         <Col span={18}>
                             <Select
-                                defaultValue='Staff'
+                                value={accountDetail.role}
                                 style={{ width: '100%' }}
-                                options={[
-                                    { value: 'Staff', label: 'Staff' },
-                                    { value: 'Manager', label: 'Manager' },
-                                ]}
+                                options={props.role.map(item => {
+                                    return {
+                                        label: item,
+                                        value: item
+                                    }
+                                })}
                                 onChange={(value) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
-                                    temp['accountType'] = value;
+                                    temp['role'] = value;
                                     setAccountDetail(temp);
                                 }}
                             />
                         </Col>
                     </Row>
-                    <Row className='__app-account-info-row'>
+                    {/* <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
                             <span>
                                 <strong>Chi Nhánh:</strong> <span className='__app-required-field'> *</span>
@@ -147,7 +168,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                                 }}
                             />
                         </Col>
-                    </Row>
+                    </Row> */}
                     <Divider className='__app-divider-no-margin'></Divider>
                     <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
@@ -172,7 +193,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                        <Input
+                            <Input
                                 onChange={(args) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
                                     temp['email'] = args.target.value;
@@ -205,7 +226,9 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             </span>
                         </Col>
                         <Col span={18}>
-                        <Input
+                            <PatternFormat
+                                className="app-numeric-input"
+                                format='#### ### ###'
                                 onChange={(args) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
                                     temp['phone'] = args.target.value;
@@ -219,7 +242,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             <strong>Địa chỉ:</strong>
                         </Col>
                         <Col span={18}>
-                        <Input
+                            <Input
                                 onChange={(args) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
                                     temp['address'] = args.target.value;
@@ -228,7 +251,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             />
                         </Col>
                     </Row>
-                    <Row className='__app-account-info-row'>
+                    {/* <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
                             <strong>Ảnh đại diện:</strong>
                         </Col>
@@ -282,7 +305,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                                 }
                             </Upload>
                         </Col>
-                    </Row>
+                    </Row> */}
                 </div>
             </Modal>
         </>
