@@ -158,7 +158,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                 compare: (acc, cur) => acc.totalRating > cur.totalRating ? 1 : acc.totalRating < cur.totalRating ? -1 : 0
             },
             render: (value) => {
-                return <Rate disabled value={value}/>
+                return <Rate disabled value={value} />
             },
             className: '__app-header-title'
         },
@@ -748,7 +748,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     </Row>
                                     <Row>
                                         <Col span={5} className='__app-object-field align-center'>
-                                            <strong>Phí giao hàng:</strong>
+                                            <strong>Kích thước chậu:</strong>
                                         </Col>
                                         <Col span={17}>
                                             {
@@ -760,7 +760,12 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                         options={plantShipFee.reduce((acc: any[], cur: any) => {
                                                             acc.push({
                                                                 value: cur.id,
-                                                                label: `${cur.potSize} (${cur.pricePerPlant})`
+                                                                label: <span>{`${cur.potSize} (phí giao hàng: `}<NumericFormat
+                                                                    thousandSeparator=' '
+                                                                    suffix=' vnđ'
+                                                                    displayType='text'
+                                                                    value={cur.pricePerPlant}
+                                                                /> {`/km)`}</span>
                                                             })
                                                             return acc;
                                                         }, [])}
@@ -790,6 +795,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                         value={bonsaiDetail?.showPlantPriceModel.price}
                                                         placeholder="Nhập giá cây"
                                                         thousandSeparator=" "
+                                                        suffix=' vnđ'
                                                     />
                                                     : <Skeleton.Input block={true} active={true} />
                                             }
@@ -986,7 +992,12 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
         const plantShipOptions = plantShip.reduce((acc: any[], cur: any) => {
             acc.push({
                 value: cur.id,
-                label: `${cur.potSize} (${cur.pricePerPlant})`
+                label: <span>{`${cur.potSize} (phí giao hàng: `}<NumericFormat
+                    thousandSeparator=' '
+                    suffix=' vnđ'
+                    displayType='text'
+                    value={cur.pricePerPlant}
+                /> {`/km)`}</span>
             })
             return acc;
         }, []);
@@ -1396,14 +1407,14 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                     <Row className='__app-object-info-row'>
                         <Col span={6} className='__app-object-field'>
                             <span>
-                                <strong>Phí ship:</strong> <span className='__app-required-field'> *</span>
+                                <strong>Kích thước chậu:</strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
                         <Col span={18}>
                             <Select
                                 style={{ width: '100%' }}
                                 options={plantShipFee}
-                                placeholder='Chọn bảng giá phí ship'
+                                placeholder='Chọn kích thước chậu'
                                 onChange={(value) => {
                                     let temp = cloneDeep(bonsaiDetail) ?? {};
                                     temp['shipPriceID'] = value;
