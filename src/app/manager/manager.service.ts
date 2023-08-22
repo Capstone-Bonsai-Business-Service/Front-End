@@ -409,6 +409,23 @@ export class ManagerServices extends CoreServices {
         })
     }
 
+    removeStorePlantQuantity$(storePlantID: string, quantity: number, reason: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/removeStorePlant/${storePlantID}?quantity=${quantity}&reason=${reason}`
+            axios.delete(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Giảm số lượng cây thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
     getReport$(from: string, to: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/statistic?storeID=${this.storeId}&from=${from}&to=${to}`

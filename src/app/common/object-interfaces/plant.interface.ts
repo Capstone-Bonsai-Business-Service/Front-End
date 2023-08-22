@@ -28,7 +28,10 @@ export interface IPlant {
     }[];
     //status
     status: PlantStatus;
-    showStorePlantModel: any;
+    showStorePlantModel: {
+        id: string;
+        quantity: number;
+    };
 }
 
 export type PlantStatus = 'ONSALE' | 'INACTIVE';

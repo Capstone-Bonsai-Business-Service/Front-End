@@ -1,13 +1,12 @@
-import { CloudUploadOutlined, FormOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Dropdown } from "antd";
+import { LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, Divider, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Dropdown } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { IPlant, PlantStatus, PlantStatusMapping } from "../../common/object-interfaces/plant.interface";
 import { NumericFormat } from "react-number-format";
 import { ManagerServices } from "../manager.service";
-import { concat, map, take, tap } from "rxjs";
+import { map, take } from "rxjs";
 import { cloneDeep } from "lodash";
 import TextArea from "antd/es/input/TextArea";
 import { CommonUtility } from "../../utils/utilities";
@@ -28,8 +27,6 @@ interface IFormImportPlantProps {
 
 export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (props) => {
 
-    const navigate = useNavigate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const managerServices = new ManagerServices();
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -45,6 +42,17 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
     const [showPopupImport, setShowPopupImport] = useState<boolean>(false);
     const [showPopupPlantQuantity, setShowPopupPlantQuantity] = useState<boolean>(false);
     const [plantQuantityHistory, setPlantQuantityHistory] = useState<any[]>([]);
+    const [plantDecreaseQuantityForm, setPlantDecreaseQuantityForm] = useState<{
+        isShow: boolean;
+        storePlantID: string;
+        quantity: number;
+        reason: string
+    }>({
+        isShow: false,
+        storePlantID: '',
+        quantity: 0,
+        reason: ''
+    });
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -143,7 +151,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                         trigger={['click']}
                         menu={{
                             items: [{
-                                key: 'amountIncrease',
+                                key: 'detail',
                                 label: <span
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -151,6 +159,20 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                         setFormMode('edit');
                                     }}
                                 >Xem chi tiết</span>
+                            },
+                            {
+                                key: 'quantityDecrease',
+                                label: <span
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPlantDecreaseQuantityForm({
+                                            isShow: true,
+                                            quantity: 0,
+                                            reason: '',
+                                            storePlantID: record.showStorePlantModel.id
+                                        });
+                                    }}
+                                >Giảm số lượng cây</span>
                             },
                             {
                                 key: 'disablePlant',
@@ -595,6 +617,86 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                             loadData();
                         }}
                     /> : <></>
+            }
+            {
+                plantDecreaseQuantityForm.isShow ?
+                    <Modal
+                        width={500}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Giảm số lượng cây
+                            </span>
+                        )}
+                        footer={[
+                            <Button key='cancel' onClick={() => {
+                                setPlantDecreaseQuantityForm({
+                                    isShow: false,
+                                    quantity: 0,
+                                    reason: '',
+                                    storePlantID: ''
+                                })
+                            }}>Đóng</Button>,
+                            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
+                                managerServices.removeStorePlantQuantity$(plantDecreaseQuantityForm.storePlantID, plantDecreaseQuantityForm.quantity, plantDecreaseQuantityForm.reason).pipe(take(1)).subscribe({
+                                    next: (res) => {
+                                        if (res.error) {
+                                            toast.error(res.error);
+                                        } else {
+                                            toast.success(`Cập nhật thành công.`);
+                                            setPlantDecreaseQuantityForm({
+                                                isShow: false,
+                                                quantity: 0,
+                                                reason: '',
+                                                storePlantID: ''
+                                            })
+                                        }
+                                    }
+                                })
+
+                            }}>Lưu</Button>
+                        ]}
+                        centered
+                    >
+                        <div style={{ width: '100%', display: 'flex', gap: 4, flexDirection: 'column' }}>
+                            <Row>
+                                <Col span={5} className='__app-object-field align-center'>
+                                    <strong>Số lượng:</strong>
+                                </Col>
+                                <Col span={19}>
+                                    <NumericFormat
+                                        className="app-numeric-input"
+                                        placeholder="Nhập số lượng"
+                                        value={plantDecreaseQuantityForm.quantity}
+                                        allowNegative={false}
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(plantDecreaseQuantityForm);
+                                            temp['quantity'] = Number(value.target.value);
+                                            setPlantDecreaseQuantityForm(temp);
+                                        }}></NumericFormat>
+                                </Col>
+
+                            </Row>
+                            <Row>
+                                <Col span={5} className='__app-object-field align-center'>
+                                    <strong>Lý do:</strong>
+                                </Col>
+                                <Col span={19}>
+                                    <TextArea
+                                        rows={5}
+                                        value={plantDecreaseQuantityForm.reason}
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(plantDecreaseQuantityForm);
+                                            temp['reason'] = value.target.value;
+                                            setPlantDecreaseQuantityForm(temp);
+                                        }}
+                                    ></TextArea>
+                                </Col>
+
+                            </Row>
+                        </div>
+                    </Modal> : <></>
             }
         </>
     )
