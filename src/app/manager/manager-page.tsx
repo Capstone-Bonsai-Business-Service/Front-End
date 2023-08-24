@@ -44,7 +44,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
         sumOfContract: [0, 0, 0, 0, 0, 0, 0],
         sumOfOrder: [0, 0, 0, 0, 0, 0, 0]
     })
-    const [datasetFilter, setDatasetFilter] = useState<'weekly' | 'quarter' | 'month'>('weekly');
+    const [datasetFilter, setDatasetFilter] = useState<'weekly' | 'quarter' | 'monthly'>('weekly');
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -82,10 +82,10 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
         })
     }
 
-    function loadStatistic$(_datasetFilter: 'weekly' | 'quarter' | 'month') {
+    function loadStatistic$(_datasetFilter: 'weekly' | 'quarter' | 'monthly') {
         switch (_datasetFilter) {
             case 'weekly': return getDataSetReportWeekly$();
-            case 'month': return getDataSetReportMonthly$();
+            case 'monthly': return getDataSetReportMonthly$();
             case 'quarter': return getDataSetReportQuarter$();
         }
     }
@@ -125,7 +125,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
         return new Observable(obs => {
             const thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
             const currentMonth = new Date().getMonth() + 1;
-            const currentQuarter = Math.ceil(currentMonth / 3);
+            const currentQuarter = Math.ceil(currentMonth / 4);
 
             const request$ = [managerService.getReport$(`${thisYear}-01-01`, `${thisYear}-03-31`)];
 
@@ -398,7 +398,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             },
             type: 'bar'
         },
-        filterOptions: [{ label: '7 ngày trước', value: 'weekly' }, { label: 'Mỗi Quý', value: 'quarter' }, { label: 'Mỗi Tháng', value: 'month' }],
+        filterOptions: [{ label: '7 ngày trước', value: 'weekly' }, { label: 'Mỗi Quý', value: 'quarter' }, { label: 'Mỗi Tháng', value: 'monthly' }],
         filterSelected: 'weekly'
     }
 

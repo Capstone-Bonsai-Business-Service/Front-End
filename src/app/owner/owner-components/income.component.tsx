@@ -183,7 +183,7 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
     }
 
     const donutChartOrder: IDashboard['donutChart'] = {
-        title: 'DOANH THU ĐƠN HÀNG THEO CHI NHÁNH',
+        title: `DOANH THU ĐƠN HÀNG THEO CHI NHÁNH NĂM ${new Date().getFullYear()}`,
         dataSource: {
             options: {
                 responsive: true,
@@ -215,7 +215,7 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
     }
 
     const donutChartContract: IDashboard['donutChart'] = {
-        title: 'DOANH THU HỢP ĐỒNG THEO CHI NHÁNH',
+        title: `DOANH THU HỢP ĐỒNG THEO CHI NHÁNH NĂM ${new Date().getFullYear()}`,
         dataSource: {
             options: {
                 responsive: true,
@@ -350,7 +350,7 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
         return new Observable(obs => {
             const thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
             const currentMonth = new Date().getMonth() + 1;
-            const currentQuarter = Math.ceil(currentMonth / 3);
+            const currentQuarter = Math.ceil(currentMonth / 4);
 
             const request$ = [ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-03-31`)];
 

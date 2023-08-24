@@ -355,7 +355,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                         }}>Đóng</Button>
                                     ]}
                                 >
-                                    <Row style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                    <Row style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', maxHeight: 400, overflowX: 'auto' }}>
                                         <Col span={22} >
                                             <Row>
                                                 <Col span={1}></Col>
@@ -367,17 +367,28 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                             <Divider className="__app-divider-no-margin" />
                                             {
                                                 plantQuantityHistory?.reduce((acc, cur, index) => {
+                                                    const isIncrease = cur.reason.indexOf('[+]') > -1;
+                                                    const _reason = cur.reason.split('Lí do :')[1].trim();
                                                     acc.push(
                                                         <Row key={`history_${index}`} style={{ marginTop: 5 }}>
                                                             <Col span={1}></Col>
                                                             <Col span={8} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
-                                                                {DateTime.fromJSDate(new Date(cur.importDate)).toFormat('dd-MM-yyyy HH:mm')}
+                                                                {DateTime.fromJSDate(new Date(cur.importDate)).toFormat('dd/MM/yyyy HH:mm')}
                                                             </Col>
                                                             <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
-                                                                {cur.amount}
+                                                                <span style={{
+                                                                    color: isIncrease ? '#3f8600' : '#cf1322'
+                                                                }}>
+                                                                    <NumericFormat 
+                                                                        thousandSeparator=' '
+                                                                        displayType='text'
+                                                                        prefix={isIncrease ? '+' : '-'}
+                                                                        value={cur.amount}
+                                                                    />
+                                                                </span>
                                                             </Col>
                                                             <Col span={10} style={{ textAlign: 'center' }}>
-                                                                {cur.reason}
+                                                                {_reason}
                                                             </Col>
                                                             <Col span={1}></Col>
                                                         </Row>

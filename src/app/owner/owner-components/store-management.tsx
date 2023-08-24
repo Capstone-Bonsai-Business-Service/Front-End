@@ -13,6 +13,7 @@ import { CommonUtility } from "../../utils/utilities";
 import { UserPicker } from "../../common/components/user-picker-component";
 import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
 import { NumericFormat, PatternFormat } from "react-number-format";
+import { DateTime } from "luxon";
 
 
 interface IStoreManagementProps {
@@ -42,6 +43,15 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
     const [tabKey, setTabKey] = useState<'plant' | 'staff'>('plant');
     const [isShowPopUpStaffAdd, setShowPopUpStaffAdd] = useState<boolean>(false);
     const [freeStaff, setFreeStaff] = useState<any[]>([]);
+    const [formPlantQuantityHistory, setFormPlantQuantityHistory] = useState<{
+        isShow: boolean;
+        plantID: string;
+        history: any[];
+    }>({
+        isShow: false,
+        plantID: '',
+        history: []
+    })
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -250,6 +260,28 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                 compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
             },
             className: '__app-header-title'
+        },
+        {
+            title: '',
+            dataIndex: 'command',
+            key: 'command',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (_, record) => {
+                return <Button onClick={() => {
+                    setFormPlantQuantityHistory({
+                        isShow: true,
+                        plantID: record.plantID,
+                        history: []
+                    });
+                    getPlantQuantityHistory(record.plantID, storeDetail?.id as string);
+                }}>Xem lịch sử</Button>
+            },
+            width: 100,
+            sorter: {
+                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+            },
+            className: '__app-header-title'
         }
     ]
 
@@ -396,6 +428,20 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
             result.fields.push('Quản lý');
         }
         return result;
+    }
+
+    function getPlantQuantityHistory(plantId: string, storeID: string) {
+        ownerServices.getPlantQuantityHistory$(plantId, storeID).pipe(take(1)).subscribe({
+            next: value => {
+                if (value) {
+                    setFormPlantQuantityHistory({
+                        isShow: true,
+                        history: value,
+                        plantID: plantId
+                    });
+                }
+            }
+        })
     }
 
     return (
@@ -773,6 +819,90 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                         centered
                     >
                         <span>Vui lòng nhấn xác nhận để vô hiệu hoá cửa hàng trong hệ thống.</span>
+                    </Modal> : <></>
+            }
+            {
+                formPlantQuantityHistory.isShow ?
+                    <Modal
+                        width={600}
+                        open={true}
+
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                LỊCH SỬ NHẬP/ XUẤT CÂY
+                            </span>
+                        )}
+                        footer={[
+                            <Button key='cancel' onClick={() => {
+                                setFormPlantQuantityHistory({
+                                    isShow: false,
+                                    history: [],
+                                    plantID: ''
+                                })
+                            }}>Đóng</Button>
+                        ]}
+                    >
+                        <Row style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', maxHeight: 400, overflowX: 'auto' }}>
+                            <Col span={22} >
+                                <Row>
+                                    <Col span={1}></Col>
+                                    <Col span={8} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center', fontWeight: 500 }}>Ngày</Col>
+                                    <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center', fontWeight: 500 }}>Số lượng</Col>
+                                    <Col span={10} style={{ textAlign: 'center', fontWeight: 500 }}>Nội dung</Col>
+                                    <Col span={1}></Col>
+                                </Row>
+                                <Divider className="__app-divider-no-margin" />
+                                {
+                                    formPlantQuantityHistory.history?.reduce((acc, cur, index) => {
+                                        const isIncrease = cur.reason.indexOf('[+]') > -1;
+                                        const _reason = (cur.reason as string).replace('[-]', '').replace('[+]', '');
+                                        acc.push(
+                                            <Row key={`history_${index}`} style={{ marginTop: 5 }}>
+                                                <Col span={1}></Col>
+                                                <Col span={8} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                    {DateTime.fromJSDate(new Date(cur.importDate)).toFormat('dd/MM/yyyy HH:mm')}
+                                                </Col>
+                                                <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                    <span style={{
+                                                        color: isIncrease ? '#3f8600' : '#cf1322'
+                                                    }}>
+                                                        <NumericFormat
+                                                            thousandSeparator=' '
+                                                            displayType='text'
+                                                            prefix={isIncrease ? '+' : '-'}
+                                                            value={cur.amount}
+                                                        />
+                                                    </span>
+                                                </Col>
+                                                <Col span={10} style={{ textAlign: 'center' }}>
+                                                    {_reason}
+                                                </Col>
+                                                <Col span={1}></Col>
+                                            </Row>
+                                        )
+                                        return acc;
+                                    }, [])
+                                }
+                                {
+                                    formPlantQuantityHistory.history.length === 0 ?
+                                        <Row key={`history_0`} style={{ marginTop: 5 }}>
+                                            <Col span={1}></Col>
+                                            <Col span={8} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                --
+                                            </Col>
+                                            <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                --
+                                            </Col>
+                                            <Col span={10} style={{ textAlign: 'center' }}>
+                                                --
+                                            </Col>
+                                            <Col span={1}></Col>
+                                        </Row> : <></>
+                                }
+                            </Col>
+                        </Row>
+
                     </Modal> : <></>
             }
         </>

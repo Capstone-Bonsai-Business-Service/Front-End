@@ -190,6 +190,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    getPlantQuantityHistory$(plantID: string, storeID: string) {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/store/getStorePlantRecord?plantID=${plantID}&storeID=${storeID}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
     getServicePacks$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/servicePack`
