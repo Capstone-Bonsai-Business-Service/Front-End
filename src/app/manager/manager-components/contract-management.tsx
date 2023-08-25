@@ -619,8 +619,8 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                 next: values => {
                     const staffListOption = values[0].reduce((acc, cur) => {
                         acc.push({
-                            value: cur.staffID,
-                            label: cur.staffName
+                            value: cur.id,
+                            label: cur.fullName
                         })
                         return acc;
                     }, [] as any)

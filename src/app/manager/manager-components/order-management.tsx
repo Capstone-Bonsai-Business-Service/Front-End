@@ -132,8 +132,8 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
             next: (value) => {
                 const staffListOption = value.reduce((acc, cur) => {
                     acc.push({
-                        value: cur.staffID,
-                        label: cur.staffName
+                        value: cur.id,
+                        label: cur.fullName
                     })
                     return acc;
                 }, [] as any)
@@ -387,25 +387,6 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                             <span>
                                                 <Tag color={orderDetail?.isPaid ? 'lime' : 'red'}>{orderDetail?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>
                                             </span>
-                                            {
-                                                orderDetail?.isPaid === false ? 
-                                                <Button size="middle" type="link" onClick={() => {
-                                                    setIsProcess(true);
-                                                    managerServices.confirmPaymentOrder$(orderDetail?.id).pipe(take(1)).subscribe({
-                                                        next: (value) => {
-                                                            if (value) {
-                                                                toast.success('Cập nhật thành công.');
-                                                                setIsProcess(false);
-                                                                const data = cloneDeep(orderDetail);
-                                                                data['isPaid'] = true;
-                                                                setOrderDetail(data);
-                                                            } else {
-                                                                toast.error('Không thể xác nhận. Vui lòng thử lại');
-                                                            }
-                                                        }
-                                                    })
-                                                }}>Xác nhận thanh toán</Button> : <></>
-                                            }
                                         </Col>
                                     </Row>
                                     {
