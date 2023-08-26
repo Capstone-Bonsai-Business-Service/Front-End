@@ -418,7 +418,7 @@ const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICrea
                         onClick={() => {
                             const validation = validateFormCreate();
                             if (validation.invalid === false) {
-                                onCreateService();
+                                onCreateServicePack();
                             } else {
                                 toast.error(`Không được để trống ${validation.fields.join(', ')}`);
                             }
@@ -587,33 +587,17 @@ const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICrea
         return result;
     }
 
-    function onCreateService() {
-        // const formData = {
-        //     "name": serviceForm.name,
-        //     "price": serviceForm.price,
-        //     "description": serviceForm.description,
-        //     "createServiceTypeModel": serviceForm.createServiceTypeModel.reduce((acc, cur) => {
-        //         acc.push({
-        //             "name": cur.name,
-        //             "size": cur.size,
-        //             "unit": cur.unit,
-        //             "percentage": cur.percentage
-        //         })
-        //         return acc;
-        //     }, [] as any[]),
-        //     "listURL": serviceForm.listURL,
-        //     "atHome": serviceForm.atHome
-        // }
-        // ownerServices.createService$(formData).pipe(take(1)).subscribe({
-        //     next: (res) => {
-        //         if (res.error) {
-        //             toast.error(res.error);
-        //         } else {
-        //             toast.success('Thêm cây thành công');
-        //             props.onSave();
-        //         }
-        //     }
-        // })
+    function onCreateServicePack() {
+        ownerServices.createServicePack$(servicePackForm.range as string, servicePackForm.unit  as string, servicePackForm.percentage).pipe(take(1)).subscribe({
+            next: (res) => {
+                if (res.error) {
+                    toast.error(res.error);
+                } else {
+                    toast.success('Thêm gói dịch vụ công');
+                    props.onSave();
+                }
+            }
+        })
     }
 }
 

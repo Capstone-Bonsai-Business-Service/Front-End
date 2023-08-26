@@ -190,6 +190,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    createServicePack$(range: string, unit: string, percent: number) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/servicePack?range=${range}&unit=${unit}&percentage=${percent}`
+            axios.post(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Tạo gói dịch vụ thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
     getPlantQuantityHistory$(plantID: string, storeID: string) {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/store/getStorePlantRecord?plantID=${plantID}&storeID=${storeID}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`

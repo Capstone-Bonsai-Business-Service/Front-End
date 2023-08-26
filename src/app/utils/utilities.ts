@@ -158,11 +158,15 @@ export module CommonUtility {
     }
 
     export function getListColorDataSet(labels: string[]) {
-        const colors = labels.reduce((acc, cur) => {
-            const r = Math.floor(Math.random() * 256);
-            const g = Math.floor(Math.random() * 256);
-            const b = Math.floor(Math.random() * 256);
-            const color = `rgb(${r},${g},${b}, 0.5)`;
+        const arrColor = [`rgb(18,254,57,0.5)`,
+        `rgb(171,80,254,0.5)`,
+        `rgb(238,245,89,0.5)`,
+        `rgb(88,227,246,0.5)`,
+        `rgb(222,112,204,0.5)`,
+        `rgb(222,116,0,0.5)`,
+        `rgb(104,0,0,0.5)`,]
+        const colors = labels.reduce((acc, cur, index) => {
+            const color = arrColor[Math.floor(index % 7)];
             acc.push(color);
             return acc;
         }, [] as string[]);

@@ -5,7 +5,7 @@ import '../../common/components/common-component.scss';
 import { OwnerServices } from '../owner.service';
 import { IDashboard, reportLabel } from '../../common/interfaces';
 import { DateTime } from 'luxon';
-import { Observable, forkJoin, take } from 'rxjs';
+import { Observable, concat, forkJoin, take, tap } from 'rxjs';
 import { ArrowDownOutlined, ArrowUpOutlined, LoadingOutlined } from '@ant-design/icons';
 import { NumericFormat } from 'react-number-format';
 
@@ -239,28 +239,40 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
         return new Observable(obs => {
             let today = DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd');
             const request$ = [];
+            let isCompleted = false;
+            const result: any[] = [];
             for (let i = 0; i < 7; i++) {
                 let date = new Date(today);
                 let _to = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - i))).toFormat('yyyy-MM-dd');
                 let _from = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - 1))).toFormat('yyyy-MM-dd');
-                request$.push(ownerService.getReport$(_from, _to, storeId))
+                if (i === 0) {
+                    // eslint-disable-next-line no-loop-func
+                    request$.push(ownerService.getReport$(_from, _to, storeId).pipe(tap(() => { isCompleted = true })))
+                } else {
+                    request$.push(ownerService.getReport$(_from, _to, storeId))
+                }
             }
-            forkJoin(request$.reverse()).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
-                        return acc;
-                    }, {
-                        numOfContract: [],
-                        numOfOrder: [],
-                        sumOfContract: [],
-                        sumOfOrder: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
+
+            concat(...request$.reverse()).subscribe({
+                next: (value: any) => {
+                    result.push(value)
+                    if (isCompleted) {
+                        const datasets = result.reduce((acc, cur) => {
+                            acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
+                            acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
+                            acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
+                            acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
+                            return acc;
+                        }, {
+                            numOfContract: [],
+                            numOfOrder: [],
+                            sumOfContract: [],
+                            sumOfOrder: []
+                        })
+                        obs.next(datasets);
+                        obs.complete();
+                    }
+
                 }
             })
         })
@@ -273,32 +285,43 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
             const currentQuarter = Math.ceil(currentMonth / 3);
 
             const request$ = [ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-03-31`, storeId)];
+            let isCompleted = false;
+            const result: any[] = [];
 
             if (currentQuarter < 3) {
-                request$.push(ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-06-30`, storeId));
+                request$.push(ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-06-30`, storeId).pipe(tap(() => {
+                    isCompleted = true;
+                })));
             }
             if (currentQuarter < 4) {
-                request$.push(ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-09-30`, storeId));
+                request$.push(ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-09-30`, storeId).pipe(tap(() => {
+                    isCompleted = true;
+                })));
             }
             if (currentQuarter === 4) {
-                request$.push(ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-12-31`, storeId));
+                request$.push(ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-12-31`, storeId).pipe(tap(() => {
+                    isCompleted = true;
+                })));
             }
-            forkJoin([...request$]).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
-                        return acc;
-                    }, {
-                        numOfContract: [],
-                        numOfOrder: [],
-                        sumOfContract: [],
-                        sumOfOrder: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
+            concat(...request$).subscribe({
+                next: (value) => {
+                    result.push(value);
+                    if (isCompleted) {
+                        const datasets = result.reduce((acc, cur) => {
+                            acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
+                            acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
+                            acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
+                            acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
+                            return acc;
+                        }, {
+                            numOfContract: [],
+                            numOfOrder: [],
+                            sumOfContract: [],
+                            sumOfOrder: []
+                        })
+                        obs.next(datasets);
+                        obs.complete();
+                    }
                 }
             })
         })
@@ -309,6 +332,9 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
             let thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
             const currentMonth = new Date().getMonth() + 1;
             const request$: Observable<any>[] = [];
+            let isCompleted = false;
+            const result: any[] = [];
+
             const range = [
                 ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-01-31`, storeId),
                 ownerService.getReport$(`${thisYear}-02-01`, `${thisYear}-02-28`, storeId),
@@ -324,24 +350,34 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
                 ownerService.getReport$(`${thisYear}-12-01`, `${thisYear}-12-31`, storeId)
             ];
             for (let i = 0; i < currentMonth; i++) {
-                request$.push(range[i]);
+                if (i === currentMonth - 1) {
+                    // eslint-disable-next-line no-loop-func
+                    request$.push(range[i].pipe(tap(() => {
+                        isCompleted = true;
+                    })));
+                } else {
+                    request$.push(range[i]);
+                }
             }
-            forkJoin([...request$]).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
-                        acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
-                        acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
-                        acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
-                        return acc;
-                    }, {
-                        numOfContract: [],
-                        numOfOrder: [],
-                        sumOfContract: [],
-                        sumOfOrder: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
+            concat(...request$).subscribe({
+                next: (value) => {
+                    result.push(value);
+                    if (isCompleted) {
+                        const datasets = result.reduce((acc, cur) => {
+                            acc['numOfContract'].push(cur.storeContractModel.numOfContract ?? 0);
+                            acc['numOfOrder'].push(cur.storeOrderModel.numOfOrder ?? 0);
+                            acc['sumOfContract'].push(Number(cur.storeContractModel.sumOfContract ?? 0));
+                            acc['sumOfOrder'].push(Number(cur.storeOrderModel.sumOfOrder ?? 0));
+                            return acc;
+                        }, {
+                            numOfContract: [],
+                            numOfOrder: [],
+                            sumOfContract: [],
+                            sumOfOrder: []
+                        })
+                        obs.next(datasets);
+                        obs.complete();
+                    }
                 }
             })
         })

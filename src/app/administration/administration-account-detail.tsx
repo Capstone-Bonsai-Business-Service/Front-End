@@ -183,7 +183,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.username ?? ''} disabled />
+                                    <span>{account?.username ?? ''}</span>
                                 </Col>
                             </Row>
                             <Row className='__app-account-info-row'>
@@ -195,7 +195,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.roleName ?? ''} disabled />
+                                    <span>{account?.roleName ?? ''}</span>
                                 </Col>
                             </Row>
                             <Divider className='__app-divider-no-margin'></Divider>
@@ -208,7 +208,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.fullName ?? ''} />
+                                    <span>{account?.fullName ?? ''}</span>
                                 </Col>
                             </Row>
                             <Row className='__app-account-info-row'>
@@ -220,7 +220,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.email ?? ''} />
+                                    <span>{account?.email ?? ''}</span>
                                 </Col>
                             </Row>
                             <Row className='__app-account-info-row'>

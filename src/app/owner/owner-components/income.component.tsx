@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Chart, Doughnut } from 'react-chartjs-2';
 import { Select, Spin } from 'antd';
 import { IDashboard, reportLabel } from '../../common/interfaces';
-import { Observable, forkJoin, take } from 'rxjs';
+import { Observable, concat, forkJoin, take, tap } from 'rxjs';
 import { DateTime } from 'luxon';
 import { OwnerServices } from '../owner.service';
 import '../owner.scss';
@@ -318,29 +318,41 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
         return new Observable(obs => {
             let today = DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd');
             const request$ = [];
+            let isCompleted = false;
+            const result: any[] = [];
             for (let i = 0; i < 7; i++) {
                 let date = new Date(today);
                 let _to = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - i))).toFormat('yyyy-MM-dd');
                 let _from = DateTime.fromJSDate(new Date(date.setDate(date.getDate() - 1))).toFormat('yyyy-MM-dd');
-                request$.push(ownerService.getReport$(_from, _to))
+                if (i === 0) {
+                    // eslint-disable-next-line no-loop-func
+                    request$.push(ownerService.getReport$(_from, _to).pipe(tap(() => { isCompleted = true })))
+                } else {
+                    request$.push(ownerService.getReport$(_from, _to))
+                }
             }
-            forkJoin(request$.reverse()).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        if (object === 'contract') {
-                            acc['count'].push(cur.numOfContract ?? 0);
-                            acc['sum'].push(Number(cur.sumOfContract ?? 0));
-                        } else {
-                            acc['count'].push(cur.numOfOrder ?? 0);
-                            acc['sum'].push(Number(cur.sumOfOrder ?? 0));
-                        }
-                        return acc;
-                    }, {
-                        count: [],
-                        sum: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
+
+            concat(...request$.reverse()).subscribe({
+                next: (value: any) => {
+                    result.push(value)
+                    if (isCompleted) {
+                        const datasets = result.reduce((acc, cur) => {
+                            if (object === 'contract') {
+                                acc['count'].push(cur.numOfContract ?? 0);
+                                acc['sum'].push(Number(cur.sumOfContract ?? 0));
+                            } else {
+                                acc['count'].push(cur.numOfOrder ?? 0);
+                                acc['sum'].push(Number(cur.sumOfOrder ?? 0));
+                            }
+                            return acc;
+                        }, {
+                            count: [],
+                            sum: []
+                        })
+                        obs.next(datasets);
+                        obs.complete();
+                    }
+
                 }
             })
         })
@@ -350,36 +362,47 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
         return new Observable(obs => {
             const thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
             const currentMonth = new Date().getMonth() + 1;
-            const currentQuarter = Math.ceil(currentMonth / 4);
+            const currentQuarter = Math.ceil(currentMonth / 3);
 
             const request$ = [ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-03-31`)];
+            let isCompleted = false;
+            const result: any[] = [];
 
             if (currentQuarter < 3) {
-                request$.push(ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-06-30`));
+                request$.push(ownerService.getReport$(`${thisYear}-04-01`, `${thisYear}-06-30`).pipe(tap(() => {
+                    isCompleted = true;
+                })));
             }
             if (currentQuarter < 4) {
-                request$.push(ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-09-30`));
+                request$.push(ownerService.getReport$(`${thisYear}-07-01`, `${thisYear}-09-30`).pipe(tap(() => {
+                    isCompleted = true;
+                })));
             }
             if (currentQuarter === 4) {
-                request$.push(ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-12-31`));
+                request$.push(ownerService.getReport$(`${thisYear}-10-01`, `${thisYear}-12-31`).pipe(tap(() => {
+                    isCompleted = true;
+                })));
             }
-            forkJoin([...request$]).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        if (object === 'contract') {
-                            acc['count'].push(cur.numOfContract ?? 0);
-                            acc['sum'].push(Number(cur.sumOfContract ?? 0));
-                        } else {
-                            acc['count'].push(cur.numOfOrder ?? 0);
-                            acc['sum'].push(Number(cur.sumOfOrder ?? 0));
-                        }
-                        return acc;
-                    }, {
-                        count: [],
-                        sum: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
+            concat(...request$).subscribe({
+                next: (value) => {
+                    result.push(value);
+                    if (isCompleted) {
+                        const datasets = result.reduce((acc, cur) => {
+                            if (object === 'contract') {
+                                acc['count'].push(cur.numOfContract ?? 0);
+                                acc['sum'].push(Number(cur.sumOfContract ?? 0));
+                            } else {
+                                acc['count'].push(cur.numOfOrder ?? 0);
+                                acc['sum'].push(Number(cur.sumOfOrder ?? 0));
+                            }
+                            return acc;
+                        }, {
+                            count: [],
+                            sum: []
+                        })
+                        obs.next(datasets);
+                        obs.complete();
+                    }
                 }
             })
         })
@@ -390,6 +413,9 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
             let thisYear = DateTime.fromJSDate(new Date()).toFormat('yyyy');
             const currentMonth = new Date().getMonth() + 1;
             const request$: Observable<any>[] = [];
+            let isCompleted = false;
+            const result: any[] = [];
+
             const range = [
                 ownerService.getReport$(`${thisYear}-01-01`, `${thisYear}-01-31`),
                 ownerService.getReport$(`${thisYear}-02-01`, `${thisYear}-02-28`),
@@ -405,25 +431,35 @@ export const IncomStatisticComponent: React.FC<IDashboardProps> = (props) => {
                 ownerService.getReport$(`${thisYear}-12-01`, `${thisYear}-12-31`)
             ];
             for (let i = 0; i < currentMonth; i++) {
-                request$.push(range[i]);
+                if (i === currentMonth - 1) {
+                    // eslint-disable-next-line no-loop-func
+                    request$.push(range[i].pipe(tap(() => {
+                        isCompleted = true;
+                    })));
+                } else {
+                    request$.push(range[i]);
+                }
             }
-            forkJoin([...request$]).subscribe({
-                next: (values) => {
-                    const datasets = values.reduce((acc, cur) => {
-                        if (object === 'contract') {
-                            acc['count'].push(cur.numOfContract ?? 0);
-                            acc['sum'].push(Number(cur.sumOfContract ?? 0));
-                        } else {
-                            acc['count'].push(cur.numOfOrder ?? 0);
-                            acc['sum'].push(Number(cur.sumOfOrder ?? 0));
-                        }
-                        return acc;
-                    }, {
-                        count: [],
-                        sum: []
-                    })
-                    obs.next(datasets);
-                    obs.complete();
+            concat(...request$).subscribe({
+                next: (value) => {
+                    result.push(value);
+                    if (isCompleted) {
+                        const datasets = result.reduce((acc, cur) => {
+                            if (object === 'contract') {
+                                acc['count'].push(cur.numOfContract ?? 0);
+                                acc['sum'].push(Number(cur.sumOfContract ?? 0));
+                            } else {
+                                acc['count'].push(cur.numOfOrder ?? 0);
+                                acc['sum'].push(Number(cur.sumOfOrder ?? 0));
+                            }
+                            return acc;
+                        }, {
+                            count: [],
+                            sum: []
+                        })
+                        obs.next(datasets);
+                        obs.complete();
+                    }
                 }
             })
         })

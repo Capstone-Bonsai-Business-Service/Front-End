@@ -651,9 +651,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     "phone": contractDetail['phone'] ?? '',
                     "address": contractDetail['address'] ?? '',
                     "storeID": managerServices.storeId,
-                    "deposit": contractDetail['deposit'] ?? 0,
                     "paymentMethod": contractDetail['paymentMethod'] ?? '',
-                    "paymentTypeID": contractDetail['paymentTypeID'] ?? '',
                     "customerID": null,
                     "email": '',
                     "detailModelList": servicesForm.reduce((acc, cur) => {
@@ -800,61 +798,17 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             <Select
                                 style={{ width: '100%' }}
                                 options={[
-                                    { value: 'PT001', label: 'Thanh toán trước 50%' },
-                                    { value: 'PT002', label: 'Thanh toán trước 80%' },
-                                    { value: 'PT003', label: 'Thanh toán hoàn toàn' },
+                                    { value: 'Thanh toán trực tuyến', label: 'Thanh toán trực tuyến' },
+                                    { value: 'Thanh toán tiền mặt', label: 'Thanh toán tiền mặt' },
                                 ]}
                                 placeholder='Chọn phương thức thanh toán'
                                 onChange={(value) => {
                                     let temp = cloneDeep(contractDetail) ?? {};
-                                    temp['paymentTypeID'] = value;
+                                    temp['paymentMethod'] = value;
                                     setContractDetail(temp);
                                 }}
                             />
                         </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
-                        <Col span={12}>
-                            <Row>
-                                <Col span={6} className='__app-account-field'>
-                                    <span>
-                                        <strong>Loại thanh toán:</strong> <span className='__app-required-field'> *</span>
-                                    </span>
-                                </Col>
-                                <Col span={16}>
-                                    <Select
-                                        style={{ width: '100%' }}
-                                        options={[
-                                            { value: 'Thanh toán online', label: 'Thanh toán online' },
-                                            { value: 'Thanh toán tiền mặt', label: 'Thanh toán tiền mặt' },
-                                        ]}
-                                        placeholder='Chọn loại thanh toán'
-                                        onChange={(value) => {
-                                            let temp = cloneDeep(contractDetail) ?? {};
-                                            temp['paymentMethod'] = value;
-                                            setContractDetail(temp);
-                                        }}
-                                    />
-                                </Col>
-                            </Row>
-                        </Col>
-                        <Col span={12}>
-                            <Row>
-                                <Col span={6} className='__app-account-field'>
-                                    <span>
-                                        <strong>Tiền đặt cọc:</strong>
-                                    </span>
-                                </Col>
-                                <Col span={16}>
-                                    <NumericFormat className="app-numeric-input" thousandSeparator=" " defaultValue={0} onChange={(args) => {
-                                        let temp = cloneDeep(contractDetail) ?? {};
-                                        temp['deposit'] = Number(args.target.value);
-                                        setContractDetail(temp);
-                                    }} />
-                                </Col>
-                            </Row>
-                        </Col>
-
                     </Row>
                     <Row className='__app-account-info-row'>
 

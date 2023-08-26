@@ -1,14 +1,12 @@
 import { LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Input, Radio, Row, Select, Skeleton, Table, Tag, Upload } from "antd";
+import { Avatar, Button, Col, Divider, Radio, Row, Skeleton, Table, Tag } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { OwnerServices } from "../owner.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
-import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import { CommonUtility } from "../../utils/utilities";
-import toast from "react-hot-toast";
 import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
 import { PatternFormat } from "react-number-format";
 
@@ -27,7 +25,6 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [userDetail, setUserDetail] = useState<IUser | null>(null);
-    const [stores, setStore] = useState<any[]>([]);
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -46,18 +43,6 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
         });
         if (!isFirstInit) {
             setFirstInit(true);
-            ownerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
-                next: data => {
-                    const optionStore = data.reduce((acc, cur) => {
-                        acc.push({
-                            value: cur.id,
-                            label: cur.storeName
-                        })
-                        return acc;
-                    }, []);
-                    setStore(optionStore);
-                }
-            })
         }
     }
 
