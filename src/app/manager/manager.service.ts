@@ -459,4 +459,21 @@ export class ManagerServices extends CoreServices {
             })
         })
     }
+
+    checkExistedCustomer$(phone: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/user/searchCustomer?phone=${phone}&pageNo=0&pageSize=1&sortBy=ID&sortTypeAsc=true`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Kiểm tra thất bại.' });
+                obs.complete();
+            })
+        })
+    }
 }

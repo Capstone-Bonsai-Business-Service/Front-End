@@ -1,9 +1,9 @@
-import { CloudUploadOutlined, LeftOutlined, LoadingOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Button, Col, DatePicker, Divider, Input, Modal, Row, Select, Skeleton, Table, Tabs, Tag, Upload } from "antd";
+import { CheckSquareOutlined, CloudUploadOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Button, Col, DatePicker, Divider, Input, Modal, Row, Select, Skeleton, Table, Tabs, Tag } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
-import { NumericFormat } from "react-number-format";
+import { NumericFormat, PatternFormat } from "react-number-format";
 import { ManagerServices } from "../manager.service";
 import { forkJoin, take } from "rxjs";
 import { ContractStatus, ContractStatusMapping, IContract, IContractDetail } from "../../common/object-interfaces/contract.interface";
@@ -405,12 +405,12 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                                 contractDetail[0]?.showContractModel?.showStaffModel.id ?
                                                     <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
                                                     contractDetail[0]?.showContractModel?.status === 'WAITING' ?
-                                                    <UserPicker
-                                                        listUser={staffList}
-                                                        onChanged={(value) => {
-                                                            setStaffForContract(value);
-                                                        }}
-                                                    /> : <span>--</span>
+                                                        <UserPicker
+                                                            listUser={staffList}
+                                                            onChanged={(value) => {
+                                                                setStaffForContract(value);
+                                                            }}
+                                                        /> : <span>--</span>
                                             }
                                         </Col>
                                     </Row>
@@ -511,28 +511,28 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                             {
                                 contractDetail[0]?.showContractModel?.status === 'WAITING' ?
                                     <div className="__app-action-button">
-                                        <Button type="primary" 
-                                        style={{ background: '#0D6368' }} onClick={() => {
-                                            const dataPost = {
-                                                "contractID": contractDetail[0]?.showContractModel?.id,
-                                                "deposit": contractDetail[0]?.showContractModel?.deposit,
-                                                "paymentMethod": contractDetail[0]?.showContractModel?.paymentMethod,
-                                                "staffID": staffForContract,
-                                                "paymentTypeID": contractDetail[0]?.showContractModel?.paymentTypeID ?? 'PT003'
-                                            }
-                                            managerServices.approveContract$(dataPost).pipe(take(1)).subscribe({
-                                                next: (res) => {
-                                                    if (res) {
-                                                        setFormMode('display');
-                                                        setContractDetail([]);
-                                                        loadData();
-                                                        toast.success('Duyệt Hợp đồng thành công');
-                                                    } else {
-                                                        toast.error('Duyệt Hợp đồng thất bại');
-                                                    }
+                                        <Button type="primary"
+                                            style={{ background: '#0D6368' }} onClick={() => {
+                                                const dataPost = {
+                                                    "contractID": contractDetail[0]?.showContractModel?.id,
+                                                    "deposit": contractDetail[0]?.showContractModel?.deposit,
+                                                    "paymentMethod": contractDetail[0]?.showContractModel?.paymentMethod,
+                                                    "staffID": staffForContract,
+                                                    "paymentTypeID": contractDetail[0]?.showContractModel?.paymentTypeID ?? 'PT003'
                                                 }
-                                            })
-                                        }}>Duyệt</Button>
+                                                managerServices.approveContract$(dataPost).pipe(take(1)).subscribe({
+                                                    next: (res) => {
+                                                        if (res) {
+                                                            setFormMode('display');
+                                                            setContractDetail([]);
+                                                            loadData();
+                                                            toast.success('Duyệt Hợp đồng thành công');
+                                                        } else {
+                                                            toast.error('Duyệt Hợp đồng thất bại');
+                                                        }
+                                                    }
+                                                })
+                                            }}>Duyệt</Button>
                                         <Button type="default" onClick={() => {
                                             managerServices.rejectContract$(contractDetail[0]?.showContractModel?.id as string, 'DENIED').pipe(take(1)).subscribe({
                                                 next: (res) => {
@@ -610,6 +610,13 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
 
     const [servicesForm, setServiceForm] = useState<any[]>([]);
+    const [checkCustomer, setCheckCustomer] = useState<{
+        isChecked: boolean,
+        isExist: boolean
+    }>({
+        isChecked: false,
+        isExist: false
+    })
 
     const managerServices = new ManagerServices();
 
@@ -652,8 +659,8 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     "address": contractDetail['address'] ?? '',
                     "storeID": managerServices.storeId,
                     "paymentMethod": contractDetail['paymentMethod'] ?? '',
-                    "customerID": null,
-                    "email": '',
+                    "customerID": contractDetail['customerID'] ?? null,
+                    "email": contractDetail['email'] ?? '',
                     "detailModelList": servicesForm.reduce((acc, cur) => {
                         acc.push({
                             "note": cur['note'] ?? '',
@@ -706,6 +713,62 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             <Row>
                                 <Col span={6} className='__app-account-field'>
                                     <span>
+                                        <strong>Số điện thoại:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={16} style={{
+                                    display: "flex",
+                                    flexDirection: 'row',
+                                    gap: 10
+                                }}>
+                                    <PatternFormat
+                                        displayType='input'
+                                        className='app-numeric-input'
+                                        format='#### ### ###'
+                                        value={contractDetail?.phone ?? ''}
+                                        onValueChange={(values) => {
+                                            let temp = cloneDeep(contractDetail) ?? {};
+                                            temp['phone'] = values.value;
+                                            setContractDetail(temp);
+                                            setCheckCustomer({
+                                                isChecked: false,
+                                                isExist: false
+                                            })
+                                        }}
+                                        placeholder="Nhập số điện thoại khách hàng"
+                                    />
+                                    <Button type='ghost' title='Kiểm tra khách hàng' icon={<CheckSquareOutlined style={{ color: '#0D6368' }} />} onClick={() => {
+                                        managerServices.checkExistedCustomer$(contractDetail?.phone).pipe(take(1)).subscribe({
+                                            next: (value) => {
+                                                if (value.error) {
+                                                    setCheckCustomer({
+                                                        isChecked: true,
+                                                        isExist: false
+                                                    })
+                                                } else {
+                                                    setCheckCustomer({
+                                                        isChecked: true,
+                                                        isExist: value.length > 0
+                                                    });
+                                                    if (value.length > 0) {
+                                                        let temp = cloneDeep(contractDetail) ?? {};
+                                                        temp['fullName'] = value[0].fullName;
+                                                        temp['email'] = value[0].email;
+                                                        temp['address'] = value[0].address;
+                                                        temp['customerID'] = value[0].userID;
+                                                        setContractDetail(temp);
+                                                    }
+                                                }
+                                            }
+                                        })
+                                    }}></Button>
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Col span={12}>
+                            <Row>
+                                <Col span={6} className='__app-account-field'>
+                                    <span>
                                         <strong>Khách Hàng: </strong> <span className='__app-required-field'> *</span>
                                     </span>
                                 </Col>
@@ -716,29 +779,29 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                         setContractDetail(temp);
                                     }}
                                         placeholder="Nhập tên khách hàng"
-                                    />
-                                </Col>
-                            </Row>
-                        </Col>
-                        <Col span={12}>
-                            <Row>
-                                <Col span={6} className='__app-account-field'>
-                                    <span>
-                                        <strong>Số điện thoại:</strong> <span className='__app-required-field'> *</span>
-                                    </span>
-                                </Col>
-                                <Col span={16}>
-                                    <Input onChange={(args) => {
-                                        let temp = cloneDeep(contractDetail) ?? {};
-                                        temp['phone'] = args.target.value;
-                                        setContractDetail(temp);
-                                    }}
-                                        placeholder="Nhập số điện thoại khách hàng"
+                                        value={contractDetail?.fullName}
                                     />
                                 </Col>
                             </Row>
                         </Col>
                     </Row>
+                    {
+                        checkCustomer.isChecked ? <Row className='__app-account-info-row'>
+                            <Col span={12}>
+                                <Row>
+                                    <Col span={6} className='__app-account-field'>
+                                    </Col>
+                                    <span
+                                        style={{
+                                            color: checkCustomer.isExist ? 'green' : 'red'
+                                        }}
+                                    >{
+                                            checkCustomer.isExist ? 'Đã có user trong hệ thống' : 'User chưa có trong hệ thống'
+                                        }</span>
+                                </Row>
+                            </Col>
+                        </Row> : <></>
+                    }
                     <Row className='__app-account-info-row'>
                         <Col span={3} className='__app-account-field'>
                             <span>
@@ -752,6 +815,24 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 setContractDetail(temp);
                             }}
                                 placeholder="Nhập địa chỉ"
+                                value={contractDetail?.address}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-account-info-row'>
+                        <Col span={3} className='__app-account-field'>
+                            <span>
+                                <strong>Email:</strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={20}>
+                            <Input onChange={(args) => {
+                                let temp = cloneDeep(contractDetail) ?? {};
+                                temp['email'] = args.target.value;
+                                setContractDetail(temp);
+                            }}
+                                placeholder="Nhập địa chỉ"
+                                value={contractDetail?.email}
                             />
                         </Col>
                     </Row>
@@ -1097,7 +1178,7 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
         const servicePrice = serviceList.find(item => item.serviceID === cur['serviceID'])?.price ?? 0;
         const servicePackPercent = servicePackList.find(item => item.id === cur['servicePackID'])?.percentage ?? 0;
         const serviceTypePercent = serviceList.find(item => item.serviceID === cur['serviceID'])?.typeList.find((itemTL: any) => itemTL.id === cur['serviceTypeID'])?.percentage ?? 0;
-        const total = (servicePrice * pack) - (servicePrice * (servicePackPercent / 100)) + (servicePrice * (serviceTypePercent / 100));
+        const total = (servicePrice * pack) - (servicePrice * (servicePackPercent / 100) * pack) + (servicePrice * (serviceTypePercent / 100) * pack);
         return total;
     }
 

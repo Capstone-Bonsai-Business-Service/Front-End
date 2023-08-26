@@ -7,6 +7,9 @@ import { IUser } from "../../IApp.interface";
 import toast from "react-hot-toast";
 import { CommonUtility } from "../utils/utilities";
 import { PatternFormat } from "react-number-format";
+import { IStore } from "../common/object-interfaces/store.interface";
+import { take } from "rxjs";
+import { cloneDeep } from "lodash";
 
 interface IAccountDetailPageProps {
     currentUser?: IUser;
@@ -21,9 +24,8 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
     const [account, setAccount] = useState<any>(null);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
-    const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string>();
-
+    const [newStores, setNewStores] = useState<IStore[]>([]);
+    const [storeForMember, setStoreForMember] = useState<string>('');
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -36,6 +38,12 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                         setFirstInit(true);
                         setDataReady(true);
                     }
+                }
+            });
+            adminService.getStoreWithoutManager$().pipe(take(1)).subscribe({
+                next: (value) => {
+                    setNewStores(value);
+                    setDataReady(true);
                 }
             })
         }
@@ -139,7 +147,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                 trigger={['click']}
                                 menu={{ items: userMenuItems }}
                                 placement='bottomRight'>
-                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} icon={<UserOutlined />} size={'large'} />
+                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar ?? null} icon={<UserOutlined />} size={'large'} />
                             </Dropdown>
                         </div>
                     </Layout.Header>
@@ -268,24 +276,66 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                             </span>
                                         </Col>
                                         <Col span={15}>
-                                            <Select
-                                                defaultValue={account?.store?.Id}
-                                                style={{ width: '100%' }}
-                                                options={[
-                                                    { value: '001', label: 'Chi Nhánh 1' },
-                                                    { value: '002', label: 'Chi Nhánh 2' },
-                                                    { value: '003', label: 'Chi Nhánh 3' },
-                                                ]}
-                                                onChange={(value) => {
-                                                    // let temp = cloneDeep(accountDetail) ?? {};
-                                                    // temp['storeId'] = value;
-                                                    // setAccountDetail(temp);
-                                                }}
-                                            />
+                                            {
+                                                account?.storeID === null ?
+                                                    <Select
+                                                        value={storeForMember}
+                                                        style={{ width: '100%' }}
+                                                        options={newStores.reduce((acc: any[], cur) => {
+                                                            if (account?.roleID === 'R003') {
+                                                                if (CommonUtility.isNullOrUndefined(cur.managerID)) {
+                                                                    acc.push({
+                                                                        label: cur.storeName,
+                                                                        value: cur.id
+                                                                    })
+                                                                }
+                                                            } else {
+                                                                acc.push({
+                                                                    label: cur.storeName,
+                                                                    value: cur.id
+                                                                })
+                                                            }
+                                                            return acc;
+                                                        }, [])}
+                                                        onChange={(value) => {
+                                                            setStoreForMember(value);
+                                                        }}
+                                                    /> : <span>{account?.storeName}</span>
+                                            }
+
                                         </Col>
                                     </Row> :
                                     <></>
                             }
+                            {
+                                (account?.roleID === 'R003' || account?.roleID === 'R004') && account?.storeID === null ?
+                                    <Row style={{
+                                        display: 'flex',
+                                        flexDirection: 'row-reverse',
+                                        width: '87%'
+                                    }}>
+                                        <Button type="primary"
+                                            style={{ backgroundColor: '#0D6368' }}
+                                            onClick={() => {
+                                                adminService.addStoreEmployee$(storeForMember, Number(params?.id as string)).pipe(take(1)).subscribe({
+                                                    next: (res) => {
+                                                        if (res.error) {
+                                                            toast.error(`Cập nhật thất bại.`);
+                                                        } else {
+                                                            toast.success(`Cập nhật thành công.`);
+                                                            let temp = cloneDeep(account) ?? {};
+                                                            temp['storeID'] = storeForMember;
+                                                            const storeName = newStores.find(item => item.id === storeForMember)?.storeName ?? '--'
+                                                            temp['storeName'] = storeName;
+                                                            setAccount(temp);
+                                                        }
+                                                    }
+                                                })
+                                            }}
+                                        >Lưu</Button>
+                                    </Row> : <></>
+                            }
+
                         </div>
                     </Layout.Content>
                 </Layout>

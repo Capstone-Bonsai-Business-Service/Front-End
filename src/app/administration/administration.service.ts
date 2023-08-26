@@ -103,4 +103,41 @@ export class adminServices extends CoreServices {
             })
         })
     }
+
+    getStoreWithoutManager$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/store`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    addStoreEmployee$(storeID: string, employeeID: number) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/addStoreEmployee`
+            axios.post(url, {
+                storeID: storeID,
+                employeeIDList: [employeeID]
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((_) => {
+                obs.next(true);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: err });
+                obs.complete();
+            })
+        })
+    }
 }

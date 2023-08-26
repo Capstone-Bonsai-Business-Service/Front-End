@@ -13,6 +13,8 @@ import { CreateAccountDialog } from './dialogs/add-account-dialog';
 import { useNavigate } from 'react-router-dom';
 import './administration.scss';
 import { CommonUtility } from '../utils/utilities';
+import { PatternFormat } from "react-number-format";
+import { AccountStatusMapping } from '../common/object-interfaces/account.interface';
 
 interface IAdminPageProps {
     currentUser?: IUser;
@@ -173,6 +175,14 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
             filterSearch: true,
             filterMultiple: true,
             onFilter: (value, record) => (record.phone as string).toLowerCase().indexOf((value as string).toLowerCase()) > -1,
+            render: (value) => {
+                return (
+                <PatternFormat
+                    displayType='text'
+                    format='#### ### ###'
+                    value={value}
+                />)
+            }
         },
         {
             title: 'Trạng thái',
@@ -184,7 +194,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
             },
             ellipsis: true,
             render: (value) => {
-                return <Tag color={CommonUtility.statusColorMapping(value)}>{value}</Tag>
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{AccountStatusMapping[value]}</Tag>
             },
             width: 200,
             filterMode: 'menu',
@@ -291,7 +301,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                 <Row>
                                     <Col className='__app-account-field' span={6}>Trạng thái:</Col>
                                     <Col span={18}>
-                                        <Tag color={CommonUtility.statusColorMapping(cur.status)}>{cur.status}</Tag>
+                                        <Tag color={CommonUtility.statusColorMapping(cur.status)}>{AccountStatusMapping[cur.status]}</Tag>
                                     </Col>
                                 </Row>
                             </div>
@@ -459,7 +469,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                 trigger={['click']}
                                 menu={{ items: userMenuItems }}
                                 placement='bottomRight'>
-                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} />
+                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar ?? null} size={'large'} icon={<UserOutlined />} />
                             </Dropdown>
                         </div>
                     </Layout.Header>

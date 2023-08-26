@@ -2,12 +2,13 @@ import { EyeInvisibleOutlined, EyeTwoTone, LoadingOutlined, PlusOutlined } from 
 import { Avatar, Button, Col, Divider, Input, Modal, Radio, Row, Select, Upload } from 'antd';
 import { RcFile, UploadChangeParam, UploadFile } from 'antd/es/upload';
 import { cloneDeep } from 'lodash';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { CommonUtility } from '../../utils/utilities';
 import { adminServices } from '../administration.service';
-import { take } from 'rxjs';
+import { switchMap, take } from 'rxjs';
 import { PatternFormat } from 'react-number-format';
+import { IStore } from '../../common/object-interfaces/store.interface';
 
 interface IAccountDetailProps {
     onCancel: () => void;
@@ -19,6 +20,20 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
 
     const adminService = new adminServices();
 
+    const [isDataReady, setDataReady] = useState<boolean>(false);
+    const [newStores, setNewStores] = useState<IStore[]>([]);
+
+    useEffect(() => {
+        if (!isDataReady) {
+            adminService.getStoreWithoutManager$().pipe(take(1)).subscribe({
+                next: (value) => {
+                    setNewStores(value);
+                    setDataReady(true);
+                }
+            })
+        }
+    })
+
     const [accountDetail, setAccountDetail] = useState<{
         username: string;
         password: string;
@@ -27,16 +42,18 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
         phone: string;
         address: string;
         role: string;
-        gender: string;
+        gender: boolean;
+        storeID: string;
     }>({
         username: '',
-        password: '',
+        password: '123456',
         fullName: '',
         email: '',
         phone: '',
         address: '',
-        gender: '',
-        role: props.role[0] ?? ''
+        gender: true,
+        role: props.role[0] ?? '',
+        storeID: ''
     });
     // const [loading, setLoading] = useState(false);
     // const [imageUrl, setImageUrl] = useState<string>();
@@ -59,9 +76,14 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                     "email": accountDetail.email,
                     "phone": accountDetail.phone,
                     "address": accountDetail.address,
-                    "gender": accountDetail.gender
+                    "gender": accountDetail.gender,
+                    "avatar": ''
                 }
-                adminService.createAccount$(accountInfo).pipe(take(1)).subscribe({
+                adminService.createAccount$(accountInfo).pipe(
+                    switchMap((res: string) => {
+                        return adminService.addStoreEmployee$(accountDetail.storeID, Number(res) ?? -1)
+                    })
+                ).subscribe({
                     next: (res) => {
                         if (props.onSave) {
                             props.onSave(res);
@@ -112,6 +134,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                         <Col span={18}>
                             <Input.Password
                                 placeholder="Nhập mật khẩu"
+                                value={accountDetail?.password ?? '123456'}
                                 onChange={(args) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
                                     temp['password'] = args.target.value;
@@ -145,7 +168,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             />
                         </Col>
                     </Row>
-                    {/* <Row className='__app-account-info-row'>
+                    <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
                             <span>
                                 <strong>Chi Nhánh:</strong> <span className='__app-required-field'> *</span>
@@ -154,21 +177,31 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                         </Col>
                         <Col span={18}>
                             <Select
-                                defaultValue='001'
                                 style={{ width: '100%' }}
-                                options={[
-                                    { value: '001', label: 'Chi Nhánh 1' },
-                                    { value: '002', label: 'Chi Nhánh 2' },
-                                    { value: '003', label: 'Chi Nhánh 3' },
-                                ]}
+                                options={newStores.reduce((acc: any[], cur) => {
+                                    if (accountDetail.role === 'manager') {
+                                        if (CommonUtility.isNullOrUndefined(cur.managerID)) {
+                                            acc.push({
+                                                label: cur.storeName,
+                                                value: cur.id
+                                            })
+                                        }
+                                    } else {
+                                        acc.push({
+                                            label: cur.storeName,
+                                            value: cur.id
+                                        })
+                                    }
+                                    return acc;
+                                }, [])}
                                 onChange={(value) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
-                                    temp['storeId'] = value;
+                                    temp['storeID'] = value;
                                     setAccountDetail(temp);
                                 }}
                             />
                         </Col>
-                    </Row> */}
+                    </Row>
                     <Divider className='__app-divider-no-margin'></Divider>
                     <Row className='__app-account-info-row'>
                         <Col span={6} className='__app-account-field'>
@@ -213,7 +246,7 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                                 let temp = cloneDeep(accountDetail) ?? {};
                                 temp['gender'] = args.target.value;
                                 setAccountDetail(temp);
-                            }} defaultValue={true}>
+                            }} value={accountDetail?.gender ?? true}>
                                 <Radio value={true}>Nam</Radio>
                                 <Radio value={false}>Nữ</Radio>
                             </Radio.Group>
@@ -229,9 +262,9 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                             <PatternFormat
                                 className="app-numeric-input"
                                 format='#### ### ###'
-                                onChange={(args) => {
+                                onValueChange={(value) => {
                                     let temp = cloneDeep(accountDetail) ?? {};
-                                    temp['phone'] = args.target.value;
+                                    temp['phone'] = value.value;
                                     setAccountDetail(temp);
                                 }}
                             />
