@@ -55,6 +55,23 @@ export class ManagerServices extends CoreServices {
         })
     }
 
+    disableAccount$(accountID: number) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res);
+                obs.complete();
+            }).catch(err => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Thay đổi thất bại.' });
+                obs.complete();
+            })
+        })
+    }
+
     getService$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/service?pageNo=0&pageSize=10&sortBy=ID&sortAsc=false`
@@ -186,7 +203,7 @@ export class ManagerServices extends CoreServices {
             })
         })
     }
-    
+
     getPlantQuantityHistory$(plantID: string) {
         return new Observable<IUser[]>(obs => {
             let url = this.globalSettings.domain + `/store/getStorePlantRecord?plantID=${plantID}&storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
@@ -272,7 +289,7 @@ export class ManagerServices extends CoreServices {
         })
     }
 
-    rejectOrder$(orderId: string, reason: string ) {
+    rejectOrder$(orderId: string, reason: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/order/rejectOrder?orderID=${orderId}&reason=${reason}&status=DENIED`
             axios.put(url, undefined, {
@@ -289,7 +306,7 @@ export class ManagerServices extends CoreServices {
         })
     }
 
-    rejectContract$(contractId: string, status: string ) {
+    rejectContract$(contractId: string, status: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/contract/changeContractStatus?contractID=${contractId}&status=${status}`
             axios.put(url, undefined, {
@@ -306,7 +323,7 @@ export class ManagerServices extends CoreServices {
         })
     }
 
-    cancelContract$(orderId: string, reason: string ) {
+    cancelContract$(orderId: string, reason: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/contract/rejectOrder?orderID=${orderId}&reason=${reason}&status=STAFFCANCEL`
             axios.put(url, undefined, {
@@ -420,7 +437,7 @@ export class ManagerServices extends CoreServices {
                 obs.next(res.data);
                 obs.complete();
             }).catch((err) => {
-                obs.next({error: JSON.stringify(err.response?.data) ?? 'Giảm số lượng cây thất bại.'});
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Giảm số lượng cây thất bại.' });
                 obs.complete();
             })
         })
@@ -437,7 +454,7 @@ export class ManagerServices extends CoreServices {
                 obs.next(res.data);
                 obs.complete();
             }).catch((err) => {
-                obs.next({error: JSON.stringify(err.response?.data) ?? 'Lấy Report Thất bại.'});
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Lấy Report Thất bại.' });
                 obs.complete();
             })
         })

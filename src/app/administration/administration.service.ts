@@ -43,7 +43,11 @@ export class adminServices extends CoreServices {
     getAccounts$(options: string = '') {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=USERNAME&sortTypeAsc=true`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 if (!CommonUtility.isNullOrEmpty(options)) {
                     const data = res.data.reduce((acc: any[], cur: any) => {
                         if (cur.roleName === options) {
@@ -67,7 +71,11 @@ export class adminServices extends CoreServices {
     getAccount$(accountId: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/user/getByID?userID=${accountId}`
-            axios.get(url).then((res) => {
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch((err) => {
@@ -82,7 +90,11 @@ export class adminServices extends CoreServices {
     createAccount$(dataPost: any) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/user/register`
-            axios.post(url, dataPost).then((res) => {
+            axios.post(url, dataPost, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {

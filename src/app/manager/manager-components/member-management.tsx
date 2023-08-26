@@ -1,5 +1,5 @@
-import { FormOutlined, LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Input, Radio, Row, Select, Skeleton, Table, Tag, Upload } from "antd";
+import { FormOutlined, LeftOutlined, MoreOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, Divider, Dropdown, Input, Modal, Radio, Row, Select, Skeleton, Table, Tag, Upload } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
@@ -30,32 +30,30 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [userDetail, setUserDetail] = useState<IUser | null>(null);
-    const [stores, setStore] = useState<any[]>([]);
+    const [popUpConfirm, setPopUpConfirm] = useState<{
+        isShow: boolean,
+        accountId: number
+    }>({
+        isShow: false,
+        accountId: -1
+    });
 
     useEffect(() => {
         if (!isFirstInit) {
-            managerServices.getMembers$().pipe(take(1)).subscribe({
-                next: data => {
-                    setMember(data);
-                    setSearchMember(data);
-                    setFirstInit(true);
-                    setDataReady(true);
-                }
-            });
-            managerServices.getStores$({ pageNo: 0, pageSize: 1000 }).pipe(take(1)).subscribe({
-                next: data => {
-                    const optionStore = data.reduce((acc, cur) => {
-                        acc.push({
-                            value: cur.id,
-                            label: cur.storeName
-                        })
-                        return acc;
-                    }, []);
-                    setStore(optionStore);
-                }
-            })
+            loadData();
         }
     }, [isFirstInit, members, managerServices, props.roleID, props.roleName]);
+
+    function loadData() {
+        managerServices.getMembers$().pipe(take(1)).subscribe({
+            next: data => {
+                setMember(data);
+                setSearchMember(data);
+                setDataReady(true);
+                setFirstInit(true);
+            }
+        });
+    }
 
     const tableUserColumns: ColumnsType<IUser> = [
         {
@@ -132,12 +130,45 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
             showSorterTooltip: false,
             ellipsis: true,
             render: (_, record, __) => {
+                // return <div>
+                //     <Button className='__app-command-button' onClick={(e) => {
+                //         e.preventDefault();
+                //         getUserDetail(record.id);
+                //         setFormMode('edit');
+                //     }} icon={<FormOutlined />} />
+                // </div>
                 return <div>
-                    <Button className='__app-command-button' onClick={(e) => {
-                        e.preventDefault();
-                        getUserDetail(record.id);
-                        setFormMode('edit');
-                    }} icon={<FormOutlined />} />
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [{
+                                key: 'detail',
+                                label: <span
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        getUserDetail(record.id);
+                                        setFormMode('edit');
+                                    }}
+                                >Xem chi tiết</span>
+                            },
+                            record.status === 'ACTIVE' ? 
+                            {
+                                key: 'disableAccount',
+                                label: <span
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPopUpConfirm({
+                                            isShow: true,
+                                            accountId: record['id']
+                                        })
+                                    }}
+                                >Sa thải</span>
+                            } : null,
+                            ]
+                        }}
+                        placement='bottom'>
+                        <MoreOutlined />
+                    </Dropdown>
                 </div>
             },
         }
@@ -397,7 +428,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
 
                                 </Col>
                             </Row>
-                            {
+                            {/* {
                                 !isDataReady ?
                                     <Skeleton.Input block={true} active={true} />
                                     :
@@ -431,7 +462,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                             </Col>
                                         </Row> :
                                         <></>
-                            }
+                            } */}
                             {/* {
                                 isDataReady ?
                                     <div style={{ height: 210, display: 'flex', flexDirection: 'column-reverse', padding: 24 }}>
@@ -446,6 +477,53 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                         </div>
                     </div>
                 </> : <></>
+            }
+            {
+                popUpConfirm.isShow ?
+                    <Modal
+                        width={300}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Xác nhận
+                            </span>
+                        )}
+                        footer={[
+                            <Button type="default" onClick={() => {
+                                setPopUpConfirm({
+                                    isShow: false,
+                                    accountId: -1
+                                })
+                            }}>Huỷ</Button>,
+                            <Button type="primary"
+                                style={{ backgroundColor: '#5D050b' }}
+                                onClick={() => {
+                                    managerServices.disableAccount$(popUpConfirm.accountId).pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    accountId: -1
+                                                })
+                                            } else {
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    accountId: -1
+                                                })
+                                                loadData();
+                                                toast.success('Cập nhật thành công');
+                                            }
+                                        }
+                                    })
+
+                                }}>Xác Nhận</Button>
+                        ]}
+                        centered
+                    >
+                        <span>Vui lòng xác nhận sẽ sa thải nhân viên?</span>
+                    </Modal> : <></>
             }
         </>
     )

@@ -284,6 +284,25 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
         })
     }
 
+    function validateFormDecreasePlant() {
+        let result = {
+            invalid: false,
+            error: [] as string[]
+        }
+        if (CommonUtility.isNullOrEmpty(plantDecreaseQuantityForm.quantity)) {
+            result.invalid = true;
+            result.error.push('Số lượng');
+        } else if (plantDecreaseQuantityForm.quantity <= 0) {
+            result.invalid = true;
+            result.error.push('Số lượng lớn hơn 0');
+        }
+        if (CommonUtility.isNullOrEmpty(plantDecreaseQuantityForm.reason)) {
+            result.invalid = true;
+            result.error.push('Lý do');
+        }
+        return result;
+    }
+
     return (
         <>
             {
@@ -650,22 +669,26 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                 })
                             }}>Đóng</Button>,
                             <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
-                                managerServices.removeStorePlantQuantity$(plantDecreaseQuantityForm.storePlantID, plantDecreaseQuantityForm.quantity, plantDecreaseQuantityForm.reason).pipe(take(1)).subscribe({
-                                    next: (res) => {
-                                        if (res.error) {
-                                            toast.error(res.error);
-                                        } else {
-                                            toast.success(`Cập nhật thành công.`);
-                                            setPlantDecreaseQuantityForm({
-                                                isShow: false,
-                                                quantity: 0,
-                                                reason: '',
-                                                storePlantID: ''
-                                            })
+                                const validation = validateFormDecreasePlant();
+                                if (validation.invalid) {
+                                    toast.error('Vui lòng nhập thông tin ' + validation.error.join(', '));
+                                } else {
+                                    managerServices.removeStorePlantQuantity$(plantDecreaseQuantityForm.storePlantID, plantDecreaseQuantityForm.quantity, plantDecreaseQuantityForm.reason).pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                            } else {
+                                                toast.success(`Cập nhật thành công.`);
+                                                setPlantDecreaseQuantityForm({
+                                                    isShow: false,
+                                                    quantity: 0,
+                                                    reason: '',
+                                                    storePlantID: ''
+                                                })
+                                            }
                                         }
-                                    }
-                                })
-
+                                    })
+                                }
                             }}>Lưu</Button>
                         ]}
                         centered
@@ -673,7 +696,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                         <div style={{ width: '100%', display: 'flex', gap: 4, flexDirection: 'column' }}>
                             <Row>
                                 <Col span={5} className='__app-object-field align-center'>
-                                    <strong>Số lượng:</strong>
+                                    <strong>Số lượng: <span className='__app-required-field'> *</span></strong>
                                 </Col>
                                 <Col span={19}>
                                     <NumericFormat
@@ -691,7 +714,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                             </Row>
                             <Row>
                                 <Col span={5} className='__app-object-field align-center'>
-                                    <strong>Lý do:</strong>
+                                    <strong>Lý do: <span className='__app-required-field'> *</span></strong>
                                 </Col>
                                 <Col span={19}>
                                     <TextArea

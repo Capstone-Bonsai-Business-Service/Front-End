@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { adminServices } from "./administration.service";
 import { useNavigate, useParams } from "react-router-dom";
-import { Avatar, Button, Col, Divider, Dropdown, Input, Layout, Menu, MenuProps, Row, Select, Upload } from "antd";
+import { Avatar, Button, Col, Divider, Dropdown, Input, Layout, Menu, MenuProps, Row, Select, Radio } from "antd";
 import { LeftOutlined, LoadingOutlined, LogoutOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import { IUser } from "../../IApp.interface";
-import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import toast from "react-hot-toast";
 import { CommonUtility } from "../utils/utilities";
+import { PatternFormat } from "react-number-format";
 
 interface IAccountDetailPageProps {
     currentUser?: IUser;
@@ -139,11 +139,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                 trigger={['click']}
                                 menu={{ items: userMenuItems }}
                                 placement='bottomRight'>
-                                {
-                                    props.currentUser?.avatar ?
-                                        <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} /> :
-                                        <Avatar className='__app-user-avatar' size={'large'}>PH</Avatar>
-                                }
+                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} icon={<UserOutlined />} size={'large'} />
                             </Dropdown>
                         </div>
                     </Layout.Header>
@@ -163,7 +159,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                 <Col span={3} className='__app-account-field'>
                                 </Col>
                                 <Col span={21}>
-                                    <Avatar shape="circle" size={100} src={imageUrl} />
+                                    <Avatar shape="circle" size={100} src={account?.avatar} icon={<UserOutlined />} />
                                 </Col>
                             </Row>
                             <Row className='__app-account-info-row'>
@@ -175,7 +171,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.Id ?? ''} disabled />
+                                    <span>{account?.userID ?? ''}</span>
                                 </Col>
                             </Row>
                             <Row className='__app-account-info-row'>
@@ -199,7 +195,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.role ?? ''} disabled />
+                                    <Input value={account?.roleName ?? ''} disabled />
                                 </Col>
                             </Row>
                             <Divider className='__app-divider-no-margin'></Divider>
@@ -236,7 +232,12 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.phone ?? ''} />
+                                    <PatternFormat
+                                        displayType='text'
+                                        format='#### ### ###'
+                                        value={account?.phone}
+                                        placeholder="Nhập số điện thoại"
+                                    />
                                 </Col>
                             </Row>
                             <Row className='__app-account-info-row'>
@@ -248,7 +249,12 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                     </span>
                                 </Col>
                                 <Col span={15}>
-                                    <Input value={account?.gender ?? ''} />
+                                    <Radio.Group
+                                        disabled
+                                        value={account?.gender}>
+                                        <Radio value={true}>Nam</Radio>
+                                        <Radio value={false}>Nữ</Radio>
+                                    </Radio.Group>
                                 </Col>
                             </Row>
                             {

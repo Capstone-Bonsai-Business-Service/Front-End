@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
+import { Avatar, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { ManagerServices } from './manager.service';
 import { GiTreehouse } from 'react-icons/gi';
-import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
+import { PiHandshake, PiUserList } from 'react-icons/pi';
 import { RiFeedbackLine } from 'react-icons/ri';
 import { AiOutlineAreaChart, AiOutlineFall, AiOutlineRise } from 'react-icons/ai'
 import { LuClipboardSignature } from 'react-icons/lu';
@@ -17,7 +17,6 @@ import { ContractManagementComponent } from './manager-components/contract-manag
 import { BonsaiManagementComponent } from './manager-components/bonsai-management';
 import { MemberManagementComponent } from './manager-components/member-management';
 import { OrderManagementComponent } from './manager-components/order-management';
-import Logo from '../../assets/images/logo1.png'
 import { toast } from 'react-hot-toast';
 import { FeedbackManagementComponent } from './manager-components/feedback-management';
 import { Observable, forkJoin, take, timer } from 'rxjs';
@@ -61,7 +60,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
     });
 
     function registerPingToken() {
-        let sub = timer(0, 120000).subscribe({
+        let sub = timer(0, 1200000).subscribe({
             next: (time: any) => {
                 if (props.currentUser) {
                     managerService.getUserInfoByToken$(props.currentUser.token).pipe(take(1)).subscribe({
@@ -475,6 +474,12 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                             alignItems: 'center'
                         }}>
                             {/* <img src={Logo} alt='' style={{ height: 58, }} /> */}
+                            <span
+                                style={{
+                                    userSelect: 'none',
+                                    fontWeight: '600'
+                                }}
+                            >{ props?.currentUser?.storeName ?? '' }</span>
                         </div>
                         <div className='__app-header-right'>
                             {/* <div className='__app-notification-info'>
@@ -487,6 +492,12 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                     </Badge>
                                 </Dropdown>
                             </div> */}
+                            <span style={{
+                                    userSelect: 'none',
+                                    fontWeight: '600'
+                                }}>
+                                { props?.currentUser?.fullName ?? '' }
+                            </span>
 
                             <div className='__app-user-info'>
                                 <Dropdown

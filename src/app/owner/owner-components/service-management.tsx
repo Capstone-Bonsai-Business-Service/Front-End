@@ -175,6 +175,7 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                             <NumericFormat
                                 className="app-numeric-input"
                                 thousandSeparator=' '
+                                allowNegative={false}
                                 onValueChange={(values) => {
                                     let temp = cloneDeep(serviceForm) ?? {};
                                     temp['price'] = values.floatValue as number;

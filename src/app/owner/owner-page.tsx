@@ -49,7 +49,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
     });
 
     function registerPingToken() {
-        let sub = timer(0, 100000).subscribe({
+        let sub = timer(0, 1200000).subscribe({
             next: (time) => {
                 if (props.currentUser) {
                     ownerService.getUserInfoByToken$(props.currentUser.token).pipe(take(1)).subscribe({

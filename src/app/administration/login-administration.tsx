@@ -52,14 +52,6 @@ export const LoginAdmin: React.FC<ILoginAdminProps> = (props) => {
         })
     }
 
-    //remove later
-    function checkDummyLogin(users: any) {
-        if (users?.admin.username === username && users?.admin.password === password) {
-            return true;
-        }
-        return false;
-    }
-
     return (
         <div className='__app-login'>
             <div className='__app-login-container'>

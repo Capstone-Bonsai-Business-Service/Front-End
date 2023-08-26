@@ -1394,6 +1394,7 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                             <NumericFormat
                                 className="app-numeric-input"
                                 thousandSeparator=' '
+                                allowNegative={false}
                                 onValueChange={(values) => {
                                     let temp = cloneDeep(bonsaiDetail) ?? {};
                                     temp['price'] = values.floatValue as number;
