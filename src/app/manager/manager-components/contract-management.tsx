@@ -58,11 +58,11 @@ export const ContractManagementComponent: React.FC<any> = () => {
                         key: 'denied',
                         children: tabKey === 'denied' ? <ContractTabLayoutComponent contractStatus='DENIED' /> : <></>,
                     },
-                    {
-                        label: 'HĐ cửa hàng đã huỷ',
-                        key: 'storeCancel',
-                        children: tabKey === 'storeCancel' ? <ContractTabLayoutComponent contractStatus='STAFFCANCELED' /> : <></>,
-                    },
+                    // {
+                    //     label: 'HĐ cửa hàng đã huỷ',
+                    //     key: 'storeCancel',
+                    //     children: tabKey === 'storeCancel' ? <ContractTabLayoutComponent contractStatus='STAFFCANCELED' /> : <></>,
+                    // },
                     {
                         label: 'HĐ đã bị huỷ',
                         key: 'cancel',
@@ -100,6 +100,15 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
         deposit: 0,
         paymentTypeID: null
     })
+    const [rejectContractForm, setRejectContractForm] = useState<{
+        isShow: boolean,
+        reason: string,
+        contractID: string
+    }>({
+        isShow: false,
+        reason: '',
+        contractID: ''
+    });
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -191,8 +200,8 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
             next: (values) => {
                 const staffListOption = values[1].reduce((acc, cur) => {
                     acc.push({
-                        value: cur.staffID,
-                        label: cur.staffName
+                        value: cur.id,
+                        label: cur.fullName
                     })
                     return acc;
                 }, [] as any)
@@ -201,6 +210,18 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                 setDataReady(true);
             }
         });
+    }
+
+    function validateFormReject() {
+        let result = {
+            invalid: false,
+            error: [] as string[]
+        }
+        if (CommonUtility.isNullOrEmpty(rejectContractForm.reason)) {
+            result.invalid = true;
+            result.error.push('Lý do');
+        }
+        return result;
     }
 
     return (
@@ -539,17 +560,10 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                                 })
                                             }}>Duyệt</Button>
                                         <Button type="default" onClick={() => {
-                                            managerServices.rejectContract$(contractDetail[0]?.showContractModel?.id as string, 'DENIED').pipe(take(1)).subscribe({
-                                                next: (res) => {
-                                                    if (res) {
-                                                        setFormMode('display');
-                                                        setContractDetail([]);
-                                                        loadData();
-                                                        toast.success('Cập nhật thành công');
-                                                    } else {
-                                                        toast.error('Cập nhật thất bại. Vui lòng thử lại');
-                                                    }
-                                                }
+                                            setRejectContractForm({
+                                                isShow: true,
+                                                contractID: contractDetail[0]?.showContractModel?.id ?? '',
+                                                reason: ''
                                             })
                                         }}>Từ chối</Button>
                                     </div> : <></>
@@ -596,6 +610,55 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                             })
                                         }}>Huỷ Hợp Đồng</Button>
                                     </div> : <></>
+                            }
+                            {
+                                rejectContractForm.isShow ?
+                                    <Modal
+                                        width={500}
+                                        open={true}
+                                        closable={false}
+                                        title={(
+                                            <span className='__app-dialog-title'>
+                                                Từ chối hợp đồng
+                                            </span>
+                                        )}
+                                        footer={[
+                                            <Button key='cancel' onClick={() => {
+                                                setRejectContractForm({
+                                                    isShow: false,
+                                                    contractID: '',
+                                                    reason: ''
+                                                })
+                                            }}>Đóng</Button>,
+                                            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
+                                                const validation = validateFormReject();
+                                                if (validation.invalid) {
+                                                    toast.error('Vui lòng nhập thông tin ' + validation.error.join(', '));
+                                                } else {
+                                                    managerServices.rejectContract$(contractDetail[0]?.showContractModel?.id as string, 'DENIED', rejectContractForm.reason).pipe(take(1)).subscribe({
+                                                        next: (res) => {
+                                                            if (res) {
+                                                                setFormMode('display');
+                                                                setContractDetail([]);
+                                                                setRejectContractForm({
+                                                                    isShow: false,
+                                                                    contractID: '',
+                                                                    reason: ''
+                                                                })
+                                                                loadData();
+                                                                toast.success('Cập nhật thành công');
+                                                            } else {
+                                                                toast.error('Cập nhật thất bại. Vui lòng thử lại');
+                                                            }
+                                                        }
+                                                    })
+                                                }
+                                            }}>Lưu</Button>
+                                        ]}
+                                        centered
+                                    >
+
+                                    </Modal> : <></>
                             }
                         </div>
                     </div>

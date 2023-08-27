@@ -306,7 +306,7 @@ export class ManagerServices extends CoreServices {
         })
     }
 
-    rejectContract$(contractId: string, status: string) {
+    rejectContract$(contractId: string, status: string, reason?: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/contract/changeContractStatus?contractID=${contractId}&status=${status}`
             axios.put(url, undefined, {
@@ -400,7 +400,13 @@ export class ManagerServices extends CoreServices {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
                 }
             }).then((res) => {
-                obs.next(res.data);
+                const result = res.data.reduce((acc: any[], cur: any) => {
+                    if (cur.storeID === this.storeId) {
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, [])
+                obs.next(result);
                 obs.complete();
             }).catch(() => {
                 obs.next([]);
