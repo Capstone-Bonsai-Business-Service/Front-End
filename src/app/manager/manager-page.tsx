@@ -6,6 +6,7 @@ import { ManagerServices } from './manager.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiHandshake, PiUserList } from 'react-icons/pi';
 import { RiFeedbackLine } from 'react-icons/ri';
+import { VscFeedback } from 'react-icons/vsc';
 import { AiOutlineAreaChart, AiOutlineFall, AiOutlineRise } from 'react-icons/ai'
 import { LuClipboardSignature } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +22,7 @@ import { toast } from 'react-hot-toast';
 import { FeedbackManagementComponent } from './manager-components/feedback-management';
 import { Observable, forkJoin, take, timer } from 'rxjs';
 import { DateTime } from 'luxon';
+import { ReportManagementComponent } from './manager-components/report-management';
 
 
 interface IManagerPageProps {
@@ -255,10 +257,20 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
         {
             key: 'feedback',
             className: '__app-group-menu',
-            icon: <RiFeedbackLine color='#000' />,
+            icon: <VscFeedback color='#000' />,
             label: (
                 <div className='__app-group-menu-label'>
                     Phản hồi
+                </div>
+            )
+        },
+        {
+            key: 'report',
+            className: '__app-group-menu',
+            icon: <RiFeedbackLine color='#000' />,
+            label: (
+                <div className='__app-group-menu-label'>
+                    Báo cáo
                 </div>
             )
         },
@@ -546,6 +558,11 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                             currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
                                 : <></>
                         }
+                        {
+                            currentMenuItem === 'report' ? <ReportManagementComponent />
+                                : <></>
+                        }
+                        
                     </Layout.Content>
                 </Layout>
             </Layout>

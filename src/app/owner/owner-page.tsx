@@ -46,8 +46,9 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
             registerPingToken();
             setFirstInit(true);
         }
-    });
+    }, [isFirstInit, registerPingToken]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     function registerPingToken() {
         let sub = timer(0, 1200000).subscribe({
             next: (time) => {
@@ -189,17 +190,6 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
 
     function onChangeMenuSelect(key: any) {
         setCurrentMenuItem(key);
-    }
-
-    function bindingNotifications() {
-        const noti = (['1', '2', '3'] as any).reduce((acc: any[], cur: any) => {
-            acc.push({
-                key: cur,
-                label: `Notification ${cur}`
-            });
-            return acc;
-        }, []);
-        return noti;
     }
 
     return (

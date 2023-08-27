@@ -1,5 +1,5 @@
 import { CloseOutlined, LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Modal, Row, Table, Tabs, Tag } from "antd";
+import { Avatar, Button, Col, Divider, Modal, Row, Table, Tag } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
@@ -21,31 +21,32 @@ interface IFeedbackTabProps {
 }
 
 export const FeedbackManagementComponent: React.FC<IFeedbackManagementProps> = (props) => {
-    const [tabKey, setTabKey] = useState<string>('order')
+    // const [tabKey, setTabKey] = useState<string>('order')
     return (
-        <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
-            <Tabs
-                className="__app-tabs-custom"
-                style={{ marginBottom: 0 }}
-                defaultActiveKey='order'
-                type='card'
-                onChange={(key) => {
-                    setTabKey(key);
-                }}
-                items={[
-                    {
-                        label: 'Cây cảnh',
-                        key: 'order',
-                        children: tabKey === 'order' ? <FeedbackTabComponent feedbackType='order' /> : <></>,
-                    },
-                    {
-                        label: 'Hợp đồng',
-                        key: 'contract',
-                        children: tabKey === 'contract' ? <FeedbackTabComponent feedbackType='contract' /> : <></>,
-                    },
-                ]}
-            />
-        </div>
+        // <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
+        //     <Tabs
+        //         className="__app-tabs-custom"
+        //         style={{ marginBottom: 0 }}
+        //         defaultActiveKey='order'
+        //         type='card'
+        //         onChange={(key) => {
+        //             setTabKey(key);
+        //         }}
+        //         items={[
+        //             {
+        //                 label: 'Cây cảnh',
+        //                 key: 'order',
+        //                 children: tabKey === 'order' ? <FeedbackTabComponent feedbackType='order' /> : <></>,
+        //             },
+        //             {
+        //                 label: 'Hợp đồng',
+        //                 key: 'contract',
+        //                 children: tabKey === 'contract' ? <FeedbackTabComponent feedbackType='contract' /> : <></>,
+        //             },
+        //         ]}
+        //     />
+        // </div>
+        <FeedbackTabComponent feedbackType='order' />
     )
 
 }
@@ -174,7 +175,7 @@ export const FeedbackTabComponent: React.FC<IFeedbackTabProps> = (props) => {
             {
                 formMode === 'display' ?
                     <>
-                        <div className='__app-toolbar-container' style={{ width: '100%', padding: '8px 24px' }}>
+                        <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                             <div className='__app-toolbar-left-buttons'>
                                 <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(feedbacks, tableUserColumns);
@@ -199,7 +200,7 @@ export const FeedbackTabComponent: React.FC<IFeedbackTabProps> = (props) => {
                         <div style={{ width: '94%' }}>
                             <Divider className='__app-divider-no-margin' style={{ width: '94%' }}></Divider>
                         </div>
-                        <div className='__app-layout-container' style={{ width: '100%', height: 'calc(100vh - 220px)', padding: '8px 24px' }}>
+                        <div className='__app-layout-container' style={{ height: 'calc(100vh - 160px)', padding: '8px 24px' }}>
                             <Table
                                 loading={!isDataReady}
                                 tableLayout='auto'

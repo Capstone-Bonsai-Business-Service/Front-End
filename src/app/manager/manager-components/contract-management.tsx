@@ -289,7 +289,12 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                         <Col span={5} style={{ fontWeight: 500 }}>Khách hàng:</Col>
                                         <Col>
                                             <Row style={{ fontWeight: 600 }}>{contractDetail[0]?.showContractModel?.fullName}</Row>
-                                            <Row>{contractDetail[0]?.showContractModel?.phone}</Row>
+                                            <Row>
+                                                <PatternFormat
+                                                    displayType='text'
+                                                    format='#### ### ###'
+                                                    value={contractDetail[0]?.showContractModel?.phone}
+                                                /></Row>
                                         </Col>
                                     </Row>
                                     <Row>

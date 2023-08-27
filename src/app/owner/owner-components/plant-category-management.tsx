@@ -8,7 +8,7 @@ import { take } from "rxjs";
 import { cloneDeep } from "lodash";
 import { CommonUtility } from "../../utils/utilities";
 import { toast } from "react-hot-toast";
-import { PlantStatusMapping, PlantStatus, CategoryStatusMapping } from '../../common/object-interfaces/plant.interface';
+import { CategoryStatusMapping } from '../../common/object-interfaces/plant.interface';
 
 interface IPlantCategoryManagementProps {
 

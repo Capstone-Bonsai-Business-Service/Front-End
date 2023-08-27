@@ -392,6 +392,40 @@ export class ManagerServices extends CoreServices {
         })
     }
 
+    getReports$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/report/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    changeStatusReport$(id: string, status: string, reason: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/report/changeStatus?reportID=${id}&status=${status}&reason=${reason}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
     getStoreContractFeedbacks$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/feedback/contractFeedback?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
