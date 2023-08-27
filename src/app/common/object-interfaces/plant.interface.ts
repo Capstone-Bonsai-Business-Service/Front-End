@@ -41,6 +41,13 @@ export enum PlantStatusMapping {
     'INACTIVE' = 'Ngưng bán'
 }
 
+export const CategoryStatusMapping: {
+    [k: string]: string
+} = {
+    'ACTIVE': 'Hoạt động',
+    'INACTIVE': 'Vô hiệu'
+}
+
 export const plantHeightOptions = [
     {
         label: '5cm đến 30cm',

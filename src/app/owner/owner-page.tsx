@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Badge, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
+import { Avatar, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { OwnerServices } from './owner.service';
 import { GiTreehouse } from 'react-icons/gi';
-import { PiBellRingingLight, PiHandshake, PiUserList } from 'react-icons/pi';
+import { PiHandshake, PiUserList } from 'react-icons/pi';
 import { AiOutlineAreaChart } from 'react-icons/ai'
 import { LiaStoreAltSolid } from 'react-icons/lia';
 import { LuClipboardSignature } from 'react-icons/lu';
@@ -15,15 +15,15 @@ import { StoreManagementComponent } from './owner-components/store-management';
 import { MemberManagementComponent } from './owner-components/member-management';
 import { ContractManagementComponent } from './owner-components/contract-management';
 import { OrderManagementComponent } from './owner-components/order-management';
-import Logo from '../../assets/images/logo1.png'
 import './owner.scss';
 import '../../styles/global.style.scss';
 import { take, timer } from 'rxjs';
 import toast from 'react-hot-toast';
-import { RiFeedbackLine } from 'react-icons/ri';
+import { BiCategoryAlt } from 'react-icons/bi';
 import { FeedbackManagementComponent } from './owner-components/feedback-management';
 import { IncomStatisticComponent } from './owner-components/income.component';
 import { StoreStatisticComponent } from './owner-components/store-revenue.component';
+import { PlantCategoryManagementComponent } from './owner-components/plant-category-management';
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -112,6 +112,16 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     label: (
                         <div className='__app-group-menu-label'>
                             Cây cảnh
+                        </div>
+                    )
+                },
+                {
+                    key: 'categories',
+                    className: '__app-group-menu',
+                    icon: <BiCategoryAlt color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Loại cây
                         </div>
                     )
                 },
@@ -285,6 +295,10 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                         }
                         {
                             currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
+                                : <></>
+                        }
+                        {
+                            currentMenuItem === 'categories' ? <PlantCategoryManagementComponent />
                                 : <></>
                         }
                     </Layout.Content>

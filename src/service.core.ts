@@ -17,8 +17,8 @@ export class CoreServices {
 
     globalSettings: GlobalSettings;
 
-    login$(username: string, password: string): Observable<any> {
-        return new Observable(obs => {
+    login$(username: string, password: string) {
+        return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/user/login`;
             let datapost = {
                 username: username,
@@ -35,8 +35,8 @@ export class CoreServices {
         })
     }
 
-    getUserInfoByToken$(strToken: string): Observable<any> {
-        return new Observable(obs => {
+    getUserInfoByToken$(strToken: string) {
+        return new Observable<any>(obs => {
             let url = this.globalSettings.domain + '/user/getByToken';
             axios.get(url, {
                 headers: {
@@ -52,21 +52,21 @@ export class CoreServices {
         })
     }
 
-    getPlantCategories$(): Observable<any> {
-        return new Observable(obs => {
+    getPlantCategories$() {
+        return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + '/category';
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
             }).catch(() => {
-                obs.next();
+                obs.next([]);
                 obs.complete();
             });
         })
     }
 
-    getShipPlant$(): Observable<any> {
-        return new Observable(obs => {
+    getShipPlant$() {
+        return new Observable<any>(obs => {
             let url = this.globalSettings.domain + '/plantShipPrice?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false';
             axios.get(url).then((res) => {
                 obs.next(res.data);
@@ -79,7 +79,7 @@ export class CoreServices {
     }
 
     addImageToDatabase$(entityName: string,  entityID: string, listURL: string[]) {
-        return new Observable(obs => {
+        return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/image/addImage?entityName=${entityName}&entityID=${entityID}&listURL=${listURL}`;
             axios.post(url, undefined, {
                 headers: {
@@ -96,7 +96,7 @@ export class CoreServices {
     }
 
     uploadImageToFireBase$(file: any) {
-        return new Observable(obs => {
+        return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/image/convertFromFileToImageURL`;
             const dataPost = new FormData();
             dataPost.append('file', file);
@@ -116,7 +116,7 @@ export class CoreServices {
 
     updateStatusContract$() {
         return of()
-        // return new Observable(obs => {
+        // return new Observable<any>(obs => {
         //     let url = this.globalSettings.domain + `/image/convertFromFileToImageURL`;
         //     const dataPost = new FormData();
         //     dataPost.append('file', file);

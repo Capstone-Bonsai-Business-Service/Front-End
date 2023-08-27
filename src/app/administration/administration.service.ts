@@ -140,4 +140,21 @@ export class adminServices extends CoreServices {
             })
         })
     }
+
+    changeRoleNewUser$(roleId: string, username: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/user/${username}?roleId=${roleId}`
+            axios.post(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((_) => {
+                obs.next(true);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: err });
+                obs.complete();
+            })
+        })
+    }
 }

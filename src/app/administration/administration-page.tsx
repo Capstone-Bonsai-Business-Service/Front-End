@@ -329,8 +329,7 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                     </div>
                     <Divider type='vertical' style={{ height: '100%' }} className='__app-divider-no-margin'></Divider>
                     <div className='__app-command-block'>
-                        <Button className='__app-command-button' icon={<FormOutlined />} />
-                        <Button className='__app-command-button' icon={<DeleteOutlined />} />
+                        <Button className='__app-command-button' type='dashed' icon={<FormOutlined />} />
                     </div>
                 </div>
             )

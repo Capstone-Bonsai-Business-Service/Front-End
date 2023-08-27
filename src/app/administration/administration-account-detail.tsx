@@ -266,7 +266,7 @@ export const AccountDetailPage: React.FC<IAccountDetailPageProps> = (props) => {
                                 </Col>
                             </Row>
                             {
-                                account?.role === 'Staff' || 'Manager' ?
+                                (account?.roleID === 'R003' || account?.roleID === 'R004') ?
                                     <Row className='__app-account-info-row'>
                                         <Col span={3}>
                                         </Col>

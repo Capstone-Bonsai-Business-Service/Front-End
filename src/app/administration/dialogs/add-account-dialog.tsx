@@ -77,11 +77,17 @@ export const CreateAccountDialog: React.FC<IAccountDetailProps> = (props) => {
                     "phone": accountDetail.phone,
                     "address": accountDetail.address,
                     "gender": accountDetail.gender,
-                    "avatar": ''
+                    "avatar": 'https://t4.ftcdn.net/jpg/05/49/98/39/240_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'
                 }
+                let userIdNew = -1;
                 adminService.createAccount$(accountInfo).pipe(
                     switchMap((res: string) => {
-                        return adminService.addStoreEmployee$(accountDetail.storeID, Number(res) ?? -1)
+                        userIdNew = Number(res) ?? -1;
+                        return adminService.changeRoleNewUser$(accountDetail.role === 'manager' ? 'R003' : 'R004', accountDetail.username);
+                        
+                    }),
+                    switchMap(_ => {
+                        return adminService.addStoreEmployee$(accountDetail.storeID, userIdNew);
                     })
                 ).subscribe({
                     next: (res) => {

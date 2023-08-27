@@ -93,6 +93,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    updateCategory$(id: string, name: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/category?id=${id}&name=${name}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(true);
+                obs.complete();
+            }).catch(() => {
+                obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
     getMembers$(roleID: string) {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=ID&sortTypeAsc=false`
@@ -284,6 +301,23 @@ export class OwnerServices extends CoreServices {
                 obs.complete();
             }).catch(() => {
                 obs.next(null);
+                obs.complete();
+            })
+        })
+    }
+
+    disableCategory$(id: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/plant/removeCategory?categoryID=${id}`
+            axios.delete(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Vô hiệu thất bại.'});
                 obs.complete();
             })
         })
