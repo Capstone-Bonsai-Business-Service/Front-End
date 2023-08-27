@@ -417,7 +417,7 @@ export class ManagerServices extends CoreServices {
 
     getTransactions$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/report/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/transaction/getAll?byOrder=true&byContract=false&storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
