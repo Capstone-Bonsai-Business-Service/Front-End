@@ -183,9 +183,9 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                     <>
                         <div className='__app-toolbar-container' style={{ width: '100%', padding: '8px 24px' }}>
                             <div className='__app-toolbar-left-buttons'>
-                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                                {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(contracts, tableUserColumns);
-                                }}>Xuất Tệp Excel</Button>
+                                }}>Xuất Tệp Excel</Button> */}
                                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                     loadData();
                                 }}>Tải Lại</Button>

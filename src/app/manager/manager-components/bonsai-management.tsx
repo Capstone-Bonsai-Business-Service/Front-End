@@ -313,9 +313,9 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                     setShowPopupImport(true);
                                 }}>Nhập Thêm Cây</Button>
-                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                                {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(bonsais, tableUserColumns);
-                                }}>Xuất Tệp Excel</Button>
+                                }}>Xuất Tệp Excel</Button> */}
                                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                     loadData()
                                 }}>Tải Lại</Button>

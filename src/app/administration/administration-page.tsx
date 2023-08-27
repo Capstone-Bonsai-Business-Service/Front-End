@@ -480,9 +480,9 @@ export const AdminPage: React.FC<IAdminPageProps> = (props) => {
                                         <Button shape='default' icon={<PlusOutlined />} type='text' onClick={openCreateAccount}>Thêm tài khoản</Button> : <></>
                                 }
 
-                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                                {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(accounts, tableUserColumns);
-                                }}>Xuất Tệp Excel</Button>
+                                }}>Xuất Tệp Excel</Button> */}
                                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                     onChangeMenuSelect(currentMenu);
                                 }}>Tải lại</Button>

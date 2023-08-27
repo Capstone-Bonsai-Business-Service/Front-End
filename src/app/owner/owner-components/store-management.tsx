@@ -455,9 +455,9 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                     //getDataStore
                                     setShowPopupCreate(true);
                                 }}>Thêm Chi Nhánh</Button>
-                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                                {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(stores, tableUserColumns);
-                                }}>Xuất Tệp Excel</Button>
+                                }}>Xuất Tệp Excel</Button> */}
                                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                     loadData();
                                 }}>Tải Lại</Button>

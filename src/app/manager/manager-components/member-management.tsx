@@ -191,7 +191,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                     <div className='__app-toolbar-container'>
                         <div className='__app-toolbar-left-buttons'>
                             {/* <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => { }}>Thêm {props.roleName}</Button> */}
-                            <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>
+                            {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button> */}
                             <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                 setDataReady(false);
                                 managerServices.getMembers$().pipe(take(1)).subscribe({

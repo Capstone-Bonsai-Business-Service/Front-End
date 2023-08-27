@@ -177,9 +177,9 @@ export const FeedbackTabComponent: React.FC<IFeedbackTabProps> = (props) => {
                     <>
                         <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                             <div className='__app-toolbar-left-buttons'>
-                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                                {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(feedbacks, tableUserColumns);
-                                }}>Xuất Tệp Excel</Button>
+                                }}>Xuất Tệp Excel</Button> */}
                                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                     loadData()
                                 }}>Tải Lại</Button>

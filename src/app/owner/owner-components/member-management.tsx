@@ -165,7 +165,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                 formMode === 'display' ? <>
                     <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
                         <div className='__app-toolbar-left-buttons'>
-                            <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button>
+                            {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button> */}
                             <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                 loadData();
                             }}>Tải Lại</Button>

@@ -1039,9 +1039,9 @@ const TabServiceList: React.FC<any> = (props) => {
                             <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                 setShowPopupCreate(true);
                             }}>Thêm dịch vụ</Button>
-                            <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                            {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                 CommonUtility.exportExcel(services, tableUserColumns);
-                            }}>Xuất Tệp Excel</Button>
+                            }}>Xuất Tệp Excel</Button> */}
                             <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                                 loadData();
                             }}>Tải Lại</Button>
@@ -1344,9 +1344,9 @@ const TabPackList: React.FC<{}> = (props) => {
                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                     setShowPopUpCreate(true);
                 }}>Thêm gói dịch vụ</Button>
-                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
+                {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                     CommonUtility.exportExcel(servicePacks, tableUserColumns);
-                }}>Xuất Tệp Excel</Button>
+                }}>Xuất Tệp Excel</Button> */}
                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
                     loadData();
                 }}>Tải Lại</Button>
