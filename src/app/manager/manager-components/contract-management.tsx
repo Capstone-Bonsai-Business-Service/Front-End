@@ -594,7 +594,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                                 }}>Lưu</Button> : <></>
                                         }
 
-                                        <Button style={{ width: 200, backgroundColor: '#5D050b' }} type="primary" onClick={() => {
+                                        {/* <Button style={{ width: 200, backgroundColor: '#5D050b' }} type="primary" onClick={() => {
                                             managerServices.rejectContract$(contractDetail[0]?.showContractModel?.id as string, 'STAFFCANCELED').pipe(take(1)).subscribe({
                                                 next: (res) => {
                                                     if (res) {
@@ -608,7 +608,7 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
                                                     }
                                                 }
                                             })
-                                        }}>Huỷ Hợp Đồng</Button>
+                                        }}>Huỷ Hợp Đồng</Button> */}
                                     </div> : <></>
                             }
                             {

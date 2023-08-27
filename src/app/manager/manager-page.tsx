@@ -9,6 +9,7 @@ import { RiFeedbackLine } from 'react-icons/ri';
 import { VscFeedback } from 'react-icons/vsc';
 import { AiOutlineAreaChart, AiOutlineFall, AiOutlineRise } from 'react-icons/ai'
 import { LuClipboardSignature } from 'react-icons/lu';
+import { BsCashCoin } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import { DashBoardComponent } from '../common/components/dashboard.component';
 import { IDashboard, ITableColumn, reportLabel } from '../common/interfaces';
@@ -23,6 +24,7 @@ import { FeedbackManagementComponent } from './manager-components/feedback-manag
 import { Observable, forkJoin, take, timer } from 'rxjs';
 import { DateTime } from 'luxon';
 import { ReportManagementComponent } from './manager-components/report-management';
+import { TransactionManagementComponent } from './manager-components/transaction-management';
 
 
 interface IManagerPageProps {
@@ -231,6 +233,16 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
             label: (
                 <div className='__app-group-menu-label'>
                     Đơn đặt hàng
+                </div>
+            )
+        },
+        {
+            key: 'transaction',
+            className: '__app-group-menu',
+            icon: <BsCashCoin color='#000' />,
+            label: (
+                <div className='__app-group-menu-label'>
+                    Giao dịch
                 </div>
             )
         },
@@ -560,6 +572,10 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                         }
                         {
                             currentMenuItem === 'report' ? <ReportManagementComponent />
+                                : <></>
+                        }
+                        {
+                            currentMenuItem === 'transaction' ? <TransactionManagementComponent />
                                 : <></>
                         }
                         

@@ -415,6 +415,29 @@ export class ManagerServices extends CoreServices {
         })
     }
 
+    getTransactions$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/report/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                const result = res.data.reduce((acc: any[], cur: any) => {
+                    if (cur.storeID === this.storeId) {
+                        acc.push(cur);
+                    }
+                    return acc;
+                }, [])
+                obs.next(result);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
     changeStatusReport$(id: string, status: string, reason: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/report/changeStatus?reportID=${id}&status=${status}&reason=${reason}`

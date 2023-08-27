@@ -67,11 +67,11 @@ export const OrderManagementComponent: React.FC<IOrderManagementProps> = (props)
                         key: 'received',
                         children: tabKey === 'received' ? <OrderTabComponent orderStatus='RECEIVED' roleID={props.roleID} /> : <></>,
                     },
-                    {
-                        label: 'Đã huỷ',
-                        key: 'reject',
-                        children: tabKey === 'reject' ? <OrderTabComponent orderStatus='STAFFCANCELED' roleID={props.roleID} /> : <></>,
-                    },
+                    // {
+                    //     label: 'Đã huỷ',
+                    //     key: 'reject',
+                    //     children: tabKey === 'reject' ? <OrderTabComponent orderStatus='STAFFCANCELED' roleID={props.roleID} /> : <></>,
+                    // },
                     {
                         label: 'Bị huỷ',
                         key: 'cancel',
@@ -426,6 +426,17 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                             <Button type="default" onClick={() => {
                                                 setShowPopupReason(true);
                                             }}>Từ chối</Button>
+                                        </Col>
+                                    </div>
+                                    : <></>
+                            }
+                            {
+                                orderDetail?.progressStatus === 'DELIVERING' ?
+                                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                        <Col span={18} style={{ padding: '24px 0', display: 'flex', flexDirection: 'row-reverse', gap: 8 }}>
+                                            <Button type="default" onClick={() => {
+                                                setShowPopupReason(true);
+                                            }}>Huỷ đơn</Button>
                                         </Col>
                                     </div>
                                     : <></>
