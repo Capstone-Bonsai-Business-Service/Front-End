@@ -116,8 +116,13 @@ export const ContractTabLayoutComponent: React.FC<IContractManagementProps> = (p
         }
     });
 
+    function autoUpdateStatusWorking() {
+        managerServices.updateWorkingContracts$().pipe(take(1)).subscribe();
+    }
+
     function loadData() {
         setDataReady(false);
+        autoUpdateStatusWorking();
         managerServices.getContracts$().pipe(take(1)).subscribe({
             next: data => {
                 const result = data.reduce((acc: any[], cur: any) => {
@@ -720,8 +725,9 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
         );
         nodes.push(
             <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
+                const firstServiceName = serviceList.find(item => item.serviceID === servicesForm[0]?.serviceID)?.name ?? 'Dịch vụ';
                 const dataPost = {
-                    "title": `Contract ${DateTime.fromJSDate(new Date()).toFormat('yyyy-MM-dd')}`,
+                    "title": `Hợp đồng ${firstServiceName}`,
                     "fullName": contractDetail['fullName'],
                     "phone": contractDetail['phone'] ?? '',
                     "address": contractDetail['address'] ?? '',
@@ -824,6 +830,13 @@ const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                                         temp['email'] = value[0].email;
                                                         temp['address'] = value[0].address;
                                                         temp['customerID'] = value[0].userID;
+                                                        setContractDetail(temp);
+                                                    } else {
+                                                        let temp = cloneDeep(contractDetail) ?? {};
+                                                        temp['fullName'] = '';
+                                                        temp['email'] = '';
+                                                        temp['address'] = '';
+                                                        temp['customerID'] = -1;
                                                         setContractDetail(temp);
                                                     }
                                                 }

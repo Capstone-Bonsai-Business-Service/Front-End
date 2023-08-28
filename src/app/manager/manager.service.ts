@@ -238,6 +238,23 @@ export class ManagerServices extends CoreServices {
         })
     }
 
+    updateWorkingContracts$() {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/contract/checkStartDateEndDate`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
     approveContract$(dataPost: any) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/contract/approveContract`
