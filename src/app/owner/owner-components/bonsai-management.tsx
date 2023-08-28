@@ -148,7 +148,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             className: '__app-header-title'
         },
         {
-            title: 'Rating',
+            title: 'Đánh giá',
             dataIndex: 'totalRating',
             key: 'totalRating',
             showSorterTooltip: false,

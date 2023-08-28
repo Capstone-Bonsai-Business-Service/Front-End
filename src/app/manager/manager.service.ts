@@ -423,13 +423,7 @@ export class ManagerServices extends CoreServices {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
                 }
             }).then((res) => {
-                const result = res.data.reduce((acc: any[], cur: any) => {
-                    if (cur.storeID === this.storeId) {
-                        acc.push(cur);
-                    }
-                    return acc;
-                }, [])
-                obs.next(result);
+                obs.next(res.data);
                 obs.complete();
             }).catch(() => {
                 obs.next([]);

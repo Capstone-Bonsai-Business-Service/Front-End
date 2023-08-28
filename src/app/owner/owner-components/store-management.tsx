@@ -674,7 +674,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
                                                 border: '1px solid #000000',
                                                 borderRadius: '0x 8px 8px 8px'
                                             }}>
-                                                <Button type="primary" style={{ background: '#B3B3B3' }} icon={<PlusOutlined />}>Thêm nhân viên</Button>
+                                                {/* <Button type="primary" style={{ background: '#B3B3B3' }} icon={<PlusOutlined />}>Thêm nhân viên</Button> */}
                                                 <Table
                                                     size='small'
                                                     tableLayout='auto'

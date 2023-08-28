@@ -189,7 +189,7 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                     <Row className='__app-object-info-row'>
                         <Col span={6} className='__app-object-field'>
                             <span>
-                                <strong>Loại dịch vụ:</strong> <span className='__app-required-field'> *</span>
+                                <strong>Loại phụ thu:</strong> <span className='__app-required-field'> *</span>
                             </span>
 
                         </Col>
@@ -205,10 +205,10 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                                         >
                                             <Col span={23} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                                 <Row>
-                                                    <Col span={6}>Tên loại dịch vụ: </Col>
+                                                    <Col span={6}>Tên loại phụ thu: </Col>
                                                     <Col span={16}>
                                                         <Input value={cur.name}
-                                                            placeholder='Nhập tên loại dịch vụ'
+                                                            placeholder='Nhập tên loại phụ thu'
                                                             onChange={(args) => {
                                                                 let temp = cloneDeep(serviceForm);
                                                                 temp.createServiceTypeModel[currentIndex].name = args.target.value;
@@ -268,7 +268,7 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                                     unit: 'm'
                                 })
                                 setServiceForm(temp);
-                            }}>Thêm loại dịch vụ</Button>
+                            }}>Thêm loại phụ thu</Button>
                         </Col>
                     </Row>
                     <Row className='__app-object-info-row'>
@@ -333,7 +333,24 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
         }
         if (CommonUtility.isNullOrEmpty(temp.createServiceTypeModel)) {
             result.invalid = true;
-            result.fields.push('Loại dịch vụ');
+            result.fields.push('Loại phụ thu');
+        } else {
+            const dataValid = temp.createServiceTypeModel.reduce((acc, cur) => {
+                if (CommonUtility.isNullOrEmpty(cur.name)) {
+                    acc = true;
+                }
+                if (CommonUtility.isNullOrEmpty(cur.size)) {
+                    acc = true;
+                }
+                if (CommonUtility.isNullOrEmpty(cur.percentage)) {
+                    acc = true;
+                }
+                return acc;
+            }, false);
+            if (dataValid) {
+                result.invalid = true;
+                result.fields.push('Loại phụ thu');
+            }
         }
         if (CommonUtility.isNullOrEmpty(temp.price) || temp.price === 0) {
             result.invalid = true;

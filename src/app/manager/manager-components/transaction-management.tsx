@@ -8,7 +8,7 @@ import { take } from "rxjs";
 import { CommonUtility } from "../../utils/utilities";
 import { DateTime } from "luxon";
 import toast from "react-hot-toast";
-import { PatternFormat } from "react-number-format";
+import { NumericFormat, PatternFormat } from "react-number-format";
 
 
 interface ITransactionManagementProps {
@@ -91,14 +91,22 @@ export const TransactionTabComponent: React.FC<ITransactionTabProps> = (props) =
         const request$ = managerServices.getTransactions$();
         request$.pipe(take(1)).pipe(take(1)).subscribe({
             next: data => {
-                setTransaction(data);
-                setTransactionOnSearch(data);
+                let result = onUpdateDataSource(data);
+                setTransaction(result);
+                setTransactionOnSearch(result);
                 setDataReady(true);
                 if (!isFirstInit) {
                     setFirstInit(true);
                 }
             }
         })
+    }
+
+    function onUpdateDataSource(data: any[]) {
+        for (let item of data) {
+            item['transaction'] = item?.showOrderModel?.id ?? ''
+        }
+        return data;
     }
 
     const tableUserColumns: ColumnsType<any> = [
@@ -108,32 +116,41 @@ export const TransactionTabComponent: React.FC<ITransactionTabProps> = (props) =
             key: 'id',
             showSorterTooltip: false,
             ellipsis: true,
-            width: 100,
+            width: 120,
         },
         {
             title: `Tên khách hàng`,
-            dataIndex: 'fullName',
-            key: 'fullName',
+            dataIndex: 'customer',
+            key: 'customer',
             showSorterTooltip: false,
             ellipsis: true,
-            width: 240,
+            render(value, record, index) {
+                return (
+                    <span>{record.showOrderModel.fullName}</span>
+                )
+            },
         },
         {
-            title: 'Nội dung',
-            dataIndex: 'description',
-            key: 'description',
+            title: 'Giao dịch',
+            dataIndex: 'transaction',
+            key: 'transaction',
             showSorterTooltip: false,
             ellipsis: true,
+            render(value, record, index) {
+                return (
+                    <span>Đơn hàng: {record.showOrderModel.id}</span>
+                )
+            },
         },
         {
-            title: 'Ngày Transaction',
+            title: 'Ngày giao dịch',
             dataIndex: 'createdDate',
             key: 'createdDate',
             showSorterTooltip: false,
             ellipsis: true,
             width: 150,
             render: (value) => {
-                return <span>{DateTime.fromISO(value).setLocale('vi').toRelativeCalendar()}</span>
+                return <span>{DateTime.fromISO(value).toFormat('dd/MM/yyyy HH:mm')}</span>
             }
         },
         {
@@ -173,9 +190,9 @@ export const TransactionTabComponent: React.FC<ITransactionTabProps> = (props) =
                     <Search
                         style={{ marginLeft: 10 }}
                         className='__app-search-box'
-                        placeholder="ID, Tên KH, Nội dung"
+                        placeholder="ID, Tên KH, Giao dịch"
                         onSearch={(value) => {
-                            const columnsSearch = ['id', 'description', 'fullName']
+                            const columnsSearch = ['id', 'fullName', 'transaction']
                             const data = CommonUtility.onTableSearch(value, transactions, columnsSearch);
                             setTransactionOnSearch(data);
                         }}
@@ -205,12 +222,12 @@ export const TransactionTabComponent: React.FC<ITransactionTabProps> = (props) =
             {
                 transactionDetail.isShow ?
                     <Modal
-                        width={600}
+                        width={500}
                         open={true}
                         closable={false}
                         title={(
                             <span className='__app-dialog-title'>
-                                Chi tiết báo cáo
+                                Chi tiết giao dịch
                             </span>
                         )}
                         footer={[
@@ -227,36 +244,43 @@ export const TransactionTabComponent: React.FC<ITransactionTabProps> = (props) =
                             padding: '0 24px'
                         }}>
                             <Row>
-                                <Col span={6} style={{ fontWeight: 500 }}>Mã hợp đồng:</Col><Col>{transactionDetail.transaction?.contractID}</Col>
+                                <Col span={8} style={{ fontWeight: 500 }}>Mã giao dịch:</Col><Col>{transactionDetail.transaction?.id}</Col>
                             </Row>
 
                             <Row>
-                                <Col span={6} style={{ fontWeight: 500 }}>Khách hàng:</Col>
+                                <Col span={8} style={{ fontWeight: 500 }}>Khách hàng:</Col>
                                 <Col>
-                                    <Row style={{ fontWeight: 600 }}>{transactionDetail.transaction?.fullName}</Row>
+                                    <Row style={{ fontWeight: 600 }}>{transactionDetail.transaction?.showOrderModel.fullName}</Row>
                                 </Col>
                             </Row>
                             <Row>
-                                <Col span={6} style={{ fontWeight: 500 }}>Số điện thoại:</Col>
+                                <Col span={8} style={{ fontWeight: 500 }}>Số điện thoại:</Col>
                                 <Col><PatternFormat
                                     displayType='text'
                                     format='#### ### ###'
-                                    value={transactionDetail.transaction?.phone}
+                                    value={transactionDetail.transaction?.showOrderModel.phone}
                                 />
                                 </Col>
                             </Row>
                             <Row>
-                                <Col span={6} style={{ fontWeight: 500 }}>Dịch vụ:</Col>
+                                <Col span={8} style={{ fontWeight: 500 }}>Đơn hàng:</Col>
                                 <Col>
-                                    <span>{transactionDetail.transaction?.serviceName}</span>
+                                    <span>{transactionDetail.transaction?.showOrderModel.id}</span>
                                 </Col>
                             </Row>
                             <Row>
-                                <Col span={6} style={{ fontWeight: 500 }}>Nội dung báo cáo:</Col>
+                                <Col span={8} style={{ fontWeight: 500 }}>Số tiền giao dịch:</Col>
                                 <Col>
                                     <span style={{
-                                        color: 'red'
-                                    }}>{transactionDetail.transaction?.description}</span>
+                                        color: 'green'
+                                    }}>
+                                        <NumericFormat 
+                                            displayType='text'
+                                            value={transactionDetail.transaction?.amount}
+                                            thousandSeparator=' '
+                                            suffix=' VNĐ'
+                                        />
+                                    </span>
                                 </Col>
                             </Row>
                             
