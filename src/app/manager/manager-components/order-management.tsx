@@ -393,7 +393,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                         orderDetail?.receiptIMG ?
                                             <Row>
                                                 <Col span={6} style={{ fontWeight: 500 }}>
-                                                    Ảnh hoá đơn:
+                                                    Ảnh xác nhận giao hàng:
                                                 </Col>
                                                 <Col span={16}>
                                                     <img src={orderDetail.receiptIMG} alt="" style={{ width: 100, cursor: 'pointer' }} onClick={() => {
