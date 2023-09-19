@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
+import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { ManagerServices } from './manager.service';
 import { GiTreehouse } from 'react-icons/gi';
@@ -15,7 +15,7 @@ import { DashBoardComponent } from '../common/components/dashboard.component';
 import { IDashboard, ITableColumn, reportLabel } from '../common/interfaces';
 import { NumericFormat } from 'react-number-format';
 import './manager.scss';
-import { ContractManagementComponent } from './manager-components/contract-management';
+// import { ContractManagementComponent } from './manager-components/contract-management';
 import { BonsaiManagementComponent } from './manager-components/bonsai-management';
 import { MemberManagementComponent } from './manager-components/member-management';
 import { OrderManagementComponent } from './manager-components/order-management';
@@ -25,7 +25,8 @@ import { Observable, forkJoin, take, timer } from 'rxjs';
 import { DateTime } from 'luxon';
 import { ReportManagementComponent } from './manager-components/report-management';
 import { TransactionManagementComponent } from './manager-components/transaction-management';
-
+import { ContractManagementComponentV2 } from './manager-components/contract-management-v2';
+import viVN from 'antd/locale/vi_VN'
 
 interface IManagerPageProps {
     currentUser?: IUser;
@@ -477,36 +478,37 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
     }
 
     return (
-        <>
-            <Layout className='__manager-layout ant-layout-has-sider'>
-                <Layout.Sider className='__app-layout-slider' trigger={null}>
-                    <Menu className='__app-slider-menu' mode='inline' items={items} defaultSelectedKeys={[currentMenuItem]} onSelect={(args) => {
-                        onChangeMenuSelect(args.key);
-                    }}></Menu>
-                </Layout.Sider>
-                <Layout>
-                    <Layout.Header className='__app-layout-header'
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            flexDirection: 'row'
+        <ConfigProvider locale={viVN}>
+            <>
+                <Layout className='__manager-layout ant-layout-has-sider'>
+                    <Layout.Sider className='__app-layout-slider' trigger={null}>
+                        <Menu className='__app-slider-menu' mode='inline' items={items} defaultSelectedKeys={[currentMenuItem]} onSelect={(args) => {
+                            onChangeMenuSelect(args.key);
+                        }}></Menu>
+                    </Layout.Sider>
+                    <Layout>
+                        <Layout.Header className='__app-layout-header'
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                flexDirection: 'row'
 
-                        }}>
-                        <div style={{
-                            height: 64,
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}>
-                            {/* <img src={Logo} alt='' style={{ height: 58, }} /> */}
-                            <span
-                                style={{
-                                    userSelect: 'none',
-                                    fontWeight: '600'
-                                }}
-                            >{ props?.currentUser?.storeName ?? '' }</span>
-                        </div>
-                        <div className='__app-header-right'>
-                            {/* <div className='__app-notification-info'>
+                            }}>
+                            <div style={{
+                                height: 64,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                {/* <img src={Logo} alt='' style={{ height: 58, }} /> */}
+                                <span
+                                    style={{
+                                        userSelect: 'none',
+                                        fontWeight: '600'
+                                    }}
+                                >{props?.currentUser?.storeName ?? ''}</span>
+                            </div>
+                            <div className='__app-header-right'>
+                                {/* <div className='__app-notification-info'>
                                 <Dropdown
                                     trigger={['click']}
                                     menu={{ items: bindingNotifications() }}
@@ -516,100 +518,102 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                     </Badge>
                                 </Dropdown>
                             </div> */}
-                            <span style={{
+                                <span style={{
                                     userSelect: 'none',
                                     fontWeight: '600'
                                 }}>
-                                { props?.currentUser?.fullName ?? '' }
-                            </span>
+                                    {props?.currentUser?.fullName ?? ''}
+                                </span>
 
-                            <div className='__app-user-info'>
-                                <Dropdown
-                                    trigger={['click']}
-                                    menu={{ items: userMenuItems }}
-                                    placement='bottomRight'>
-                                    {
-                                        props.currentUser?.avatar ?
-                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} /> :
-                                            <Avatar className='__app-user-avatar' size={'large'} icon={<UserOutlined />}></Avatar>
-                                    }
-                                </Dropdown>
+                                <div className='__app-user-info'>
+                                    <Dropdown
+                                        trigger={['click']}
+                                        menu={{ items: userMenuItems }}
+                                        placement='bottomRight'>
+                                        {
+                                            props.currentUser?.avatar ?
+                                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} /> :
+                                                <Avatar className='__app-user-avatar' size={'large'} icon={<UserOutlined />}></Avatar>
+                                        }
+                                    </Dropdown>
+                                </div>
                             </div>
-                        </div>
 
-                    </Layout.Header>
-                    <Layout.Content className='__app-layout-content'>
-                        {
-                            currentMenuItem === 'dashboard' ? <DashBoardComponent
-                                key='dashboard-manager'
-                                barChart={barChart}
-                                tableReport={tableReport}
-                            /> : <></>
-                        }
-                        {
-                            currentMenuItem === 'contracts' ? <ContractManagementComponent
-                            /> : <></>
-                        }
-                        {
-                            currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
-                            /> : <></>
-                        }
-                        {/* {
+                        </Layout.Header>
+                        <Layout.Content className='__app-layout-content'>
+                            {
+                                currentMenuItem === 'dashboard' ? <DashBoardComponent
+                                    key='dashboard-manager'
+                                    barChart={barChart}
+                                    tableReport={tableReport}
+                                /> : <></>
+                            }
+                            {
+                                currentMenuItem === 'contracts' ? <ContractManagementComponentV2
+                                /> : <></>
+                            }
+                            {
+                                currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
+                                /> : <></>
+                            }
+                            {/* {
                             currentMenuItem === 'stores' ? <StoreManagementComponent
                             /> : <></>
                         } */}
-                        {
-                            currentMenuItem === 'members' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'orders' ? <OrderManagementComponent roleID='R004' />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'report' ? <ReportManagementComponent />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'transaction' ? <TransactionManagementComponent />
-                                : <></>
-                        }
-                        
-                    </Layout.Content>
+                            {
+                                currentMenuItem === 'members' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'orders' ? <OrderManagementComponent roleID='R004' />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'report' ? <ReportManagementComponent />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'transaction' ? <TransactionManagementComponent />
+                                    : <></>
+                            }
+
+                        </Layout.Content>
+                    </Layout>
                 </Layout>
-            </Layout>
-            {
-                showModalExpiredToken ?
-                    <Modal
-                        width={500}
-                        open={true}
-                        closable={false}
-                        title={(
-                            <span className='__app-dialog-title'>
-                                Thông báo
-                            </span>
-                        )}
-                        footer={[
-                            <Button type="default" onClick={() => {
-                                setShowModalExpiredToken(false)
-                            }}>Huỷ</Button>,
-                            <Button type="primary"
-                                style={{ background: '#0D6368' }}
-                                onClick={() => {
-                                    props.onLogoutCallback();
-                                    toast.loading(`Phiên đăng nhập đã hết hạn.`);
-                                    return navigate('/manager-login');
-                                }}>Xác nhận</Button>
-                        ]}
-                        centered
-                    >
-                        <span>Phiên đăng nhập đã hết hạn.</span>
-                    </Modal> : <></>
-            }
-        </>
+                {
+                    showModalExpiredToken ?
+                        <Modal
+                            width={500}
+                            open={true}
+                            closable={false}
+                            title={(
+                                <span className='__app-dialog-title'>
+                                    Thông báo
+                                </span>
+                            )}
+                            footer={[
+                                <Button type="default" onClick={() => {
+                                    setShowModalExpiredToken(false)
+                                }}>Huỷ</Button>,
+                                <Button type="primary"
+                                    style={{ background: '#0D6368' }}
+                                    onClick={() => {
+                                        props.onLogoutCallback();
+                                        toast.loading(`Phiên đăng nhập đã hết hạn.`);
+                                        return navigate('/manager-login');
+                                    }}>Xác nhận</Button>
+                            ]}
+                            centered
+                        >
+                            <span>Phiên đăng nhập đã hết hạn.</span>
+                        </Modal> : <></>
+                }
+            </>
+        </ConfigProvider>
+
     )
 }

@@ -77,7 +77,8 @@ export interface IContractDetail {
 export const ContractStatusMapping: {
     [k: string]: string;
 } = {
-    'WAITING': 'Đang chờ duyệt',
+    'WAITING': 'Mới',
+    'CONFIRMING': 'Đang khảo sát',
     'APPROVED': 'Đã duyệt',
     'DENIED': 'Đã từ chối',
     'STAFFCANCELED': 'Cửa hàng đã huỷ',
@@ -87,4 +88,4 @@ export const ContractStatusMapping: {
     'DONE': 'Đã kết thúc'
 }
 
-export type ContractStatus = 'WAITING' | 'APPROVED' | 'DENIED' | 'STAFFCANCELED' | 'CUSTOMERCANCELED' | 'SIGNED' | 'WORKING' | 'DONE'
+export type ContractStatus = 'WAITING' | 'CONFIRMING' | 'APPROVED' | 'DENIED' | 'STAFFCANCELED' | 'CUSTOMERCANCELED' | 'SIGNED' | 'WORKING' | 'DONE'

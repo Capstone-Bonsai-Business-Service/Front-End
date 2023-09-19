@@ -6,14 +6,12 @@ import { OwnerServices } from './owner.service';
 import { GiTreehouse } from 'react-icons/gi';
 import { PiHandshake, PiUserList } from 'react-icons/pi';
 import { AiOutlineAreaChart } from 'react-icons/ai'
-import { LiaStoreAltSolid } from 'react-icons/lia';
 import { LuClipboardSignature } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
 import { BonsaiManagementComponent } from './owner-components/bonsai-management';
 import { ServiceManagementComponent } from './owner-components/service-management';
 import { StoreManagementComponent } from './owner-components/store-management';
 import { MemberManagementComponent } from './owner-components/member-management';
-import { ContractManagementComponent } from './owner-components/contract-management';
 import { OrderManagementComponent } from './owner-components/order-management';
 import './owner.scss';
 import '../../styles/global.style.scss';
@@ -24,7 +22,7 @@ import { FeedbackManagementComponent } from './owner-components/feedback-managem
 import { IncomStatisticComponent } from './owner-components/income.component';
 import { StoreStatisticComponent } from './owner-components/store-revenue.component';
 import { PlantCategoryManagementComponent } from './owner-components/plant-category-management';
-import { ContractManagementComponentV2 } from '../manager/manager-components/contract-management-v2';
+import { ContractManagementComponentV2 } from './owner-components/contract-management';
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -89,12 +87,12 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     className: '__app-children-menu-divider',
                     label: 'Doanh thu',
                 },
-                {
-                    key: 'storeRating',
-                    icon: <AiOutlineAreaChart color='#000' />,
-                    className: '__app-children-menu-divider',
-                    label: 'Thống kê theo cửa hàng',
-                },
+                // {
+                //     key: 'storeRating',
+                //     icon: <AiOutlineAreaChart color='#000' />,
+                //     className: '__app-children-menu-divider',
+                //     label: 'Thống kê theo cửa hàng',
+                // },
             ]
         },
         {

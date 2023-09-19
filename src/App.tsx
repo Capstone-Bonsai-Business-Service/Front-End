@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './App.scss';
 import {
   createBrowserRouter,
@@ -31,6 +31,8 @@ import { LoginPage } from './app/common/components/login.component';
 import { ManagerInitLanding } from './app/manager/manager-init-landing';
 import { ManagerPage } from './app/manager/manager-page';
 import './styles/global.style.scss';
+import { OwnerPage as ManagerPageV2 } from './app/owner-v2/owner-page';
+import { OwnerInitLanding as ManagerLandingV2 } from './app/owner-v2/owner-init-landing';
 
 ChartJS.register(
   CategoryScale,
@@ -79,10 +81,23 @@ function App() {
     },
     {
       path: '/owner',
-      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerPage onLogoutCallback={onLogout} currentUser={currentUser}  /> : <OwnerInitLanding currentUser={currentUser} />,
+      element: currentUser && currentUser.roleName === 'Manager' ? <ManagerPageV2 onLogoutCallback={onLogout} currentUser={currentUser}  /> : <ManagerLandingV2 currentUser={currentUser} />,
     },
     {
       path: '/owner-login',
+      element: currentUser && currentUser.roleName === 'Manager' ? <ManagerLandingV2 currentUser={currentUser} /> : <LoginPage onSaveUserLogin={(user) => {
+        setCurrentUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+      }}
+        navigatePage='owner'
+      />,
+    },
+    {
+      path: '/v1/owner',
+      element: currentUser && currentUser.roleName === 'Owner' ? <OwnerPage onLogoutCallback={onLogout} currentUser={currentUser}  /> : <OwnerInitLanding currentUser={currentUser} />,
+    },
+    {
+      path: '/v1/owner-login',
       element: currentUser && currentUser.roleName === 'Owner' ? <OwnerInitLanding currentUser={currentUser} /> : <LoginPage onSaveUserLogin={(user) => {
         setCurrentUser(user);
         localStorage.setItem('user', JSON.stringify(user));

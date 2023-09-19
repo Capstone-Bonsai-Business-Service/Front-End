@@ -38,3 +38,48 @@
 
     }
 }
+
+.__app-working-time-container {
+    padding: 24px;
+    background-color: #91C4CA;
+    height: calc(100vh - 130px);
+    overflow: auto;
+
+    .__app-calendar-container {
+        border: 1px solid rgba(5, 5, 5, 0.06);
+
+        .__app-date-block {
+            margin: 0 4px;
+            padding: 4px 8px 0;
+            height: 75px;
+            border: 0px;
+            border-top: 2px solid rgba(5, 5, 5, 0.06);
+            border-radius: 0;
+            transition: background 0.3s;
+            user-select: none;
+
+            &.today {
+                border-top: 2px solid rgba(22, 119, 255, 0.6);
+            }
+
+            .__app-date-value {
+                &.today {
+                    color: #1677ff;
+
+                }
+                user-select: none;
+                font-weight: 500;
+            }
+
+            .__app-date-content {
+                text-align: center;
+            }
+        }
+
+        .__app-calendar-header {
+            padding: 14px 8px 8px 16px;
+            display: flex;
+            gap: 8px;
+        }
+    }
+}

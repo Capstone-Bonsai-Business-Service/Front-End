@@ -12,16 +12,16 @@ export const OwnerInitLanding: React.FC<ownerLandingProps> = (props: ownerLandin
 
     useEffect(() => {
         if (CommonUtility.isNullOrUndefined(props.currentUser)) {
-            return navigate('/v1/owner-login');
+            return navigate('/owner-login');
         } else {
             if (props.currentUser?.roleName === 'Admin') {
                 return navigate('/administration');
             }
             if (props.currentUser?.roleName === 'Owner') {
-                return navigate('/v1/owner');
+                return navigate('/owner');
             }
             if (props.currentUser?.roleName === 'Manager') {
-                return navigate('/manager');
+                return navigate('/owner');
             }
         }
     });
