@@ -4,9 +4,12 @@ import { CommonUtility } from '../../utils/utilities';
 import './common-component.scss';
 import { useEffect, useState } from 'react';
 import { DefaultOptionType } from 'antd/es/select';
+import { take } from 'rxjs';
 
 interface IWorkingTimeProps {
-    contractId: string;
+    contractDetailId: string;
+    callbackFn?: () => void;
+    apiServices: any;
 }
 
 
@@ -30,6 +33,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
         if (!isFirstInit) {
             renderOptions();
             setFirstInit(true);
+            loadData();
         }
     });
 
@@ -99,6 +103,14 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                 value: currentYear + 1,
             },
         ])
+    }
+
+    function loadData() {
+        props.apiServices.getWorkingTimesByService$(props.contractDetailId).pipe(take(1)).subscribe({
+            next: (value: any) => {
+                setListWorkingTime(value);
+            }
+        })
     }
 
     function getBackgroundColor(status: any) {

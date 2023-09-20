@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { IUser } from '../../IApp.interface';
-import { Avatar, Button, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
+import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, MenuProps, Modal } from 'antd';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { OwnerServices } from './owner.service';
 import { GiTreehouse } from 'react-icons/gi';
@@ -23,6 +23,7 @@ import { IncomStatisticComponent } from './owner-components/income.component';
 import { StoreStatisticComponent } from './owner-components/store-revenue.component';
 import { PlantCategoryManagementComponent } from './owner-components/plant-category-management';
 import { ContractManagementComponentV2 } from './owner-components/contract-management';
+import viVN from 'antd/locale/vi_VN'
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -202,6 +203,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
     }
 
     return (
+        <ConfigProvider locale={viVN}>
         <>
             <Layout className='__owner-layout ant-layout-has-sider'>
                 <Layout.Sider className='__app-layout-slider' trigger={null}>
@@ -332,5 +334,6 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     </Modal> : <></>
             }
         </>
+        </ConfigProvider>
     )
 }

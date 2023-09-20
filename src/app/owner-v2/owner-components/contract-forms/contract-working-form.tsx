@@ -1,4 +1,4 @@
-import { LeftOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import { LeftOutlined, PlusOutlined, ReloadOutlined, ScheduleOutlined } from "@ant-design/icons";
 import { WorkingTimeCalendar } from "../../../common/components/working-time.component";
 import { DateTime } from "luxon";
 import { CommonUtility } from "../../../utils/utilities";
@@ -21,22 +21,31 @@ interface IContractFormProps {
 interface IContractDetailProps extends IContractFormProps {
     contractId: string;
 }
-type actionCallback = 'backToList' | 'goToDetail'
+type actionCallback = 'backToList' | 'goToDetail' | 'goToSchedule'
 
 export const ContractWorkingFormModule: React.FC<{}> = () => {
-    const [formMode, setFormMode] = useState<'list' | 'detail'>('list');
+    const [formMode, setFormMode] = useState<'list' | 'detail' | 'schedule'>('list');
     const [contractId, setContractId] = useState<string | undefined>();
+    const [contractDetailId, setContractDetailId] = useState<string | undefined>();
 
     function componentCallback(action: actionCallback, data?: string) {
         if (action === 'backToList') {
-            setFormMode('list');
             setContractId(undefined);
+            setContractDetailId(undefined)
+            setFormMode('list');
         }
         if (action === 'goToDetail') {
-            setFormMode('detail');
             setContractId(data);
+            setContractDetailId(undefined);
+            setFormMode('detail');
+        }
+        if (action === 'goToSchedule') {
+            setContractDetailId(data);
+            setFormMode('schedule');
         }
     }
+
+    const apiService = new OwnerServices();
 
     return <>
         {
@@ -47,11 +56,20 @@ export const ContractWorkingFormModule: React.FC<{}> = () => {
             /> : <></>
         }
         {
-            formMode === 'detail' ? <RequestContractDetailComponent
+            formMode === 'detail' ? <ContractDetailComponent
                 contractId={contractId as string}
-                callbackFn={(action) => {
-                    componentCallback(action);
+                callbackFn={(action, data) => {
+                    componentCallback(action, data);
                 }}
+            /> : <></>
+        }
+        {
+            formMode === 'schedule' ? <WorkingTimeCalendar
+                contractDetailId={contractDetailId as string}
+                callbackFn={() => {
+                    componentCallback('goToDetail');
+                }}
+                apiServices={apiService}
             /> : <></>
         }
     </>
@@ -231,7 +249,7 @@ const RequestContractListComponent: React.FC<IContractFormProps> = (props) => {
     </>
 }
 
-const RequestContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
+const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
     const apiService = new OwnerServices();
 
     const [contractDetail, setContractDetail] = useState<IContractDetail[]>([]);
@@ -300,7 +318,7 @@ const RequestContractDetailComponent: React.FC<IContractDetailProps> = (props) =
         } else {
             return '--';
         }
-        
+
     }
 
     return <div className="__app-layout-container form-edit" style={{ width: '100%', height: 'calc(100vh - 160px)' }}>
@@ -310,7 +328,7 @@ const RequestContractDetailComponent: React.FC<IContractDetailProps> = (props) =
                     props.callbackFn('backToList');
                 }
             }} />
-            <div className="__app-title-form">YÊU CẦU</div>
+            <div className="__app-title-form">HỢP ĐỒNG</div>
         </div>
         <div className="__app-content-container">
             <div style={{ display: 'flex', flexDirection: 'row', margin: '0 30px', gap: 6 }}>
@@ -321,7 +339,12 @@ const RequestContractDetailComponent: React.FC<IContractDetailProps> = (props) =
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Tên hợp đồng:</Col><Col>{contractDetail[0]?.showContractModel?.title}</Col>
                     </Row>
-
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Trạng thái:</Col>
+                        <Col>
+                            <Tag color={CommonUtility.statusColorMapping(contractDetail[0]?.showContractModel?.status ?? '')}>{ContractStatusMapping[contractDetail[0]?.showContractModel?.status ?? '']}</Tag>
+                        </Col>
+                    </Row>
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Khách hàng:</Col>
                         <Col>
@@ -340,6 +363,19 @@ const RequestContractDetailComponent: React.FC<IContractDetailProps> = (props) =
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Ngày dự kiến kết thúc:</Col><Col>{getExpectedEndDate()}</Col>
                     </Row>
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
+                        <Col span={16}>
+                            {
+                                contractDetail[0]?.showContractModel?.showStaffModel.id ?
+                                    <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
+                                    <span>--</span>
+                            }
+                        </Col>
+                    </Row>
+
+                </Col>
+                <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
                     <Row>
                         <Col span={5} style={{ fontWeight: 500 }}>Dịch vụ thuê:</Col>
                         <Col span={19} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -365,7 +401,31 @@ const RequestContractDetailComponent: React.FC<IContractDetailProps> = (props) =
                                             </Row>
                                             <Row style={{ width: '100%' }}>
                                                 <Col span={8}>Ngày làm:</Col>
-                                                <Col span={16}>{cur.timeWorking ?? '--'}</Col>
+                                                <Col span={16}>
+                                                    <span>{cur.timeWorking ?? '--'}</span>
+                                                </Col>
+                                            </Row>
+                                            <Row style={{ width: '100%' }}>
+                                                <Col span={8}></Col>
+                                                <Col span={16} >
+                                                    <div onClick={() => {
+                                                        if (props.callbackFn) {
+                                                            props.callbackFn('goToSchedule', cur.id);
+                                                        }
+                                                    }}>
+                                                        <ScheduleOutlined style={{
+                                                            cursor: 'pointer',
+                                                            marginRight: 10,
+                                                            color: 'blue',
+                                                        }} />
+                                                        <span style={{
+                                                            cursor: 'pointer',
+                                                            color: 'blue',
+                                                            textDecoration: 'underline'
+                                                        }}>Xem lịch làm việc</span>
+                                                    </div>
+
+                                                </Col>
                                             </Row>
                                             <Row style={{ width: '100%' }}>
                                                 <Col span={8}>Ghi chú:</Col>
@@ -388,112 +448,7 @@ const RequestContractDetailComponent: React.FC<IContractDetailProps> = (props) =
                         <span style={{ fontWeight: 500 }}>Tổng thanh toán: <span><NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={contractDetail[0]?.showContractModel?.total} /></span></span>
                     </Row>
                 </Col>
-                <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
-                    <Row>
-                        <Col span={8} style={{ fontWeight: 500 }}>Trạng thái:</Col><Col><Tag color={CommonUtility.statusColorMapping(contractDetail[0]?.showContractModel?.status ?? '')}>{ContractStatusMapping[contractDetail[0]?.showContractModel?.status ?? '']}</Tag></Col>
-                    </Row>
-                    <Row>
-                        <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
-                        <Col span={16}>
-                            {
-                                contractDetail[0]?.showContractModel?.showStaffModel.id ?
-                                    <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
-                                    contractDetail[0]?.showContractModel?.status === 'WAITING' ?
-                                        <UserPicker
-                                            listUser={staffList}
-                                            onChanged={(value) => {
-                                                setStaffForContract(value);
-                                            }}
-                                        /> : <span>--</span>
-                            }
-                        </Col>
-                    </Row>
-                    {
-                        contractDetail[0]?.showContractModel?.status === 'DENIED' ?
-                            <>
-                                <Row>
-                                    <Col span={8} style={{ fontWeight: 500 }}>Ngày từ chối:</Col>
-                                    <Col>{contractDetail[0]?.showContractModel.rejectedDate}</Col>
-                                </Row>
-                                <Row>
-                                    <Col span={16} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
-                                    <Col>{contractDetail[0]?.showContractModel.reason}</Col>
-                                </Row>
-                            </> : <></>
-                    }
-                </Col>
             </div>
-            {
-                contractDetail[0]?.showContractModel?.status === 'WAITING' ?
-                    <div className="__app-action-button" style={{ gap: 10 }}>
-                        <Button type="primary"
-                            style={{ background: '#0D6368' }} onClick={() => {
-                                apiService.approveContract$(props.contractId, 'APPROVED', staffForContract as number).pipe(take(1)).subscribe({
-                                    next: (res) => {
-                                        if (res) {
-                                            toast.success('Duyệt Hợp đồng thành công');
-                                            if (props.callbackFn) {
-                                                props.callbackFn('backToList');
-                                            }
-                                        } else {
-                                            toast.error('Duyệt Hợp đồng thất bại');
-                                        }
-                                    }
-                                })
-                            }}>Duyệt</Button>
-                        <Button type="default" onClick={() => {
-                            setRejectContractForm({
-                                isShow: true,
-                                contractID: contractDetail[0]?.showContractModel?.id ?? '',
-                                reason: ''
-                            })
-                        }}>Từ chối</Button>
-                    </div> : <></>
-            }
-            {
-                rejectContractForm.isShow ?
-                    <Modal
-                        width={500}
-                        open={true}
-                        closable={false}
-                        title={(
-                            <span className='__app-dialog-title'>
-                                Từ chối hợp đồng
-                            </span>
-                        )}
-                        footer={[
-                            <Button key='cancel' onClick={() => {
-                                setRejectContractForm({
-                                    isShow: false,
-                                    contractID: '',
-                                    reason: ''
-                                })
-                            }}>Đóng</Button>,
-                            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
-                                const validation = validateFormReject();
-                                if (validation.invalid) {
-                                    toast.error('Vui lòng nhập thông tin ' + validation.error.join(', '));
-                                } else {
-                                    apiService.rejectContract$(props.contractId, 'DENIED', rejectContractForm.reason).pipe(take(1)).subscribe({
-                                        next: (res) => {
-                                            if (res) {
-                                                toast.success('Cập nhật thành công');
-                                                if (props.callbackFn) {
-                                                    props.callbackFn('backToList');
-                                                }
-                                            } else {
-                                                toast.error('Cập nhật thất bại. Vui lòng thử lại');
-                                            }
-                                        }
-                                    })
-                                }
-                            }}>Lưu</Button>
-                        ]}
-                        centered
-                    >
-
-                    </Modal> : <></>
-            }
         </div>
     </div>
 }

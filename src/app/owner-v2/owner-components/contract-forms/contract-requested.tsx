@@ -298,7 +298,7 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
         } else {
             return '--';
         }
-        
+
     }
 
     return <div className="__app-layout-container form-edit" style={{ width: '100%', height: 'calc(100vh - 160px)' }}>
@@ -319,7 +319,9 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Tên hợp đồng:</Col><Col>{contractDetail[0]?.showContractModel?.title}</Col>
                     </Row>
-
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Trạng thái:</Col><Col><Tag color={CommonUtility.statusColorMapping(contractDetail[0]?.showContractModel?.status ?? '')}>{ContractStatusMapping[contractDetail[0]?.showContractModel?.status ?? '']}</Tag></Col>
+                    </Row>
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Khách hàng:</Col>
                         <Col>
@@ -338,6 +340,38 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Ngày dự kiến kết thúc:</Col><Col>{getExpectedEndDate()}</Col>
                     </Row>
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
+                        <Col span={16}>
+                            {
+                                contractDetail[0]?.showContractModel?.showStaffModel.id ?
+                                    <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
+                                    contractDetail[0]?.showContractModel?.status === 'WAITING' ?
+                                        <UserPicker
+                                            listUser={staffList}
+                                            onChanged={(value) => {
+                                                setStaffForContract(value);
+                                            }}
+                                        /> : <span>--</span>
+                            }
+                        </Col>
+                    </Row>
+                    {
+                        contractDetail[0]?.showContractModel?.status === 'DENIED' ?
+                            <>
+                                <Row>
+                                    <Col span={8} style={{ fontWeight: 500 }}>Ngày từ chối:</Col>
+                                    <Col>{contractDetail[0]?.showContractModel.rejectedDate}</Col>
+                                </Row>
+                                <Row>
+                                    <Col span={16} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
+                                    <Col>{contractDetail[0]?.showContractModel.reason}</Col>
+                                </Row>
+                            </> : <></>
+                    }
+
+                </Col>
+                <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
                     <Row>
                         <Col span={5} style={{ fontWeight: 500 }}>Dịch vụ thuê:</Col>
                         <Col span={19} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -386,47 +420,13 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                         <span style={{ fontWeight: 500 }}>Tổng thanh toán: <span><NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={contractDetail[0]?.showContractModel?.total} /></span></span>
                     </Row>
                 </Col>
-                <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
-                    <Row>
-                        <Col span={8} style={{ fontWeight: 500 }}>Trạng thái:</Col><Col><Tag color={CommonUtility.statusColorMapping(contractDetail[0]?.showContractModel?.status ?? '')}>{ContractStatusMapping[contractDetail[0]?.showContractModel?.status ?? '']}</Tag></Col>
-                    </Row>
-                    <Row>
-                        <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
-                        <Col span={16}>
-                            {
-                                contractDetail[0]?.showContractModel?.showStaffModel.id ?
-                                    <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
-                                    contractDetail[0]?.showContractModel?.status === 'WAITING' ?
-                                        <UserPicker
-                                            listUser={staffList}
-                                            onChanged={(value) => {
-                                                setStaffForContract(value);
-                                            }}
-                                        /> : <span>--</span>
-                            }
-                        </Col>
-                    </Row>
-                    {
-                        contractDetail[0]?.showContractModel?.status === 'DENIED' ?
-                            <>
-                                <Row>
-                                    <Col span={8} style={{ fontWeight: 500 }}>Ngày từ chối:</Col>
-                                    <Col>{contractDetail[0]?.showContractModel.rejectedDate}</Col>
-                                </Row>
-                                <Row>
-                                    <Col span={16} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
-                                    <Col>{contractDetail[0]?.showContractModel.reason}</Col>
-                                </Row>
-                            </> : <></>
-                    }
-                </Col>
             </div>
             {
                 contractDetail[0]?.showContractModel?.status === 'WAITING' ?
                     <div className="__app-action-button" style={{ gap: 10 }}>
                         <Button type="primary"
                             style={{ background: '#0D6368' }} onClick={() => {
-                                apiService.approveContract$(props.requestId, 'APPROVED', staffForContract as number).pipe(take(1)).subscribe({
+                                apiService.approveContract$(props.requestId, 'CONFIRMING', staffForContract as number).pipe(take(1)).subscribe({
                                     next: (res) => {
                                         if (res) {
                                             toast.success('Duyệt Hợp đồng thành công');

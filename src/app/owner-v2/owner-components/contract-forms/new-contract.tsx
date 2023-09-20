@@ -77,7 +77,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     "detailModelList": servicesForm.reduce((acc, cur) => {
                         acc.push({
                             "note": cur['note'] ?? '',
-                            "timeWorking": cur['timeWorking']?.join(', ') ?? '',
+                            "timeWorking": cur['timeWorking']?.join(' - ') ?? '',
                             "totalPrice": getTotalPrice(cur),
                             "servicePackID": cur['servicePackID'] ?? '',
                             "serviceTypeID": cur['serviceTypeID'] ?? '',
