@@ -644,6 +644,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    getContracts$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/contract/v2/getAllContractByStatus?type=CONTRACT&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
     getMembers$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
@@ -736,5 +753,6 @@ export class OwnerServices extends CoreServices {
             })
         })
     }
+
     //#endregion
 }

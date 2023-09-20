@@ -5,7 +5,7 @@ import { ContractWorkingFormModule } from "./contract-forms/contract-working-for
 
 
 export const ContractManagementComponentV2: React.FC<any> = () => {
-    const [tabKey, setTabKey] = useState<string>('contract')
+    const [tabKey, setTabKey] = useState<string>('request')
     return (
         <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
             <Tabs
