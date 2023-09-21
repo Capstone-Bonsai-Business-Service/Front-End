@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
-import { OwnerServices } from "../../owner.service";
-import { forkJoin, take } from "rxjs";
-import { Button, Col, DatePicker, Input, Modal, Row, Select, Skeleton } from "antd";
-import toast from "react-hot-toast";
-import { NumericFormat, PatternFormat } from "react-number-format";
-import { CheckSquareOutlined, CloudUploadOutlined, PlusOutlined, RestOutlined } from "@ant-design/icons";
-import { cloneDeep } from "lodash";
-import { UserPicker } from "../../../common/components/user-picker-component";
-import { DateTime } from "luxon";
+import { useEffect, useState } from 'react';
+import { OwnerServices } from '../../owner.service';
+import { forkJoin, take } from 'rxjs';
+import { Button, Col, DatePicker, Input, Modal, Row, Select, Skeleton } from 'antd';
+import toast from 'react-hot-toast';
+import { NumericFormat, PatternFormat } from 'react-number-format';
+import { CheckSquareOutlined, CloudUploadOutlined, PlusOutlined, RestOutlined } from '@ant-design/icons';
+import { cloneDeep } from 'lodash';
+import { UserPicker } from '../../../common/components/user-picker-component';
+import { DateTime } from 'luxon';
 import dayjs from 'dayjs';
-import TextArea from "antd/es/input/TextArea";
+import TextArea from 'antd/es/input/TextArea';
 
 
 export const FormCreateContractDialog: React.FC<any> = (props: any) => {
@@ -66,28 +66,29 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
             <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
                 const firstServiceName = serviceList.find(item => item.serviceID === servicesForm[0]?.serviceID)?.name ?? 'Dịch vụ';
                 const dataPost = {
-                    "title": `Hợp đồng ${firstServiceName}`,
-                    "fullName": contractDetail['fullName'],
-                    "phone": contractDetail['phone'] ?? '',
-                    "address": contractDetail['address'] ?? '',
-                    "storeID": apiService.storeId,
-                    "paymentMethod": contractDetail['paymentMethod'] ?? '',
-                    "customerID": contractDetail['customerID'] ?? null,
-                    "email": contractDetail['email'] ?? '',
-                    "detailModelList": servicesForm.reduce((acc, cur) => {
+                    'title': `Hợp đồng ${firstServiceName}`,
+                    'fullName': contractDetail['fullName'],
+                    'phone': contractDetail['phone'] ?? '',
+                    'address': contractDetail['address'] ?? '',
+                    'storeID': apiService.storeId,
+                    'paymentMethod': contractDetail['paymentMethod'] ?? '',
+                    'customerID': contractDetail['customerID'] ?? null,
+                    'email': contractDetail['email'] ?? '',
+                    'detailModelList': servicesForm.reduce((acc, cur) => {
                         acc.push({
-                            "note": cur['note'] ?? '',
-                            "timeWorking": cur['timeWorking']?.join(' - ') ?? '',
-                            "totalPrice": getTotalPrice(cur),
-                            "servicePackID": cur['servicePackID'] ?? '',
-                            "serviceTypeID": cur['serviceTypeID'] ?? '',
-                            "startDate": cur['startDate'] ?? '',
-                            "endDate": getEndDate(cur) ?? ''
+                            'note': cur['note'] ?? '',
+                            'timeWorking': cur['timeWorking']?.join(' - ') ?? '',
+                            'totalPrice': getTotalPrice(cur),
+                            'servicePackID': cur['servicePackID'] ?? '',
+                            'serviceTypeID': cur['serviceTypeID'] ?? '',
+                            'startDate': cur['startDate'] ?? '',
+                            'endDate': getEndDate(cur) ?? ''
                         })
                         return acc;
                     }, []),
-                    "staffID": contractDetail['staffID'],
-                    "listURL": imageScanUrls
+                    'staffID': contractDetail['staffID'],
+                    'listURL': imageScanUrls,
+                    'isPaid': true
                 }
                 apiService.createContract$(dataPost).subscribe({
                     next: (res) => {
@@ -130,7 +131,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                     </span>
                                 </Col>
                                 <Col span={16} style={{
-                                    display: "flex",
+                                    display: 'flex',
                                     flexDirection: 'row',
                                     gap: 10
                                 }}>
@@ -148,7 +149,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                                 isExist: false
                                             })
                                         }}
-                                        placeholder="Nhập số điện thoại khách hàng"
+                                        placeholder='Nhập số điện thoại khách hàng'
                                     />
                                     <Button type='ghost' title='Kiểm tra khách hàng' icon={<CheckSquareOutlined style={{ color: '#0D6368' }} />} onClick={() => {
                                         apiService.checkExistedCustomer$(contractDetail?.phone).pipe(take(1)).subscribe({
@@ -198,7 +199,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                         temp['fullName'] = args.target.value;
                                         setContractDetail(temp);
                                     }}
-                                        placeholder="Nhập tên khách hàng"
+                                        placeholder='Nhập tên khách hàng'
                                         value={contractDetail?.fullName}
                                     />
                                 </Col>
@@ -234,7 +235,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 temp['address'] = args.target.value;
                                 setContractDetail(temp);
                             }}
-                                placeholder="Nhập địa chỉ"
+                                placeholder='Nhập địa chỉ'
                                 value={contractDetail?.address}
                             />
                         </Col>
@@ -251,7 +252,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 temp['email'] = args.target.value;
                                 setContractDetail(temp);
                             }}
-                                placeholder="Nhập địa chỉ"
+                                placeholder='Nhập địa chỉ'
                                 value={contractDetail?.email}
                             />
                         </Col>
@@ -275,13 +276,13 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                             const form = cloneDeep(servicesForm);
                                             form.push({
                                                 'tempId': new Date().getTime().toString(),
-                                                "note": '',
-                                                "timeWorking": [],
-                                                "totalPrice": 0,
-                                                "servicePackID": '',
-                                                "serviceTypeID": '',
-                                                "startDate": '',
-                                                "endDate": ''
+                                                'note': '',
+                                                'timeWorking': [],
+                                                'totalPrice': 0,
+                                                'servicePackID': '',
+                                                'serviceTypeID': '',
+                                                'startDate': '',
+                                                'endDate': ''
                                             })
                                             setServiceForm(form);
                                         }}
@@ -323,7 +324,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                         <Col span={20}>
                             <UserPicker
                                 listUser={staffList}
-                                placeholder="Chọn nhân viên"
+                                placeholder='Chọn nhân viên'
                                 onChanged={(value) => {
                                     let temp = cloneDeep(contractDetail) ?? {};
                                     temp['staffID'] = value;
@@ -337,8 +338,8 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             <span><strong>Ảnh Scan: </strong> <span className='__app-required-field'> *</span></span>
                         </Col>
                         <Col span={20}>
-                            <div className="__app-images-upload-container">
-                                <div className="__app-button-upload">
+                            <div className='__app-images-upload-container'>
+                                <div className='__app-button-upload'>
                                     {
                                         !isUpload ? <Button key='upload' icon={<CloudUploadOutlined />} onClick={() => {
                                             document.getElementById('uploadContract')?.click();
@@ -348,8 +349,8 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 </div>
                                 <input
                                     id='uploadContract'
-                                    type="file"
-                                    accept="*"
+                                    type='file'
+                                    accept='*'
                                     multiple={false}
                                     hidden={true}
                                     onChange={(args) => {
@@ -497,7 +498,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 <Col span={20}>
                                     <DatePicker
                                         style={{ width: '100%' }}
-                                        placeholder="Chọn ngày bắt đầu"
+                                        placeholder='Chọn ngày bắt đầu'
                                         value={cur.startDate !== '' ? dayjs(new Date(cur.startDate)) : null}
                                         onChange={(value) => {
                                             let temp = cloneDeep(servicesForm) ?? [];
@@ -548,7 +549,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 <Col span={20}>
                                     {
                                         cur?.serviceID && cur?.serviceTypeID && cur?.servicePackID ?
-                                            <NumericFormat displayType="text" thousandSeparator=" " suffix=" vnđ" value={
+                                            <NumericFormat displayType='text' thousandSeparator=' ' suffix=' vnđ' value={
                                                 getTotalPrice(cur)
                                             } />
                                             : <>--</>
@@ -563,7 +564,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 </Col>
                                 <Col span={20}>
                                     <TextArea
-                                        placeholder="Nhập ghi chú"
+                                        placeholder='Nhập ghi chú'
                                         rows={2}
                                         value={cur.note}
                                         onChange={(value) => {

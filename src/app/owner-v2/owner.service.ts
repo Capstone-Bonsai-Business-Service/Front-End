@@ -770,5 +770,22 @@ export class OwnerServices extends CoreServices {
             })
         })
     }
+
+    changeStaffForWorkingDate$(staffId: number, workingDateId: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/workingDate/v2/updateWorkingDateStaffID?workingDateID=${workingDateId}&staffID=${staffId}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Thay thay đổi thất bại.' });
+                obs.complete();
+            })
+        })
+    }
     //#endregion
 }

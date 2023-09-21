@@ -154,6 +154,8 @@ export module CommonUtility {
             case 'UNAVAILABLE': case 'INACTIVE': return 'error';
             case 'STAFFCANCELED': case 'DENIED': return 'red';
             case 'DONE': return 'purple';
+            case 'MISSED': return 'red';
+            case 'CUSTOMERCANCELED': return 'red';
             default: return 'default';
         }
     }

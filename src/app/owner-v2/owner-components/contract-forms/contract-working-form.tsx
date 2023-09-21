@@ -27,6 +27,19 @@ export const ContractWorkingFormModule: React.FC<{}> = () => {
     const [formMode, setFormMode] = useState<'list' | 'detail' | 'schedule'>('list');
     const [contractId, setContractId] = useState<string | undefined>();
     const [contractDetailId, setContractDetailId] = useState<string | undefined>();
+    const [isFirstInit, setFirstInit] = useState<boolean>(false);
+    const [staffList, setStaffList] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (!isFirstInit) {
+            setFirstInit(true);
+            apiService.getMembers$().pipe(take(1)).subscribe({
+                next: (value) => {
+                    setStaffList(value);
+                }
+            })
+        }
+    })
 
     function componentCallback(action: actionCallback, data?: string) {
         if (action === 'backToList') {
@@ -67,9 +80,10 @@ export const ContractWorkingFormModule: React.FC<{}> = () => {
             formMode === 'schedule' ? <WorkingTimeCalendar
                 contractDetailId={contractDetailId as string}
                 callbackFn={() => {
-                    componentCallback('goToDetail');
+                    componentCallback('goToDetail', contractId);
                 }}
                 apiServices={apiService}
+                listUser={staffList}
             /> : <></>
         }
     </>

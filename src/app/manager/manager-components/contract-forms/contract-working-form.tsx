@@ -7,6 +7,6 @@ interface IContractFormProps {
 
 export const ContractWorkingFormModule: React.FC<{}> = () => {
     return <div>
-        <WorkingTimeCalendar contractDetailId='' apiServices={null}/>
+        {/* <WorkingTimeCalendar contractDetailId='' apiServices={null} /> */}
     </div>
 }
