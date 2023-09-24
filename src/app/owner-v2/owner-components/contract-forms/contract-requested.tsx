@@ -97,12 +97,24 @@ const RequestContractListComponent: React.FC<IRequestContractProps> = (props) =>
             }
         },
         {
+            title: 'Ngày tạo',
+            dataIndex: 'createdDate',
+            key: 'createdDate',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 180,
+            className: '__app-header-title',
+            render: (data) => {
+                return <span>{DateTime.fromJSDate(new Date(data)).toFormat('dd/MM/yyyy HH:mm')}</span>
+            }
+        },
+        {
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
             showSorterTooltip: false,
             ellipsis: true,
-            width: 210,
+            width: 180,
             className: '__app-header-title',
             render: (value) => {
                 return <Tag color={CommonUtility.statusColorMapping(value)}>{ContractStatusMapping[value]}</Tag>
@@ -264,6 +276,7 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                     })
                     return acc;
                 }, [] as any)
+                setStaffForContract(values[0][0]?.showContractModel?.showStaffModel?.id ?? null)
                 setStaffList(staffListOption);
                 setContractDetail(values[0]);
                 setDataReady(true);
@@ -335,6 +348,9 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                         </Col>
                     </Row>
                     <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Ngày tạo:</Col><Col>{DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.createdDate as string)).toFormat('dd/MM/yyyy HH:mm')}</Col>
+                    </Row>
+                    <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Ngày bắt đầu:</Col><Col>{DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.startedDate as string)).toFormat('dd/MM/yyyy HH:mm')}</Col>
                     </Row>
                     <Row>
@@ -343,25 +359,34 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
                         <Col span={16}>
-                            {
-                                contractDetail[0]?.showContractModel?.showStaffModel.id ?
-                                    <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
-                                    contractDetail[0]?.showContractModel?.status === 'WAITING' ?
-                                        <UserPicker
-                                            listUser={staffList}
-                                            onChanged={(value) => {
-                                                setStaffForContract(value);
-                                            }}
-                                        /> : <span>--</span>
-                            }
+                            <UserPicker
+                                listUser={staffList}
+                                defaultValue={staffForContract}
+                                onChanged={(value) => {
+                                    setStaffForContract(value);
+                                }}
+                            />
                         </Col>
                     </Row>
+                    {
+                        contractDetail[0]?.showContractModel?.status === 'CONFIRMING' ?
+                            <>
+                                <Row>
+                                    <Col span={8} style={{ fontWeight: 500 }}>Ngày duyệt:</Col>
+                                    <Col>
+                                        {DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.confirmedDate as string)).toFormat('dd/MM/yyyy HH:mm')}
+                                    </Col>
+                                </Row>
+                            </> : <></>
+                    }
                     {
                         contractDetail[0]?.showContractModel?.status === 'DENIED' ?
                             <>
                                 <Row>
                                     <Col span={8} style={{ fontWeight: 500 }}>Ngày từ chối:</Col>
-                                    <Col>{contractDetail[0]?.showContractModel.rejectedDate}</Col>
+                                    <Col>
+                                        {DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.rejectedDate as string)).toFormat('dd/MM/yyyy HH:mm')}
+                                    </Col>
                                 </Row>
                                 <Row>
                                     <Col span={16} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
@@ -422,31 +447,37 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                 </Col>
             </div>
             {
-                contractDetail[0]?.showContractModel?.status === 'WAITING' ?
-                    <div className="__app-action-button" style={{ gap: 10 }}>
-                        <Button type="primary"
-                            style={{ background: '#0D6368' }} onClick={() => {
-                                apiService.approveContract$(props.requestId, 'CONFIRMING', staffForContract as number).pipe(take(1)).subscribe({
-                                    next: (res) => {
-                                        if (res) {
-                                            toast.success('Duyệt Hợp đồng thành công');
-                                            if (props.callbackFn) {
-                                                props.callbackFn('backToList');
-                                            }
-                                        } else {
-                                            toast.error('Duyệt Hợp đồng thất bại');
+                // contractDetail[0]?.showContractModel?.status === 'WAITING' ?
+                //      : <></>
+
+                <div className="__app-action-button" style={{ gap: 10 }}>
+                    <Button type="primary"
+                        style={{ background: '#0D6368' }} onClick={() => {
+                            apiService.approveContract$(props.requestId, 'CONFIRMING', staffForContract as number).pipe(take(1)).subscribe({
+                                next: (res) => {
+                                    if (res) {
+                                        toast.success('Cập nhật thành công');
+                                        if (props.callbackFn) {
+                                            props.callbackFn('backToList');
                                         }
+                                    } else {
+                                        toast.error('Cập nhật thất bại');
                                     }
-                                })
-                            }}>Duyệt</Button>
-                        <Button type="default" onClick={() => {
-                            setRejectContractForm({
-                                isShow: true,
-                                contractID: contractDetail[0]?.showContractModel?.id ?? '',
-                                reason: ''
+                                }
                             })
-                        }}>Từ chối</Button>
-                    </div> : <></>
+                        }}>
+                        {
+                            contractDetail[0]?.showContractModel?.status === 'WAITING' ? 'Duyệt' : 'Thay đổi'
+                        }
+                    </Button>
+                    <Button type="default" onClick={() => {
+                        setRejectContractForm({
+                            isShow: true,
+                            contractID: contractDetail[0]?.showContractModel?.id ?? '',
+                            reason: ''
+                        })
+                    }}>Từ chối</Button>
+                </div>
             }
             {
                 rejectContractForm.isShow ?

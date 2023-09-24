@@ -1,5 +1,5 @@
-import { CloudUploadOutlined, FormOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
-import { Image, Button, Divider, Skeleton, Table, Tabs, Tag, Row, Col, Input, Modal, Switch, Select } from 'antd';
+import { CloudUploadOutlined, FormOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
+import { Image, Button, Divider, Skeleton, Table, Tabs, Tag, Row, Col, Input, Modal, Switch, Select, Dropdown } from 'antd';
 import Search from 'antd/es/input/Search';
 import { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
@@ -903,21 +903,21 @@ const TabServiceList: React.FC<any> = (props) => {
             },
             className: '__app-header-title'
         },
-        // {
-        //     title: 'Trạng thái',
-        //     dataIndex: 'status',
-        //     key: 'status',
-        //     showSorterTooltip: false,
-        //     ellipsis: true,
-        //     render: (value) => {
-        //         return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
-        //     },
-        //     width: 200,
-        //     sorter: {
-        //         compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
-        //     },
-        //     className: '__app-header-title'
-        // },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            key: 'status',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (value) => {
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
+            },
+            width: 200,
+            sorter: {
+                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
         {
             title: '',
             dataIndex: 'command',
@@ -1254,6 +1254,12 @@ const TabPackList: React.FC<{}> = (props) => {
     const [isShowPopUpCreate, setShowPopUpCreate] = useState<boolean>(false);
     const [isShowPopUpEdit, setShowPopUpEdit] = useState<boolean>(false);
     const [servicePackEdit, setServicePackEdit] = useState<any>(null);
+    const [popUpConfirm, setPopUpConfirm] = useState({
+        isShow: false,
+        packServiceID: '',
+        message: '',
+        action: ''
+    });
 
     const tableUserColumns: ColumnsType<any> = [
         {
@@ -1299,21 +1305,21 @@ const TabPackList: React.FC<{}> = (props) => {
             },
             className: '__app-header-title'
         },
-        // {
-        //     title: 'Trạng thái',
-        //     dataIndex: 'status',
-        //     key: 'status',
-        //     showSorterTooltip: false,
-        //     ellipsis: true,
-        //     render: (value) => {
-        //         return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
-        //     },
-        //     width: 200,
-        //     sorter: {
-        //         compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
-        //     },
-        //     className: '__app-header-title'
-        // },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            key: 'status',
+            showSorterTooltip: false,
+            ellipsis: true,
+            render: (value) => {
+                return <Tag color={CommonUtility.statusColorMapping(value)}>{ServiceStatusMapping[value]}</Tag>
+            },
+            width: 200,
+            sorter: {
+                compare: (acc, cur) => acc.status > cur.status ? 1 : acc.status < cur.status ? -1 : 0
+            },
+            className: '__app-header-title'
+        },
         {
             title: '',
             dataIndex: 'command',
@@ -1322,15 +1328,66 @@ const TabPackList: React.FC<{}> = (props) => {
             key: 'command',
             showSorterTooltip: false,
             ellipsis: true,
+            // render: (_, record, __) => {
+            //     return <div>
+            //         <Button className='__app-command-button'
+            //             type='ghost'
+            //             onClick={(e) => {
+            //                 e.preventDefault();
+            //                 setShowPopUpEdit(true);
+            //                 setServicePackEdit(record);
+            //             }} icon={<FormOutlined />} />
+            //     </div>
+            // },
             render: (_, record, __) => {
                 return <div>
-                    <Button className='__app-command-button'
-                        type='ghost'
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setShowPopUpEdit(true);
-                            setServicePackEdit(record);
-                        }} icon={<FormOutlined />} />
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [
+                                {
+                                    key: 'detail',
+                                    label: <span
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setShowPopUpEdit(true);
+                                            setServicePackEdit(record);
+                                        }}
+                                    >Xem chi tiết</span>
+                                },
+                                record.status === 'ACTIVE' ?
+                                    {
+                                        key: 'disablePlant',
+                                        label: <span
+                                            onClick={() => {
+                                                setPopUpConfirm({
+                                                    isShow: true,
+                                                    packServiceID: record.id,
+                                                    message: 'Vui lòng xác nhận huỷ bán cây trong hệ thống.',
+                                                    action: 'disable'
+                                                });
+                                            }}
+                                        >Huỷ bán cây</span>
+                                    } : null,
+                                record.status === 'INACTIVE' ?
+                                    {
+                                        key: 'activePlant',
+                                        label: <span
+                                            onClick={() => {
+                                                setPopUpConfirm({
+                                                    isShow: true,
+                                                    packServiceID: record.id,
+                                                    message: 'Vui lòng xác nhận bán lại cây trong hệ thống.',
+                                                    action: 'active'
+                                                });
+                                            }}
+                                        >Bán lại</span>
+                                    } : null,
+                            ]
+                        }}
+                        placement='bottom'>
+                        <MoreOutlined />
+                    </Dropdown>
                 </div>
             },
             className: '__app-header-title'
@@ -1429,5 +1486,85 @@ const TabPackList: React.FC<{}> = (props) => {
                     }}
                 /> : <></>
         }
+        {
+                popUpConfirm.isShow ?
+                    <Modal
+                        width={300}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Xác nhận
+                            </span>
+                        )}
+                        footer={[
+                            <Button type="default" onClick={() => {
+                                setPopUpConfirm({
+                                    isShow: false,
+                                    packServiceID: '',
+                                    message: '',
+                                    action: ''
+                                })
+                            }}>Huỷ</Button>,
+                            popUpConfirm.action === 'active' ?
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#0D6368' }}
+                                    onClick={() => {
+                                        ownerServices.activeServicePack$(popUpConfirm.packServiceID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        packServiceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        packServiceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
+                                            }
+                                        })
+                                    }}>Xác Nhận</Button> :
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#5D050b' }}
+                                    onClick={() => {
+                                        ownerServices.deleteServicePack$(popUpConfirm.packServiceID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        packServiceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        packServiceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
+                                            }
+                                        })
+
+                                    }}>Xác Nhận</Button>
+                        ]}
+                        centered
+                    >
+                        <span>{popUpConfirm.message}</span>
+                    </Modal> : <></>
+            }
     </>
 }

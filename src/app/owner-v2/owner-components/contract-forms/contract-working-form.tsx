@@ -131,6 +131,18 @@ const RequestContractListComponent: React.FC<IContractFormProps> = (props) => {
             }
         },
         {
+            title: 'Ngày tạo',
+            dataIndex: 'createdDate',
+            key: 'createdDate',
+            showSorterTooltip: false,
+            ellipsis: true,
+            width: 180,
+            className: '__app-header-title',
+            render: (data) => {
+                return <span>{DateTime.fromJSDate(new Date(data)).toFormat('dd/MM/yyyy HH:mm')}</span>
+            }
+        },
+        {
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
@@ -372,6 +384,9 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                         </Col>
                     </Row>
                     <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Ngày tạo:</Col><Col>{DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.createdDate as string)).toFormat('dd/MM/yyyy HH:mm')}</Col>
+                    </Row>
+                    <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Ngày bắt đầu:</Col><Col>{DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.startedDate as string)).toFormat('dd/MM/yyyy HH:mm')}</Col>
                     </Row>
                     <Row>
@@ -387,7 +402,18 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                             }
                         </Col>
                     </Row>
-
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Ngày duyệt:</Col>
+                        <Col>
+                            {DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.confirmedDate as string)).toFormat('dd/MM/yyyy HH:mm')}
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Ngày Ký:</Col>
+                        <Col>
+                            {DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.signedDate as string)).toFormat('dd/MM/yyyy HH:mm')}
+                        </Col>
+                    </Row>
                 </Col>
                 <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
                     <Row>

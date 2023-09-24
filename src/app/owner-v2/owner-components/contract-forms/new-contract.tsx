@@ -268,7 +268,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 renderServiceForms()
                             }
                             {
-                                servicesForm.length < 5 ?
+                                servicesForm.length < 3 ?
                                     <Button
                                         icon={<PlusOutlined />}
                                         onClick={(e) => {
@@ -290,7 +290,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             }
                         </Col>
                     </Row>
-                    <Row className='__app-account-info-row'>
+                    {/* <Row className='__app-account-info-row'>
                         <Col span={3} className='__app-account-field'>
                             <span>
                                 <strong>Phương thức thanh toán:</strong> <span className='__app-required-field'> *</span>
@@ -311,10 +311,10 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 }}
                             />
                         </Col>
-                    </Row>
-                    <Row className='__app-account-info-row'>
+                    </Row> */}
+                    {/* <Row className='__app-account-info-row'>
 
-                    </Row>
+                    </Row> */}
                     <Row className='__app-account-info-row'>
                         <Col span={3} className='__app-account-field'>
                             <span>

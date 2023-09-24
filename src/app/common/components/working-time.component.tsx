@@ -9,7 +9,7 @@ import { UserPicker } from './user-picker-component';
 import { IUser } from '../../../IApp.interface';
 import { cloneDeep } from 'lodash';
 import toast from 'react-hot-toast';
-import { LeftOutlined, LoadingOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined, LeftOutlined, LoadingOutlined } from '@ant-design/icons';
 
 interface IWorkingTimeProps {
     contractDetailId: string;
@@ -34,6 +34,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
         isShow: false,
         data: null
     })
+    const [workingDateReport, setWorkingDateReport] = useState(new Map<string, any>());
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
@@ -41,6 +42,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
             renderOptions();
             setFirstInit(true);
             loadData();
+            
         }
     });
 
@@ -139,13 +141,13 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
             return 'transparent';
         }
         switch (status) {
-            case 'DONE': return 'rgb(146, 208, 80, 0.5)';
-            case 'MISSED': return 'rgb(192, 0, 0, 0.5)';
-            case 'WAITING': return 'rgb(255, 230, 153, 0.5)';
-            case 'WORKING': return 'rgb(255, 130, 13, 0.5)';
-            case 'CUSTOMERCANCELED': return 'rgb(192, 0, 0, 0.5)';
-            case 'STAFFCANCELED': return 'rgb(192, 0, 0, 0.5)';
-            default: return 'rgb(255, 230, 153, 0.5)'
+            case 'DONE': return 'rgb(146, 208, 80, 0.3)';
+            case 'MISSED': return 'rgb(192, 0, 0, 0.3)';
+            case 'WAITING': return 'rgb(255, 230, 153, 0.3)';
+            case 'WORKING': return 'rgb(255, 130, 13, 0.3)';
+            case 'CUSTOMERCANCELED': return 'rgb(192, 0, 0, 0.3)';
+            case 'STAFFCANCELED': return 'rgb(192, 0, 0, 0.3)';
+            default: return 'rgb(255, 230, 153, 0.3)'
         }
     }
 
@@ -161,6 +163,22 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
             case 'CUSTOMERCANCELED': return 'Nghỉ';
             case 'STAFFCANCELED': return 'Nghỉ';
             default: return 'Đang đợi';
+        }
+    }
+
+    function getReport(workingDateId: string) {
+        if (CommonUtility.isNullOrUndefined(workingDateReport.get(workingDateId))) {
+            let temp = cloneDeep(workingDateReport);
+            props.apiServices.getWorkingTimesReport$(workingDateId).pipe(take(1)).subscribe({
+                next: (res: any) => {
+                    if (res.error) {
+                        temp.set(workingDateId, 'Lỗi tìm báo cáo.');
+                    } else {
+                        temp.set(workingDateId, res[0] ? res[0].reason : 'Không tìm thấy báo cáo.');
+                    }
+                    setWorkingDateReport(temp);
+                }
+            })
         }
     }
 
@@ -210,13 +228,21 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                         className={`__app-date-block${isToday ? ' today' : ''}`}
                         style={{ background: _backgroud, marginBottom: 4 }}
                         onDoubleClick={() => {
+                            item.newStaff = item?.showStaffModel?.id ?? null;
                             setPopupDate({
                                 isShow: true,
                                 data: item
-                            })
+                            });
+                            getReport(item.id);
                         }}
                     >
                         <div className={`__app-date-value${isToday ? ' today' : ''}`}>
+                            {
+                                item?.isReported ? <ExclamationCircleOutlined style={{
+                                    marginRight: 10,
+                                    color: 'red'
+                                }} /> : null
+                            }
                             {date.date()}
                         </div>
                         <div className='__app-date-content'>
@@ -321,7 +347,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                         temp.data.newStaff = userId;
                                                         setPopupDate(temp);
                                                     }}
-                                                    defaultValue={popupDate.data.showStaffModel.id}
+                                                    defaultValue={popupDate.data.newStaff}
                                                 />
                                         }
                                     </Col>
@@ -341,6 +367,18 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                             : <></>
                                     }
                                 </Row>
+                                {
+                                    popupDate.data.isReported ?
+                                        <Row>
+                                            <Col span={8} style={{ fontWeight: 500 }}>Báo cáo:</Col>
+                                            <Col span={12}>
+                                                <span color='red'>
+                                                    { workingDateReport.get(popupDate.data.id) }
+                                                </span>
+                                            </Col>
+                                        </Row>
+                                        : <></>
+                                }
                             </> : 'Không có thông tin hiển thị'
                         }
                     </div>

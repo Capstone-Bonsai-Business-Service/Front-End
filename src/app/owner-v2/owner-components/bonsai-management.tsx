@@ -911,33 +911,61 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     action: ''
                                 })
                             }}>Huỷ</Button>,
-                            <Button type="primary"
-                                style={{ backgroundColor: '#5D050b' }}
-                                onClick={() => {
-                                    ownerServices.disablePlant$(popUpConfirm.plantID).pipe(take(1)).subscribe({
-                                        next: (res) => {
-                                            if (res.error) {
-                                                toast.error(res.error);
-                                                setPopUpConfirm({
-                                                    isShow: false,
-                                                    plantID: '',
-                                                    message: '',
-                                                    action: ''
-                                                })
-                                            } else {
-                                                setPopUpConfirm({
-                                                    isShow: false,
-                                                    plantID: '',
-                                                    message: '',
-                                                    action: ''
-                                                })
-                                                loadData();
-                                                toast.success('Cập nhật thành công');
+                            popUpConfirm.action === 'active' ?
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#0D6368' }}
+                                    onClick={() => {
+                                        ownerServices.activePlant$(popUpConfirm.plantID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
                                             }
-                                        }
-                                    })
+                                        })
 
-                                }}>Xác Nhận</Button>
+                                    }}>Xác Nhận</Button> :
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#5D050b' }}
+                                    onClick={() => {
+                                        ownerServices.disablePlant$(popUpConfirm.plantID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
+                                            }
+                                        })
+
+                                    }}>Xác Nhận</Button>
                         ]}
                         centered
                     >

@@ -150,20 +150,20 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                             }}
                                         >Vô hiệu</span>
                                     } : null,
-                                // record.status === 'INACTIVE' ?
-                                //     {
-                                //         key: 'activePlant',
-                                //         label: <span
-                                //             onClick={() => {
-                                //                 setPopUpConfirm({
-                                //                     isShow: true,
-                                //                     plantCateogryID: record.categoryID,
-                                //                     message: 'Vui lòng xác nhận hoạt động lại loại cây trong hệ thống.',
-                                //                     action: 'active'
-                                //                 });
-                                //             }}
-                                //         >Bán lại</span>
-                                //     } : null,
+                                record.status === 'INACTIVE' ?
+                                    {
+                                        key: 'activePlant',
+                                        label: <span
+                                            onClick={() => {
+                                                setPopUpConfirm({
+                                                    isShow: true,
+                                                    plantCateogryID: record.categoryID,
+                                                    message: 'Vui lòng xác nhận hoạt động lại loại cây trong hệ thống.',
+                                                    action: 'active'
+                                                });
+                                            }}
+                                        >Hoạt động lại</span>
+                                    } : null,
                             ]
                         }}
                         placement='bottom'>
@@ -401,33 +401,61 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                     action: ''
                                 })
                             }}>Huỷ</Button>,
-                            <Button type="primary"
-                                style={{ backgroundColor: '#5D050b' }}
-                                onClick={() => {
-                                    ownerServices.disableCategory$(popUpConfirm.plantCateogryID).pipe(take(1)).subscribe({
-                                        next: (res) => {
-                                            if (res.error) {
-                                                toast.error(res.error);
-                                                setPopUpConfirm({
-                                                    isShow: false,
-                                                    plantCateogryID: '',
-                                                    message: '',
-                                                    action: ''
-                                                })
-                                            } else {
-                                                setPopUpConfirm({
-                                                    isShow: false,
-                                                    plantCateogryID: '',
-                                                    message: '',
-                                                    action: ''
-                                                })
-                                                loadData();
-                                                toast.success('Cập nhật thành công');
+                            popUpConfirm.action === 'active' ?
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#0D6368' }}
+                                    onClick={() => {
+                                        ownerServices.activeCategory$(popUpConfirm.plantCateogryID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantCateogryID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantCateogryID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
                                             }
-                                        }
-                                    })
+                                        })
 
-                                }}>Xác Nhận</Button>
+                                    }}>Xác Nhận</Button> :
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#5D050b' }}
+                                    onClick={() => {
+                                        ownerServices.disableCategory$(popUpConfirm.plantCateogryID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantCateogryID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        plantCateogryID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
+                                            }
+                                        })
+
+                                    }}>Xác Nhận</Button>
                         ]}
                         centered
                     >

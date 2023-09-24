@@ -21,7 +21,7 @@ export class OwnerServices extends CoreServices {
 
     getBonsais$(options: any) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/plant/getAllPlantWithInactive?pageNo=${options.pageNo ?? 1}&pageSize=${options.pageSize ?? 10}&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/plant/v2/getStorePlant?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`;
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -334,6 +334,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    activeCategory$(id: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/category/v2/activateCategory?categoryID=${id}`
+            axios.put(url, undefined,{
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Vô hiệu thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
     getProvince$() {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/store/getAllProvince`
@@ -456,7 +473,7 @@ export class OwnerServices extends CoreServices {
     activePlant$(plantID: string) {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/plant/activatePlant?plantID=${plantID}`
-            axios.delete(url, {
+            axios.put(url, undefined, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
                 }
@@ -775,6 +792,57 @@ export class OwnerServices extends CoreServices {
         return new Observable<any>(obs => {
             let url = this.globalSettings.domain + `/workingDate/v2/updateWorkingDateStaffID?workingDateID=${workingDateId}&staffID=${staffId}`
             axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Thay thay đổi thất bại.' });
+                obs.complete();
+            })
+        })
+    }
+
+    getWorkingTimesReport$(workingTimeId: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/report/v2/getByWorkingDateID?workingDateID=${workingTimeId}`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Không tìm thấy báo cáo.' });
+                obs.complete();
+            })
+        })
+    }
+
+    activeServicePack$(servicePackID: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/servicePack/v2/updateStatus?servicePackID=${servicePackID}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Thay thay đổi thất bại.' });
+                obs.complete();
+            })
+        })
+    }
+
+    deleteServicePack$(servicePackID: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/servicePack/${servicePackID}`
+            axios.delete(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
                 }
