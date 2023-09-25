@@ -12,6 +12,8 @@ import { NumericFormat, PatternFormat } from "react-number-format";
 import { DateTime } from "luxon";
 import { UserPicker } from "../../../common/components/user-picker-component";
 import toast from "react-hot-toast";
+import TextArea from "antd/es/input/TextArea";
+import { cloneDeep } from "lodash";
 
 interface IRequestContractProps {
     callbackFn?: (action: actionCallback, data?: string) => void;
@@ -249,11 +251,7 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [staffList, setStaffList] = useState<any[]>([]);
     const [staffForContract, setStaffForContract] = useState<number | null>(null);
-    const [rejectContractForm, setRejectContractForm] = useState<{
-        isShow: boolean,
-        reason: string,
-        contractID: string
-    }>({
+    const [rejectContractForm, setRejectContractForm] = useState({
         isShow: false,
         reason: '',
         contractID: ''
@@ -520,7 +518,19 @@ const RequestContractDetailComponent: React.FC<IRequestContractDetailProps> = (p
                         ]}
                         centered
                     >
-
+                        <Row style={{ padding: 16 }}>
+                            <Col span={4} style={{ fontWeight: 500 }}>Lý do:</Col>
+                            <Col span={18}>
+                                <TextArea
+                                    rows={3}
+                                    onChange={(args) => {
+                                        let temp = cloneDeep(rejectContractForm);
+                                        temp.reason = args.target.value
+                                        setRejectContractForm(temp);
+                                    }}
+                                />
+                            </Col>
+                        </Row>
                     </Modal> : <></>
             }
         </div>

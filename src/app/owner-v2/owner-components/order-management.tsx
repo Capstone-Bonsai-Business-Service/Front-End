@@ -358,7 +358,7 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                             Nhân viên tiếp nhận:
                                         </Col>
                                         <Col span={16}>
-                                            { orderDetail?.showStaffModel?.fullName ?? '--' }
+                                            {orderDetail?.showStaffModel?.fullName ?? '--'}
                                         </Col>
                                     </Row>
                                     <Row>
@@ -396,6 +396,88 @@ export const OrderTabComponent: React.FC<IOrderTabProps> = (props) => {
                                 </Col>
                             </div>
                         </div >
+                        {
+                            orderDetail?.progressStatus === 'WAITING' ?
+                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                    <Col span={18} style={{ padding: '24px 0', display: 'flex', flexDirection: 'row-reverse', gap: 8 }}>
+                                        <Button type="primary" style={{ background: '#0D6368' }} onClick={() => {
+                                            ownerServices.approveOrder$(orderDetail?.id, staffForOrder ?? 0).pipe(take(1)).subscribe({
+                                                next: (res) => {
+                                                    if (res) {
+                                                        setFormMode('display');
+                                                        setOrderDetail(null);
+                                                        loadData();
+                                                        toast.success('Duyệt đơn hàng thành công.');
+                                                    } else {
+                                                        toast.success('Không thể duyệt đơn hàng.')
+                                                    }
+                                                }
+                                            })
+                                        }}>Duyệt</Button>
+                                        <Button type="default" onClick={() => {
+                                            setShowPopupReason(true);
+                                        }}>Từ chối</Button>
+                                    </Col>
+                                </div>
+                                : <></>
+                        }
+                        {
+                            orderDetail?.progressStatus === 'DELIVERING' ?
+                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                                    <Col span={18} style={{ padding: '24px 0', display: 'flex', flexDirection: 'row-reverse', gap: 8 }}>
+                                        <Button type="default" onClick={() => {
+                                            setShowPopupReason(true);
+                                        }}>Huỷ đơn</Button>
+                                    </Col>
+                                </div>
+                                : <></>
+                        }
+                        {
+                            isShowPopupReason ?
+                                <Modal
+                                    width={600}
+                                    open={true}
+                                    closable={false}
+                                    title={(
+                                        <span className='__app-dialog-title'>
+                                            TỪ CHỐI ĐƠN HÀNG
+                                        </span>
+                                    )}
+                                    footer={[
+                                        <Button key='cancel' onClick={() => {
+                                            setShowPopupReason(false)
+                                        }}>Đóng</Button>,
+                                        <Button key='save' type='primary' style={{ background: '#5D050b' }} onClick={() => {
+                                            ownerServices.rejectOrder$(orderDetail?.id, reasonReject).pipe(take(1)).subscribe({
+                                                next: (res) => {
+                                                    if (res) {
+                                                        setFormMode('display');
+                                                        setOrderDetail(null);
+                                                        loadData();
+                                                        setShowPopupReason(false)
+                                                        toast.success('Từ chối đơn hàng thành công.');
+                                                    } else {
+                                                        toast.success('Không thể từ chối đơn hàng.')
+                                                    }
+                                                }
+                                            })
+                                        }}>Từ chối</Button>
+                                    ]}
+                                >
+                                    <Row style={{ padding: 16 }}>
+                                        <Col span={4} style={{ fontWeight: 500 }}>Lý do:</Col>
+                                        <Col span={18}>
+                                            <TextArea
+                                                rows={3}
+                                                onChange={(args) => {
+                                                    setReasonReject(args.target.value);
+                                                }}
+                                            />
+                                        </Col>
+                                    </Row>
+                                </Modal>
+                                : <></>
+                        }
                     </div >
                     : <></>
             }

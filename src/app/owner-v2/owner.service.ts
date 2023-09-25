@@ -906,5 +906,39 @@ export class OwnerServices extends CoreServices {
             })
         })
     }
+
+    approveOrder$(orderId: string, staffId: number = 0) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/order/approveOrder/${orderId}?staffID=${staffId}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
+
+    rejectOrder$(orderId: string, reason: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/order/rejectOrder?orderID=${orderId}&reason=${reason}&status=DENIED`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next();
+                obs.complete();
+            })
+        })
+    }
     //#endregion
 }
