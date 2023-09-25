@@ -24,6 +24,7 @@ import { StoreStatisticComponent } from './owner-components/store-revenue.compon
 import { PlantCategoryManagementComponent } from './owner-components/plant-category-management';
 import { ContractManagementComponentV2 } from './owner-components/contract-management';
 import viVN from 'antd/locale/vi_VN'
+import { VscFeedback } from 'react-icons/vsc';
 
 interface IOwnerPageProps {
     currentUser?: IUser;
@@ -38,15 +39,26 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
-    const [currentMenuItem, setCurrentMenuItem] = useState<string>('income');
+    const [currentMenuItem, setCurrentMenuItem] = useState<string>('storeRating');
     const [showModalExpiredToken, setShowModalExpiredToken] = useState<boolean>(false);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (!isFirstInit) {
             registerPingToken();
             setFirstInit(true);
+            autoUpdateStatusWorking();
         }
-    }, [isFirstInit, registerPingToken]);
+    });
+
+    function autoUpdateStatusWorking() {
+        timer(0, 1200000).subscribe({
+            next: () => {
+                ownerService.updateWorkingContracts$().pipe(take(1)).subscribe();
+            }
+        })
+
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     function registerPingToken() {
@@ -82,18 +94,18 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                 </div>
             ),
             children: [
-                {
-                    key: 'income',
-                    icon: <AiOutlineAreaChart color='#000' />,
-                    className: '__app-children-menu-divider',
-                    label: 'Doanh thu',
-                },
                 // {
-                //     key: 'storeRating',
+                //     key: 'income',
                 //     icon: <AiOutlineAreaChart color='#000' />,
                 //     className: '__app-children-menu-divider',
-                //     label: 'Thống kê theo cửa hàng',
+                //     label: 'Doanh thu',
                 // },
+                {
+                    key: 'storeRating',
+                    icon: <AiOutlineAreaChart color='#000' />,
+                    className: '__app-children-menu-divider',
+                    label: 'Doanh thu của cửa hàng',
+                },
             ]
         },
         {
@@ -146,6 +158,26 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                 //         </div>
                 //     )
                 // },
+                {
+                    key: 'orders',
+                    className: '__app-group-menu',
+                    icon: <PiHandshake color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Đơn đặt hàng
+                        </div>
+                    )
+                },
+                {
+                    key: 'feedback',
+                    className: '__app-group-menu',
+                    icon: <VscFeedback color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Phản hồi
+                        </div>
+                    )
+                },
                 {
                     key: 'contracts',
                     className: '__app-group-menu',
@@ -204,35 +236,42 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
 
     return (
         <ConfigProvider locale={viVN}>
-        <>
-            <Layout className='__owner-layout ant-layout-has-sider'>
-                <Layout.Sider className='__app-layout-slider' trigger={null}>
-                    <Menu
-                        className='__app-slider-menu'
-                        mode='inline'
-                        items={ownerSession}
-                        defaultSelectedKeys={[currentMenuItem]}
-                        defaultOpenKeys={['statistic', 'management']}
-                        onSelect={(args) => {
-                            onChangeMenuSelect(args.key);
-                        }}></Menu>
-                </Layout.Sider>
-                <Layout>
-                    <Layout.Header className='__app-layout-header' style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        flexDirection: 'row'
+            <>
+                <Layout className='__owner-layout ant-layout-has-sider'>
+                    <Layout.Sider className='__app-layout-slider' trigger={null}>
+                        <Menu
+                            className='__app-slider-menu'
+                            mode='inline'
+                            items={ownerSession}
+                            defaultSelectedKeys={[currentMenuItem]}
+                            defaultOpenKeys={['statistic', 'management']}
+                            onSelect={(args) => {
+                                onChangeMenuSelect(args.key);
+                            }}></Menu>
+                    </Layout.Sider>
+                    <Layout>
+                        <Layout.Header className='__app-layout-header'
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                flexDirection: 'row'
 
-                    }}>
-                        <div style={{
-                            height: 64,
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}>
-                            {/* <img src={Logo} alt='' style={{ height: 58, }} /> */}
-                        </div>
-                        <div className='__app-header-right'>
-                            {/* <div className='__app-notification-info'>
+                            }}>
+                            <div style={{
+                                height: 64,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                {/* <img src={Logo} alt='' style={{ height: 58, }} /> */}
+                                {/* <span
+                                    style={{
+                                        userSelect: 'none',
+                                        fontWeight: '600'
+                                    }}
+                                >{props?.currentUser?.storeName ?? ''}</span> */}
+                            </div>
+                            <div className='__app-header-right'>
+                                {/* <div className='__app-notification-info'>
                                 <Dropdown
                                     trigger={['click']}
                                     menu={{ items: bindingNotifications() }}
@@ -242,98 +281,104 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                                     </Badge>
                                 </Dropdown>
                             </div> */}
+                                <span style={{
+                                    userSelect: 'none',
+                                    fontWeight: '600'
+                                }}>
+                                    {props?.currentUser?.fullName ?? ''}
+                                </span>
 
-                            <div className='__app-user-info'>
-                                <Dropdown
-                                    trigger={['click']}
-                                    menu={{ items: userMenuItems }}
-                                    placement='bottomRight'>
-                                    {
-                                        props.currentUser?.avatar ?
-                                            <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} /> :
-                                            <Avatar className='__app-user-avatar' size={'large'}>PH</Avatar>
-                                    }
-                                </Dropdown>
+                                <div className='__app-user-info'>
+                                    <Dropdown
+                                        trigger={['click']}
+                                        menu={{ items: userMenuItems }}
+                                        placement='bottomRight'>
+                                        {
+                                            props.currentUser?.avatar ?
+                                                <Avatar className='__app-user-avatar' src={props.currentUser?.avatar} size={'large'} icon={<UserOutlined />} /> :
+                                                <Avatar className='__app-user-avatar' size={'large'} icon={<UserOutlined />}></Avatar>
+                                        }
+                                    </Dropdown>
+                                </div>
                             </div>
-                        </div>
 
-                    </Layout.Header>
-                    <Layout.Content className='__app-layout-content'>
-                        {
-                            currentMenuItem === 'income' ? <IncomStatisticComponent /> : <></>
-                        }
-                        {
-                            currentMenuItem === 'storeRating' ? <StoreStatisticComponent /> : <></>
-                        }
+                        </Layout.Header>
+                        <Layout.Content className='__app-layout-content'>
+                            {
+                                currentMenuItem === 'income' ? <IncomStatisticComponent /> : <></>
+                            }
+                            {
+                                currentMenuItem === 'storeRating' ? <StoreStatisticComponent /> : <></>
+                            }
 
-                        {
-                            currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
-                            /> : <></>
-                        }
-                        {
-                            currentMenuItem === 'services' ? <ServiceManagementComponent
-                            /> : <></>
-                        }
-                        {
-                            currentMenuItem === 'stores' ? <StoreManagementComponent
-                            /> : <></>
-                        }
-                        {
-                            currentMenuItem === 'staff' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'manager' ? <MemberManagementComponent roleName='Quản Lý' roleID='R003' />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'contracts' ? <ContractManagementComponentV2
-                            /> : <></>
-                        }
-                        {
-                            currentMenuItem === 'orders' ? <OrderManagementComponent />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
-                                : <></>
-                        }
-                        {
-                            currentMenuItem === 'categories' ? <PlantCategoryManagementComponent />
-                                : <></>
-                        }
-                    </Layout.Content>
+                            {
+                                currentMenuItem === 'bonsais' ? <BonsaiManagementComponent
+                                /> : <></>
+                            }
+                            {
+                                currentMenuItem === 'services' ? <ServiceManagementComponent
+                                /> : <></>
+                            }
+                            {
+                                currentMenuItem === 'stores' ? <StoreManagementComponent
+                                /> : <></>
+                            }
+                            {
+                                currentMenuItem === 'staff' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'manager' ? <MemberManagementComponent roleName='Quản Lý' roleID='R003' />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'contracts' ? <ContractManagementComponentV2
+                                /> : <></>
+                            }
+                            {
+                                currentMenuItem === 'orders' ? <OrderManagementComponent />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'feedback' ? <FeedbackManagementComponent />
+                                    : <></>
+                            }
+                            {
+                                currentMenuItem === 'categories' ? <PlantCategoryManagementComponent />
+                                    : <></>
+                            }
+                        </Layout.Content>
+                    </Layout>
                 </Layout>
-            </Layout>
-            {
-                showModalExpiredToken ?
-                    <Modal
-                        width={500}
-                        open={true}
-                        closable={false}
-                        title={(
-                            <span className='__app-dialog-title'>
-                                Thông báo
-                            </span>
-                        )}
-                        footer={[
-                            <Button type="default" onClick={() => {
-                                setShowModalExpiredToken(false)
-                            }}>Huỷ</Button>,
-                            <Button type="primary"
-                                style={{ background: '#0D6368' }}
-                                onClick={() => {
-                                    props.onLogoutCallback();
-                                    toast.loading(`Phiên đăng nhập đã hết hạn.`);
-                                    return navigate('/manager-login');
-                                }}>Xác nhận</Button>
-                        ]}
-                        centered
-                    >
-                        <span>Phiên đăng nhập đã hết hạn.</span>
-                    </Modal> : <></>
-            }
-        </>
+                {
+                    showModalExpiredToken ?
+                        <Modal
+                            width={500}
+                            open={true}
+                            closable={false}
+                            title={(
+                                <span className='__app-dialog-title'>
+                                    Thông báo
+                                </span>
+                            )}
+                            footer={[
+                                <Button type="default" onClick={() => {
+                                    setShowModalExpiredToken(false)
+                                }}>Huỷ</Button>,
+                                <Button type="primary"
+                                    style={{ background: '#0D6368' }}
+                                    onClick={() => {
+                                        props.onLogoutCallback();
+                                        toast.loading(`Phiên đăng nhập đã hết hạn.`);
+                                        return navigate('/manager-login');
+                                    }}>Xác nhận</Button>
+                            ]}
+                            centered
+                        >
+                            <span>Phiên đăng nhập đã hết hạn.</span>
+                        </Modal> : <></>
+                }
+            </>
         </ConfigProvider>
     )
 }

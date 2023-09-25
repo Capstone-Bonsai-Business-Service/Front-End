@@ -1,4 +1,4 @@
-import { CameraOutlined, CloudUploadOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { CameraOutlined, CloudUploadOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
 import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Space, Dropdown, Spin, Rate } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
@@ -13,9 +13,16 @@ import { CommonUtility } from "../../utils/utilities";
 import { toast } from "react-hot-toast";
 import notFoundImage from '../../../assets/images/Image_not_available.png';
 import { PlantStatusMapping, PlantStatus } from '../../common/object-interfaces/plant.interface';
+import { DateTime } from "luxon";
 
 interface IBonsaiManagementProps {
 
+}
+
+interface IFormImportPlantProps {
+    onCancel?: () => void;
+    onSave?: () => void;
+    listPlant: { value: string, label: string }[];
 }
 
 export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (props) => {
@@ -48,6 +55,15 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
         toUnit: 'cm'
     });
     const [displayHeightSelect, setDisplayHeightSelect] = useState<boolean>(false);
+    const [plantDecreaseQuantityForm, setPlantDecreaseQuantityForm] = useState({
+        isShow: false,
+        storePlantID: '',
+        quantity: 0,
+        reason: ''
+    });
+    const [showPopupImport, setShowPopupImport] = useState<boolean>(false);
+    const [showPopupPlantQuantity, setShowPopupPlantQuantity] = useState<boolean>(false);
+    const [plantQuantityHistory, setPlantQuantityHistory] = useState<any[]>([]);
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -145,6 +161,11 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             sorter: {
                 compare: (acc, cur) => acc.totalPlant > cur.totalPlant ? 1 : acc.totalPlant < cur.totalPlant ? -1 : 0
             },
+            render: (value) => {
+                return <div>
+                    <NumericFormat displayType='text' value={value ?? 0} thousandSeparator=' ' />
+                </div>
+            },
             className: '__app-header-title'
         },
         {
@@ -201,6 +222,29 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                         }}
                                     >Xem chi tiết</span>
                                 },
+                                {
+                                    key: 'quantityDecrease',
+                                    label: <span
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setPlantDecreaseQuantityForm({
+                                                isShow: true,
+                                                quantity: 0,
+                                                reason: '',
+                                                storePlantID: record.showStorePlantModel.id
+                                            });
+                                        }}
+                                    >Giảm số lượng cây</span>
+                                },
+                                {
+                                    key: 'disablePlant',
+                                    label: <span
+                                        onClick={() => {
+                                            getPlantQuantityHistory(record.plantID);
+                                            setShowPopupPlantQuantity(true);
+                                        }}
+                                    >Lịch sử nhập/xuất cây</span>
+                                },
                                 record.status === 'ONSALE' ?
                                     {
                                         key: 'disablePlant',
@@ -239,6 +283,16 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             className: '__app-header-title'
         }
     ]
+
+    function getPlantQuantityHistory(plantId: string) {
+        ownerServices.getPlantQuantityHistory$(plantId).pipe(take(1)).subscribe({
+            next: value => {
+                if (value) {
+                    setPlantQuantityHistory(value);
+                }
+            }
+        })
+    }
 
     function getBonsaiDetail(plantId: string) {
         setDataReady(false);
@@ -440,6 +494,25 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
         return result;
     }
 
+    function validateFormDecreasePlant() {
+        let result = {
+            invalid: false,
+            error: [] as string[]
+        }
+        if (CommonUtility.isNullOrEmpty(plantDecreaseQuantityForm.quantity)) {
+            result.invalid = true;
+            result.error.push('Số lượng');
+        } else if (plantDecreaseQuantityForm.quantity <= 0) {
+            result.invalid = true;
+            result.error.push('Số lượng lớn hơn 0');
+        }
+        if (CommonUtility.isNullOrEmpty(plantDecreaseQuantityForm.reason)) {
+            result.invalid = true;
+            result.error.push('Lý do');
+        }
+        return result;
+    }
+
     return (
         <>
             {
@@ -449,7 +522,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                             <div className='__app-toolbar-left-buttons'>
                                 <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                                     setShowPopupCreate(true);
-                                }}>Thêm Cây</Button>
+                                }}>Thêm Cây Mới</Button>
+                                <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
+                                    setShowPopupImport(true);
+                                }}>Nhập Thêm Cây</Button>
                                 {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
                                     CommonUtility.exportExcel(bonsais, tableUserColumns);
                                 }}>Xuất Tệp Excel</Button> */}
@@ -499,6 +575,87 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                             ></Table>
 
                         </div>
+                        {
+                            showPopupPlantQuantity ?
+                                <Modal
+                                    width={600}
+                                    open={true}
+
+                                    closable={false}
+                                    title={(
+                                        <span className='__app-dialog-title'>
+                                            LỊCH SỬ NHẬP/ XUẤT CÂY
+                                        </span>
+                                    )}
+                                    footer={[
+                                        <Button key='cancel' onClick={() => {
+                                            setShowPopupPlantQuantity(false)
+                                            setPlantQuantityHistory([]);
+                                        }}>Đóng</Button>
+                                    ]}
+                                >
+                                    <Row style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', maxHeight: 400, overflowX: 'auto' }}>
+                                        <Col span={22} >
+                                            <Row>
+                                                <Col span={1}></Col>
+                                                <Col span={8} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center', fontWeight: 500 }}>Ngày</Col>
+                                                <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center', fontWeight: 500 }}>Số lượng</Col>
+                                                <Col span={10} style={{ textAlign: 'center', fontWeight: 500 }}>Nội dung</Col>
+                                                <Col span={1}></Col>
+                                            </Row>
+                                            <Divider className="__app-divider-no-margin" />
+                                            {
+                                                plantQuantityHistory?.reduce((acc, cur, index) => {
+                                                    const isIncrease = cur.reason.indexOf('[+]') > -1;
+                                                    const _reason = cur.reason.split('Lí do :')[1].trim();
+                                                    acc.push(
+                                                        <Row key={`history_${index}`} style={{ marginTop: 5 }}>
+                                                            <Col span={1}></Col>
+                                                            <Col span={8} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                                {DateTime.fromJSDate(new Date(cur.importDate)).toFormat('dd/MM/yyyy HH:mm')}
+                                                            </Col>
+                                                            <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                                <span style={{
+                                                                    color: isIncrease ? '#3f8600' : '#cf1322'
+                                                                }}>
+                                                                    <NumericFormat
+                                                                        thousandSeparator=' '
+                                                                        displayType='text'
+                                                                        prefix={isIncrease ? '+' : '-'}
+                                                                        value={cur.amount}
+                                                                    />
+                                                                </span>
+                                                            </Col>
+                                                            <Col span={10} style={{ textAlign: 'center' }}>
+                                                                {_reason}
+                                                            </Col>
+                                                            <Col span={1}></Col>
+                                                        </Row>
+                                                    )
+                                                    return acc;
+                                                }, [])
+                                            }
+                                            {
+                                                plantQuantityHistory.length === 0 ?
+                                                    <Row key={`history_0`} style={{ marginTop: 5 }}>
+                                                        <Col span={1}></Col>
+                                                        <Col span={8} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                            --
+                                                        </Col>
+                                                        <Col span={4} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                                                            --
+                                                        </Col>
+                                                        <Col span={10} style={{ textAlign: 'center' }}>
+                                                            --
+                                                        </Col>
+                                                        <Col span={1}></Col>
+                                                    </Row> : <></>
+                                            }
+                                        </Col>
+                                    </Row>
+
+                                </Modal> : <></>
+                        }
                     </> : <></>
             }
             {
@@ -971,6 +1128,110 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                     >
                         <span>{popUpConfirm.message}</span>
                     </Modal> : <></>
+            }
+            {
+                plantDecreaseQuantityForm.isShow ?
+                    <Modal
+                        width={500}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Giảm số lượng cây
+                            </span>
+                        )}
+                        footer={[
+                            <Button key='cancel' onClick={() => {
+                                setPlantDecreaseQuantityForm({
+                                    isShow: false,
+                                    quantity: 0,
+                                    reason: '',
+                                    storePlantID: ''
+                                })
+                            }}>Đóng</Button>,
+                            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
+                                const validation = validateFormDecreasePlant();
+                                if (validation.invalid) {
+                                    toast.error('Vui lòng nhập thông tin ' + validation.error.join(', '));
+                                } else {
+                                    ownerServices.removeStorePlantQuantity$(plantDecreaseQuantityForm.storePlantID, plantDecreaseQuantityForm.quantity, plantDecreaseQuantityForm.reason).pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                            } else {
+                                                toast.success(`Cập nhật thành công.`);
+                                                setPlantDecreaseQuantityForm({
+                                                    isShow: false,
+                                                    quantity: 0,
+                                                    reason: '',
+                                                    storePlantID: ''
+                                                })
+                                            }
+                                        }
+                                    })
+                                }
+                            }}>Lưu</Button>
+                        ]}
+                        centered
+                    >
+                        <div style={{ width: '100%', display: 'flex', gap: 4, flexDirection: 'column' }}>
+                            <Row>
+                                <Col span={5} className='__app-object-field align-center'>
+                                    <strong>Số lượng: <span className='__app-required-field'> *</span></strong>
+                                </Col>
+                                <Col span={19}>
+                                    <NumericFormat
+                                        className="app-numeric-input"
+                                        placeholder="Nhập số lượng"
+                                        value={plantDecreaseQuantityForm.quantity}
+                                        allowNegative={false}
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(plantDecreaseQuantityForm);
+                                            temp['quantity'] = Number(value.target.value);
+                                            setPlantDecreaseQuantityForm(temp);
+                                        }}></NumericFormat>
+                                </Col>
+
+                            </Row>
+                            <Row>
+                                <Col span={5} className='__app-object-field align-center'>
+                                    <strong>Lý do: <span className='__app-required-field'> *</span></strong>
+                                </Col>
+                                <Col span={19}>
+                                    <TextArea
+                                        rows={5}
+                                        value={plantDecreaseQuantityForm.reason}
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(plantDecreaseQuantityForm);
+                                            temp['reason'] = value.target.value;
+                                            setPlantDecreaseQuantityForm(temp);
+                                        }}
+                                    ></TextArea>
+                                </Col>
+
+                            </Row>
+                        </div>
+                    </Modal> : <></>
+            }
+            {
+                showPopupImport ?
+                    <FormImportPlantDialog
+                        listPlant={bonsais.reduce((acc, cur: IPlant) => {
+                            acc.push({
+                                value: cur.plantID,
+                                label: cur.name
+                            })
+                            return acc;
+                        }, [])}
+                        onCancel={() => {
+                            setShowPopupImport(false);
+                        }}
+                        onSave={() => {
+                            setShowPopupImport(false);
+                            toast.success('Nhập cây thành công.');
+                            loadData();
+                        }}
+                    /> : <></>
             }
         </>
     )
@@ -1507,4 +1768,165 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
         }, [] as JSX.Element[]);
         return elements;
     }
+}
+
+const FormImportPlantDialog: React.FC<IFormImportPlantProps> = (props) => {
+    const apiService = new OwnerServices();
+
+    const [listPlant, setListPlant] = useState<{
+        id: string;
+        plantID: string | null,
+        quantity: number,
+    }[]>([
+        {
+            id: new Date().getTime().toString(),
+            plantID: null,
+            quantity: 0,
+        }
+    ])
+
+    function getRenderFooterButton(): React.ReactNode[] {
+        let nodes: React.ReactNode[] = []
+        nodes.push(
+            <Button key='cancel' onClick={() => {
+                if (props.onCancel) {
+                    props.onCancel();
+                }
+            }}>Đóng</Button>
+        );
+        nodes.push(
+            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
+                const data = formatDataBeforePost();
+                const body = data.reduce((acc, cur, index) => {
+                    const dataPost = {
+                        "storeID": apiService.storeId,
+                        "plantID": cur.plantID,
+                        "quantity": cur.quantity
+                    }
+                    acc.push(dataPost);
+                    return acc;
+                }, [] as any[]);
+                apiService.addStorePlantQuantity$(body).pipe(take(1)).subscribe({
+                    next: (res) => {
+                        if (res) {
+                            if (props.onSave) {
+                                props.onSave();
+                            }
+                        } else {
+                            toast.error('Nhập số lượng cây thất bại')
+                        }
+                    }
+                })
+            }}>Lưu</Button>
+        );
+        return nodes;
+    }
+
+    function formatDataBeforePost() {
+        return listPlant.reduce((acc, cur) => {
+            if (cur.quantity > 0 && cur.plantID) {
+                const includePlantIdIndex = acc.findIndex(item => item.plantID === cur.plantID);
+                if (includePlantIdIndex === -1) {
+                    acc.push(cur);
+                } else {
+                    acc[includePlantIdIndex].quantity += cur.quantity;
+                }
+            }
+            return acc;
+        }, [] as {
+            id: string;
+            plantID: string | null;
+            quantity: number;
+        }[])
+    }
+
+    function renderListPlantQuantity(): React.ReactNode[] {
+        const elem = listPlant.reduce((acc, cur, index, list) => {
+            acc.push(
+                <Row key={`plant_quantity_${index}`}>
+                    <Col span={2} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>
+                        {index + 1}
+                    </Col>
+                    <Col span={11} style={{ borderRight: '1px solid #d9d9d9', display: 'flex', justifyContent: 'center' }}>
+                        <Select
+                            style={{ width: '90%' }}
+                            options={props.listPlant}
+                            placeholder='Chọn loại cây'
+                            value={cur.plantID}
+                            onChange={(value) => {
+                                let temp = cloneDeep(listPlant) ?? [];
+                                temp[index]['plantID'] = value;
+                                setListPlant(temp);
+                            }}
+                        />
+                    </Col>
+                    <Col span={9} style={{ borderRight: '1px solid #d9d9d9', display: 'flex', justifyContent: 'center' }}>
+                        <NumericFormat
+                            style={{ width: '90%' }}
+                            className="app-numeric-input"
+                            placeholder="Nhập số lượng"
+                            value={cur.quantity}
+                            allowNegative={false}
+                            onChange={(value) => {
+                                let temp = cloneDeep(listPlant) ?? [];
+                                temp[index]['quantity'] = Number(value.target.value);
+                                setListPlant(temp);
+                            }}></NumericFormat>
+                    </Col>
+                    <Col span={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <RestOutlined style={{ width: 18, height: 18, fontSize: 18 }} onClick={(e) => {
+                            e.preventDefault();
+                            const temp = listPlant.filter(item => { return item.id !== cur.id })
+                            setListPlant(temp);
+                        }} />
+                    </Col>
+                </Row>
+            )
+            return acc;
+        }, [] as any[]);
+        return elem;
+    }
+
+    return (
+        <Modal
+            width={800}
+            open={true}
+            closable={false}
+            title={(
+                <span className='__app-dialog-title'>
+                    Nhập cây vào kho
+                </span>
+            )}
+            footer={getRenderFooterButton()}
+            centered
+        >
+            <div style={{ width: '100%', display: 'flex', gap: 4, flexDirection: 'column' }}>
+                <Row>
+                    <Col span={2} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>STT</Col>
+                    <Col span={11} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>Loại cây</Col>
+                    <Col span={9} style={{ borderRight: '1px solid #d9d9d9', textAlign: 'center' }}>Lượng nhập</Col>
+                    <Col span={2}></Col>
+                </Row>
+                <Divider className="__app-divider-no-margin"></Divider>
+                {
+                    renderListPlantQuantity()
+                }
+                <Divider className="__app-divider-no-margin"></Divider>
+                <Row style={{ padding: 10 }}>
+                    <Button
+                        icon={<PlusOutlined />}
+                        onClick={() => {
+                            const temp = cloneDeep(listPlant);
+                            temp.push({
+                                id: new Date().getTime().toString(),
+                                plantID: null,
+                                quantity: 0,
+                            })
+                            setListPlant(temp);
+                        }}
+                    >Thêm</Button>
+                </Row>
+            </div>
+        </Modal>
+    )
 }

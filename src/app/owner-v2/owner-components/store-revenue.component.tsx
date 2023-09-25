@@ -385,7 +385,7 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
 
     return (
         <div className='__app-dashboard'>
-            <div>
+            {/* <div>
                 <Row>
                     <Col span={2}
                         style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
@@ -406,7 +406,7 @@ export const StoreStatisticComponent: React.FC<IDashboardProps> = (props) => {
                         ></Select>
                     </Col>
                 </Row>
-            </div>
+            </div> */}
             <div>
                 <Row>
                     <Col span={6}>

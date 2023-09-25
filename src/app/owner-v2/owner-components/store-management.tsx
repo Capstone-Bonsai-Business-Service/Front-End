@@ -431,7 +431,7 @@ export const StoreManagementComponent: React.FC<IStoreManagementProps> = (props)
     }
 
     function getPlantQuantityHistory(plantId: string, storeID: string) {
-        ownerServices.getPlantQuantityHistory$(plantId, storeID).pipe(take(1)).subscribe({
+        ownerServices.getPlantQuantityHistory$(plantId).pipe(take(1)).subscribe({
             next: value => {
                 if (value) {
                     setFormPlantQuantityHistory({
