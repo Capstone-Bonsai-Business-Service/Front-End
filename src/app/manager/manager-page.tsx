@@ -27,6 +27,7 @@ import { ReportManagementComponent } from './manager-components/report-managemen
 import { TransactionManagementComponent } from './manager-components/transaction-management';
 import { ContractManagementComponentV2 } from './manager-components/contract-management-v2';
 import viVN from 'antd/locale/vi_VN'
+import { ContractManagementComponent } from './manager-components/contract-management';
 
 interface IManagerPageProps {
     currentUser?: IUser;
@@ -549,7 +550,7 @@ export const ManagerPage: React.FC<IManagerPageProps> = (props) => {
                                 /> : <></>
                             }
                             {
-                                currentMenuItem === 'contracts' ? <ContractManagementComponentV2
+                                currentMenuItem === 'contracts' ? <ContractManagementComponent
                                 /> : <></>
                             }
                             {

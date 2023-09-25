@@ -137,16 +137,16 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                         </div>
                     )
                 },
-                // {
-                //     key: 'stores',
-                //     className: '__app-group-menu',
-                //     icon: <LiaStoreAltSolid color='#000' />,
-                //     label: (
-                //         <div className='__app-group-menu-label'>
-                //             Chi nhánh
-                //         </div>
-                //     )
-                // },
+                {
+                    key: 'stores',
+                    className: '__app-group-menu',
+                    icon: <LiaStoreAltSolid color='#000' />,
+                    label: (
+                        <div className='__app-group-menu-label'>
+                            Chi nhánh
+                        </div>
+                    )
+                },
                 {
                     key: 'contracts',
                     className: '__app-group-menu',
