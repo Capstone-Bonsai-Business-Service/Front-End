@@ -940,5 +940,22 @@ export class OwnerServices extends CoreServices {
             })
         })
     }
+
+    updateService$(data: any) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/service`
+            axios.put(url, data, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Cập nhật thất bại.' });
+                obs.complete();
+            })
+        })
+    }
     //#endregion
 }

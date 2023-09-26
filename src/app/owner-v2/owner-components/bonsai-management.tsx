@@ -1,4 +1,4 @@
-import { CameraOutlined, CloudUploadOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { CameraOutlined, CloseOutlined, CloudUploadOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
 import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Space, Dropdown, Spin, Rate } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
@@ -36,7 +36,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
     const [isShowPopupCreate, setShowPopupCreate] = useState<boolean>(false);
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [bonsaiDetail, setBonsaiDetail] = useState<IPlant | null>(null);
-    const [imageUrl, setImageUrl] = useState<string>('');
+    const [imageUrl, setImageUrl] = useState({
+        index: -1,
+        url: ''
+    });
     const [categories, setCategories] = useState<any[]>([]);
     const [plantShipFee, setPlantShipFee] = useState<any[]>([]);
     const [popUpConfirm, setPopUpConfirm] = useState<any>({
@@ -301,7 +304,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                 if (response) {
                     response['defaultName'] = response.name;
                     setBonsaiDetail(response);
-                    setImageUrl(response.plantIMGList[0]?.url ?? notFoundImage);
+                    setImageUrl({
+                        index: response.plantIMGList[0] ? -1 : 0,
+                        url: response.plantIMGList[0]?.url ?? notFoundImage
+                    });
                     setDataReady(true);
                 }
             }
@@ -341,7 +347,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                     >
                         {
                             isUpload ? <Spin style={{ width: 24, height: 24, fontSize: 24 }} /> : <CameraOutlined style={{ width: 24, height: 24, fontSize: 24 }} />
-
                         }
                     </div>
 
@@ -364,8 +369,11 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     let _detail = cloneDeep(bonsaiDetail);
                                     (_detail as IPlant).plantIMGList = img;
                                     setBonsaiDetail(_detail);
-                                    if (CommonUtility.isNullOrEmpty(imageUrl) || imageUrl === notFoundImage) {
-                                        setImageUrl(url as string);
+                                    if (CommonUtility.isNullOrEmpty(imageUrl.url) || imageUrl.index < 0) {
+                                        setImageUrl({
+                                            index: 0,
+                                            url: url
+                                        });
                                     }
                                     setIsUpload(false);
                                 }
@@ -387,7 +395,6 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                     >
                         {
                             isUpload ? <Spin style={{ width: 24, height: 24, fontSize: 24 }} /> : <CameraOutlined style={{ width: 24, height: 24, fontSize: 24 }} />
-
                         }
                     </div>
 
@@ -410,8 +417,11 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     let _detail = cloneDeep(bonsaiDetail);
                                     (_detail as IPlant).plantIMGList = img;
                                     setBonsaiDetail(_detail);
-                                    if (CommonUtility.isNullOrEmpty(imageUrl) || imageUrl === notFoundImage) {
-                                        setImageUrl(url as string);
+                                    if (CommonUtility.isNullOrEmpty(imageUrl.url) || imageUrl.index < 0) {
+                                        setImageUrl({
+                                            index: 0,
+                                            url: url
+                                        });
                                     }
                                     setIsUpload(false);
                                 }
@@ -665,7 +675,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                             <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
                                 setFormMode('display');
                                 setBonsaiDetail(null);
-                                setImageUrl('');
+                                setImageUrl({
+                                    index: -1,
+                                    url: notFoundImage
+                                });
                             }} />
                             <div className="__app-title-form">CHI TIẾT CÂY CẢNH</div>
                         </div>
@@ -679,13 +692,50 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     </div>
                                     {
                                         isDataReady ?
-                                            <Image
-                                                style={{ borderRadius: 4, border: '1px solid' }}
-                                                preview={false}
-                                                width={350}
-                                                height={300}
-                                                src={imageUrl}
-                                            /> : <Skeleton.Image style={{ borderRadius: 4, width: 350, height: 300 }} active={true} />
+                                            <div style={{
+                                                width: 350
+                                            }}>
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    width: 350
+                                                }}>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'row-reverse',
+                                                        padding: 8
+                                                    }}>
+                                                        <CloseOutlined style={{
+                                                            cursor: 'pointer', 
+                                                            width: 18, height: 18, fontSize: 18,
+                                                            zIndex: 10
+                                                        }} onClick={() => {
+                                                            let temp = cloneDeep(bonsaiDetail) as IPlant;
+                                                            temp.plantIMGList = temp.plantIMGList.filter((item, index) => {
+                                                                return index !== imageUrl.index
+                                                            })
+                                                            if ((temp as IPlant).plantIMGList.length > 0) {
+                                                                setImageUrl({
+                                                                    index: 0,
+                                                                    url: (temp as IPlant).plantIMGList[0].url
+                                                                })
+                                                            } else {
+                                                                setImageUrl({
+                                                                    index: -1,
+                                                                    url: notFoundImage
+                                                                })
+                                                            }
+                                                            setBonsaiDetail(temp);
+                                                        }} />
+                                                    </div>
+                                                </div>
+                                                <Image
+                                                    style={{ borderRadius: 4, border: '1px solid' }}
+                                                    preview={false}
+                                                    width={350}
+                                                    height={300}
+                                                    src={imageUrl.url}
+                                                /></div> : <Skeleton.Image style={{ borderRadius: 4, width: 350, height: 300 }} active={true} />
+
                                     }
 
                                 </div>
@@ -1024,7 +1074,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                     } else {
                                                         setFormMode('display');
                                                         setBonsaiDetail(null);
-                                                        setImageUrl('');
+                                                        setImageUrl({
+                                                            index: -1,
+                                                            url: notFoundImage
+                                                        });
                                                         toast.success('Lưu thông tin thành công.')
                                                     }
                                                 }

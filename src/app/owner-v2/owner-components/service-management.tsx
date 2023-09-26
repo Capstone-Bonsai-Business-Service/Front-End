@@ -605,7 +605,7 @@ const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICrea
     }
 
     function onCreateServicePack() {
-        ownerServices.createServicePack$(servicePackForm.range as string, servicePackForm.unit  as string, servicePackForm.percentage).pipe(take(1)).subscribe({
+        ownerServices.createServicePack$(servicePackForm.range as string, servicePackForm.unit as string, servicePackForm.percentage).pipe(take(1)).subscribe({
             next: (res) => {
                 if (res.error) {
                     toast.error(res.error);
@@ -619,7 +619,6 @@ const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICrea
 }
 
 const FormEditServicePackDialog: React.FC<IEditServicePackProps> = (props: IEditServicePackProps) => {
-    const ownerServices = new OwnerServices();
     const [servicePackForm, setServicePackForm] = useState<{
         range: string | null;
         unit: 'năm' | 'tháng';
@@ -633,41 +632,43 @@ const FormEditServicePackDialog: React.FC<IEditServicePackProps> = (props: IEdit
     return (
         <>
             <Modal
-                width={700}
+                width={500}
                 open={true}
                 closable={false}
                 title={(
                     <span className='__app-dialog-title'>
-                        Chỉnh sửa gói dịch vụ
+                        Thông tin gói dịch vụ
                     </span>
                 )}
-                footer={[
-                    <Button type="default" onClick={() => {
-                        props.onCancel();
-                    }}>Huỷ</Button>,
-                    <Button type="primary"
-                        style={{ backgroundColor: '#0D6368' }}
-                        onClick={() => {
-                            const validation = validateFormCreate();
-                            if (validation.invalid === false) {
-                                onCreateService();
-                            } else {
-                                toast.error(`Không được để trống ${validation.fields.join(', ')}`);
-                            }
+                footer={
+                    [
+                        <Button type="default" onClick={() => {
+                            props.onCancel();
+                        }}>Đóng</Button>,
+                        // <Button type="primary"
+                        //     style={{ backgroundColor: '#0D6368' }}
+                        //     onClick={() => {
+                        //         const validation = validateFormCreate();
+                        //         if (validation.invalid === false) {
+                        //             onEditService();
+                        //         } else {
+                        //             toast.error(`Không được để trống ${validation.fields.join(', ')}`);
+                        //         }
 
-                        }}>Lưu</Button>
-                ]}
+                        //     }}>Lưu</Button>
+                    ]
+                }
                 centered
             >
                 <div className='__app-dialog-create-object'>
-                    <Row className='__app-object-info-row'>
-                        <Col span={6} className='__app-object-field'>
+                    <Row className='__app-object-info-row' style={{ padding: '0 24px' }}>
+                        <Col span={9} className='__app-object-field'>
                             <span>
                                 <strong>Thời hạn: </strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
-                        <Col span={18}>
-                            <Select
+                        <Col span={9}>
+                            {/* <Select
                                 style={{ width: '100%' }}
                                 value={servicePackForm.unit}
                                 options={[
@@ -687,17 +688,18 @@ const FormEditServicePackDialog: React.FC<IEditServicePackProps> = (props: IEdit
                                     temp['range'] = null;
                                     setServicePackForm(temp);
                                 }}
-                            />
+                            /> */}
+                            <span>{servicePackForm.unit}</span>
                         </Col>
                     </Row>
-                    <Row className='__app-object-info-row'>
-                        <Col span={6} className='__app-object-field'>
+                    <Row className='__app-object-info-row' style={{ padding: '0 24px' }}>
+                        <Col span={9} className='__app-object-field'>
                             <span>
                                 <strong>Khoản thời gian: </strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
-                        <Col span={18}>
-                            <Select
+                        <Col span={9}>
+                            {/* <Select
                                 style={{ width: '100%' }}
                                 value={servicePackForm.range}
                                 options={
@@ -767,19 +769,21 @@ const FormEditServicePackDialog: React.FC<IEditServicePackProps> = (props: IEdit
                                     temp['range'] = value;
                                     setServicePackForm(temp);
                                 }}
-                            />
+                            /> */}
+                            <span>{servicePackForm.range}</span>
                         </Col>
                     </Row>
-                    <Row className='__app-object-info-row'>
-                        <Col span={6} className='__app-object-field'>
+                    <Row className='__app-object-info-row' style={{ padding: '0 24px' }}>
+                        <Col span={9} className='__app-object-field'>
                             <span>
                                 <strong>Khuyến mãi (%):</strong> <span className='__app-required-field'> *</span>
                             </span>
 
                         </Col>
-                        <Col span={18}>
+                        <Col span={9}>
                             <NumericFormat
-                                className="app-numeric-input"
+                                // className="app-numeric-input"
+                                displayType='text'
                                 thousandSeparator=' '
                                 value={servicePackForm.percentage}
                                 onValueChange={(values) => {
@@ -819,7 +823,7 @@ const FormEditServicePackDialog: React.FC<IEditServicePackProps> = (props: IEdit
         return result;
     }
 
-    function onCreateService() {
+    function onEditService() {
         // const formData = {
         //     "name": serviceForm.name,
         //     "price": serviceForm.price,
@@ -1047,6 +1051,23 @@ const TabServiceList: React.FC<any> = (props) => {
         }
     }
 
+    function validateFormEdit() {
+        let temp = cloneDeep(serviceDetail);
+        let result = {
+            invalid: false,
+            fields: [] as string[]
+        }
+        if (CommonUtility.isNullOrEmpty(temp?.name)) {
+            result.invalid = true;
+            result.fields.push('Tên dịch vụ');
+        }
+        if (CommonUtility.isNullOrEmpty(temp?.description)) {
+            result.invalid = true;
+            result.fields.push('Mô tả');
+        }
+        return result;
+    }
+
     return (
         <>
             {
@@ -1119,6 +1140,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                 setFormMode('display');
                                 setServiceDetail(null);
                                 // setImageUrl('');
+                                loadData();
                             }} />
                             <div className="__app-title-form">Chi tiết</div>
                         </div>
@@ -1168,7 +1190,11 @@ const TabServiceList: React.FC<any> = (props) => {
                                         <Col span={17} >
                                             {
                                                 isDataReady ?
-                                                    <Input defaultValue={serviceDetail?.name} />
+                                                    <Input value={serviceDetail?.name} onChange={(args) => {
+                                                        let temp = cloneDeep(serviceDetail);
+                                                        temp.name = args.target.value;
+                                                        setServiceDetail(temp);
+                                                    }} />
                                                     : <Skeleton.Input block={true} active={true} />
                                             }
                                         </Col>
@@ -1182,7 +1208,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                                 isDataReady ?
                                                     <NumericFormat
                                                         displayType='text'
-                                                        defaultValue={serviceDetail?.price}
+                                                        value={serviceDetail?.price}
                                                         onValueChange={(values) => {
                                                             // let temp = cloneDeep(serviceDetail) ?? {};
                                                             // temp['height'] = values.floatValue as number;
@@ -1204,7 +1230,11 @@ const TabServiceList: React.FC<any> = (props) => {
                                         <Col span={17}>
                                             {
                                                 isDataReady ?
-                                                    <TextArea rows={6} defaultValue={serviceDetail?.description}></TextArea>
+                                                    <TextArea rows={6} defaultValue={serviceDetail?.description} onChange={(args) => {
+                                                        let temp = cloneDeep(serviceDetail);
+                                                        temp.description = args.target.value;
+                                                        setServiceDetail(temp);
+                                                    }}></TextArea>
                                                     : <Skeleton paragraph={{ rows: 3 }} active={true} />
                                             }
                                         </Col>
@@ -1230,9 +1260,36 @@ const TabServiceList: React.FC<any> = (props) => {
                             <div className="__app-action-button">
                                 <Button type="primary" style={{ background: '#0D6368' }} onClick={() => {
                                     //todo
-                                    setFormMode('display');
-                                    setServiceDetail(null);
-                                    setImageUrl('');
+                                    let validation = validateFormEdit();
+                                    if (validation.invalid) {
+                                        toast.error(`Vui lòng nhập ${validation.fields.join(', ')}`);
+                                    } else {
+                                        let data = {
+                                            "serviceID": serviceDetail.serviceID,
+                                            "name": serviceDetail.name,
+                                            "price": serviceDetail.price,
+                                            "description": serviceDetail.description,
+                                            "typeIDList": serviceDetail.typeList.reduce((acc: string[], cur: any) => {
+                                                acc.push(cur.id);
+                                                return acc;
+                                            }, []),
+                                            "listURL": serviceDetail.imgList.reduce((acc: string[], cur: any) => {
+                                                acc.push(cur.id);
+                                                return acc;
+                                            }, []),
+                                            "atHome": true
+                                        }
+                                        ownerServices.updateService$(data).pipe(take(1)).subscribe({
+                                            next: () => {
+                                                toast.success(`Cập nhật thành công`);
+                                                loadData();
+                                                setFormMode('display');
+                                                setServiceDetail(null);
+                                                setImageUrl('');
+                                            }
+                                        })
+                                    }
+
                                 }}>Lưu</Button>
                             </div>
                         </div>
@@ -1367,7 +1424,7 @@ const TabPackList: React.FC<{}> = (props) => {
                                                     action: 'disable'
                                                 });
                                             }}
-                                        >Huỷ bán cây</span>
+                                        >Ngưng gói dịch vụ</span>
                                     } : null,
                                 record.status === 'INACTIVE' ?
                                     {
@@ -1487,84 +1544,84 @@ const TabPackList: React.FC<{}> = (props) => {
                 /> : <></>
         }
         {
-                popUpConfirm.isShow ?
-                    <Modal
-                        width={300}
-                        open={true}
-                        closable={false}
-                        title={(
-                            <span className='__app-dialog-title'>
-                                Xác nhận
-                            </span>
-                        )}
-                        footer={[
-                            <Button type="default" onClick={() => {
-                                setPopUpConfirm({
-                                    isShow: false,
-                                    packServiceID: '',
-                                    message: '',
-                                    action: ''
-                                })
-                            }}>Huỷ</Button>,
-                            popUpConfirm.action === 'active' ?
-                                <Button type="primary"
-                                    style={{ backgroundColor: '#0D6368' }}
-                                    onClick={() => {
-                                        ownerServices.activeServicePack$(popUpConfirm.packServiceID).pipe(take(1)).subscribe({
-                                            next: (res) => {
-                                                if (res.error) {
-                                                    toast.error(res.error);
-                                                    setPopUpConfirm({
-                                                        isShow: false,
-                                                        packServiceID: '',
-                                                        message: '',
-                                                        action: ''
-                                                    })
-                                                } else {
-                                                    setPopUpConfirm({
-                                                        isShow: false,
-                                                        packServiceID: '',
-                                                        message: '',
-                                                        action: ''
-                                                    })
-                                                    loadData();
-                                                    toast.success('Cập nhật thành công');
-                                                }
+            popUpConfirm.isShow ?
+                <Modal
+                    width={300}
+                    open={true}
+                    closable={false}
+                    title={(
+                        <span className='__app-dialog-title'>
+                            Xác nhận
+                        </span>
+                    )}
+                    footer={[
+                        <Button type="default" onClick={() => {
+                            setPopUpConfirm({
+                                isShow: false,
+                                packServiceID: '',
+                                message: '',
+                                action: ''
+                            })
+                        }}>Huỷ</Button>,
+                        popUpConfirm.action === 'active' ?
+                            <Button type="primary"
+                                style={{ backgroundColor: '#0D6368' }}
+                                onClick={() => {
+                                    ownerServices.activeServicePack$(popUpConfirm.packServiceID).pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    packServiceID: '',
+                                                    message: '',
+                                                    action: ''
+                                                })
+                                            } else {
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    packServiceID: '',
+                                                    message: '',
+                                                    action: ''
+                                                })
+                                                loadData();
+                                                toast.success('Cập nhật thành công');
                                             }
-                                        })
-                                    }}>Xác Nhận</Button> :
-                                <Button type="primary"
-                                    style={{ backgroundColor: '#5D050b' }}
-                                    onClick={() => {
-                                        ownerServices.deleteServicePack$(popUpConfirm.packServiceID).pipe(take(1)).subscribe({
-                                            next: (res) => {
-                                                if (res.error) {
-                                                    toast.error(res.error);
-                                                    setPopUpConfirm({
-                                                        isShow: false,
-                                                        packServiceID: '',
-                                                        message: '',
-                                                        action: ''
-                                                    })
-                                                } else {
-                                                    setPopUpConfirm({
-                                                        isShow: false,
-                                                        packServiceID: '',
-                                                        message: '',
-                                                        action: ''
-                                                    })
-                                                    loadData();
-                                                    toast.success('Cập nhật thành công');
-                                                }
+                                        }
+                                    })
+                                }}>Xác Nhận</Button> :
+                            <Button type="primary"
+                                style={{ backgroundColor: '#5D050b' }}
+                                onClick={() => {
+                                    ownerServices.deleteServicePack$(popUpConfirm.packServiceID).pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    packServiceID: '',
+                                                    message: '',
+                                                    action: ''
+                                                })
+                                            } else {
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    packServiceID: '',
+                                                    message: '',
+                                                    action: ''
+                                                })
+                                                loadData();
+                                                toast.success('Cập nhật thành công');
                                             }
-                                        })
+                                        }
+                                    })
 
-                                    }}>Xác Nhận</Button>
-                        ]}
-                        centered
-                    >
-                        <span>{popUpConfirm.message}</span>
-                    </Modal> : <></>
-            }
+                                }}>Xác Nhận</Button>
+                    ]}
+                    centered
+                >
+                    <span>{popUpConfirm.message}</span>
+                </Modal> : <></>
+        }
     </>
 }
