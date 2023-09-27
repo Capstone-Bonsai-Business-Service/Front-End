@@ -355,7 +355,7 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                         </Col>
                     </Row>
                     <Row>
-                        <Col span={16} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
+                        <Col span={8} style={{ fontWeight: 500 }}>Lý do từ chối:</Col>
                         <Col>{contractDetail[0]?.showContractModel?.reason ?? '--'}</Col>
                     </Row>
                 </Col>
