@@ -10,6 +10,7 @@ import { UserPicker } from '../../../common/components/user-picker-component';
 import { DateTime } from 'luxon';
 import dayjs from 'dayjs';
 import TextArea from 'antd/es/input/TextArea';
+import { CommonUtility } from '../../../utils/utilities';
 
 
 export const FormCreateContractDialog: React.FC<any> = (props: any) => {
@@ -76,7 +77,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     'email': contractDetail['email'] ?? '',
                     'detailModelList': servicesForm.reduce((acc, cur) => {
                         acc.push({
-                            'note': cur['note'] ?? '',
+                            'note': CommonUtility.isNullOrEmpty(cur['note']) ? '(Không có ghi chú)' : cur['note'],
                             'timeWorking': cur['timeWorking']?.join(' - ') ?? '',
                             'totalPrice': getTotalPrice(cur),
                             'servicePackID': cur['servicePackID'] ?? '',
