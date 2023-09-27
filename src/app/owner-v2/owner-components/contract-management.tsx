@@ -2,6 +2,7 @@ import { Tabs } from "antd";
 import { useState } from "react";
 import { RequestContractModule } from "./contract-forms/contract-requested";
 import { ContractWorkingFormModule } from "./contract-forms/contract-working-form";
+import { ContractDeniedFormModule } from "./contract-forms/contract-denied";
 
 
 export const ContractManagementComponentV2: React.FC<any> = () => {
@@ -27,6 +28,12 @@ export const ContractManagementComponentV2: React.FC<any> = () => {
                         key: 'contract',
                         children: tabKey === 'contract' ? <ContractWorkingFormModule /> : <></>,
                     },
+                    {
+                        label: 'Đã huỷ',
+                        key: 'denied',
+                        children: tabKey === 'denied' ? <ContractDeniedFormModule /> : <></>,
+                    },
+                    
                 ]}
             />
         </div>

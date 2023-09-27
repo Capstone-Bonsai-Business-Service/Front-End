@@ -678,6 +678,23 @@ export class OwnerServices extends CoreServices {
         })
     }
 
+    getDeniedContracts$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/contract/v2/getAllContractByStatus?type=CANCEL&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
     getMembers$() {
         return new Observable<any[]>(obs => {
             let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
@@ -756,7 +773,7 @@ export class OwnerServices extends CoreServices {
 
     rejectContract$(contractId: string, status: string, reason?: string) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/contract/changeContractStatus?contractID=${contractId}&status=${status}`
+            let url = this.globalSettings.domain + `/contract/changeContractStatus?contractID=${contractId}&status=${status}&reason=${reason}`;
             axios.put(url, undefined, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -788,9 +805,9 @@ export class OwnerServices extends CoreServices {
         })
     }
 
-    changeStaffForWorkingDate$(staffId: number, workingDateId: string) {
+    changeStaffForWorkingDate$(staffId: number, workingDateId: string, note: string) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/workingDate/v2/updateWorkingDateStaffID?workingDateID=${workingDateId}&staffID=${staffId}`
+            let url = this.globalSettings.domain + `/workingDate/v2/updateWorkingDateStaffID?workingDateID=${workingDateId}&staffID=${staffId}&note=${note}`
             axios.put(url, undefined, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

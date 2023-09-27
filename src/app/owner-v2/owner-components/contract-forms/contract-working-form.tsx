@@ -1,4 +1,4 @@
-import { LeftOutlined, PlusOutlined, ReloadOutlined, ScheduleOutlined } from "@ant-design/icons";
+import { CameraOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, ScheduleOutlined } from "@ant-design/icons";
 import { WorkingTimeCalendar } from "../../../common/components/working-time.component";
 import { DateTime } from "luxon";
 import { CommonUtility } from "../../../utils/utilities";
@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { OwnerServices } from "../../owner.service";
 import { FormCreateContractDialog } from "./new-contract";
 import { ContractStatusMapping, IContract, IContractDetail } from "../../../common/object-interfaces/contract.interface";
-import { Tag, Button, Divider, Table, Col, Row, Modal } from "antd";
+import { Tag, Button, Divider, Table, Col, Row, Modal, Image } from "antd";
 import { ColumnsType } from "antd/es/table";
 import toast from "react-hot-toast";
 import { PatternFormat, NumericFormat } from "react-number-format";
@@ -15,7 +15,7 @@ import { UserPicker } from "../../../common/components/user-picker-component";
 import Search from "antd/es/input/Search";
 
 interface IContractFormProps {
-    callbackFn?: (action: actionCallback, data?: string) => void;
+    callbackFn?: (action: actionCallback, data?: string | string[]) => void;
 }
 
 interface IContractDetailProps extends IContractFormProps {
@@ -26,7 +26,7 @@ type actionCallback = 'backToList' | 'goToDetail' | 'goToSchedule'
 export const ContractWorkingFormModule: React.FC<{}> = () => {
     const [formMode, setFormMode] = useState<'list' | 'detail' | 'schedule'>('list');
     const [contractId, setContractId] = useState<string | undefined>();
-    const [contractDetailId, setContractDetailId] = useState<string | undefined>();
+    const [contractDetailId, setContractDetailId] = useState<string[] | undefined>();
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [staffList, setStaffList] = useState<any[]>([]);
 
@@ -41,19 +41,19 @@ export const ContractWorkingFormModule: React.FC<{}> = () => {
         }
     })
 
-    function componentCallback(action: actionCallback, data?: string) {
+    function componentCallback(action: actionCallback, data?: string | string[]) {
         if (action === 'backToList') {
             setContractId(undefined);
             setContractDetailId(undefined)
             setFormMode('list');
         }
         if (action === 'goToDetail') {
-            setContractId(data);
+            setContractId(data as string);
             setContractDetailId(undefined);
             setFormMode('detail');
         }
         if (action === 'goToSchedule') {
-            setContractDetailId(data);
+            setContractDetailId(data as string[]);
             setFormMode('schedule');
         }
     }
@@ -78,7 +78,7 @@ export const ContractWorkingFormModule: React.FC<{}> = () => {
         }
         {
             formMode === 'schedule' ? <WorkingTimeCalendar
-                contractDetailId={contractDetailId as string}
+                contractDetailId={contractDetailId as string[]}
                 callbackFn={() => {
                     componentCallback('goToDetail', contractId);
                 }}
@@ -283,14 +283,14 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [staffList, setStaffList] = useState<any[]>([]);
     const [staffForContract, setStaffForContract] = useState<number | null>(null);
-    const [rejectContractForm, setRejectContractForm] = useState<{
-        isShow: boolean,
-        reason: string,
-        contractID: string
-    }>({
+    const [rejectContractForm, setRejectContractForm] = useState({
         isShow: false,
         reason: '',
         contractID: ''
+    });
+    const [listImgForm, setListImgForm] = useState({
+        isShow: false,
+        listImg: []
     });
 
     useEffect(() => {
@@ -316,18 +316,6 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                 setFirstInit(true);
             }
         });
-    }
-
-    function validateFormReject() {
-        let result = {
-            invalid: false,
-            error: [] as string[]
-        }
-        if (CommonUtility.isNullOrEmpty(rejectContractForm.reason)) {
-            result.invalid = true;
-            result.error.push('Lý do');
-        }
-        return result;
     }
 
     function getExpectedEndDate() {
@@ -358,7 +346,7 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
         </div>
         <div className="__app-content-container">
             <div style={{ display: 'flex', flexDirection: 'row', margin: '0 30px', gap: 6 }}>
-                <Col span={13} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
+                <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Mã hợp đồng:</Col><Col><strong>{contractDetail[0]?.showContractModel?.id}</strong></Col>
                     </Row>
@@ -390,7 +378,7 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                         <Col span={8} style={{ fontWeight: 500 }}>Ngày bắt đầu:</Col><Col>{DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.startedDate as string)).toFormat('dd/MM/yyyy HH:mm')}</Col>
                     </Row>
                     <Row>
-                        <Col span={8} style={{ fontWeight: 500 }}>Ngày dự kiến kết thúc:</Col><Col>{getExpectedEndDate()}</Col>
+                        <Col span={8} style={{ fontWeight: 500 }}>Dự kiến kết thúc:</Col><Col>{getExpectedEndDate()}</Col>
                     </Row>
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
@@ -414,8 +402,33 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                             {DateTime.fromJSDate(new Date(contractDetail[0]?.showContractModel?.signedDate as string)).toFormat('dd/MM/yyyy HH:mm')}
                         </Col>
                     </Row>
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Lịch:</Col>
+                        <Col span={16} >
+                            <div onClick={() => {
+                                if (props.callbackFn) {
+                                    props.callbackFn('goToSchedule', contractDetail.reduce((acc: string[], cur: IContractDetail) => {
+                                        acc.push(cur.id)
+                                        return acc;
+                                    }, []));
+                                }
+                            }}>
+                                <ScheduleOutlined style={{
+                                    cursor: 'pointer',
+                                    marginRight: 10,
+                                    color: 'blue',
+                                }} />
+                                <span style={{
+                                    cursor: 'pointer',
+                                    color: 'blue',
+                                    textDecoration: 'underline'
+                                }}>Xem lịch làm việc</span>
+                            </div>
+
+                        </Col>
+                    </Row>
                 </Col>
-                <Col span={11} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
+                <Col span={13} style={{ backgroundColor: '#f0f0f0', padding: '18px 24px', borderRadius: 4, gap: 8, display: 'flex', flexDirection: 'column' }}>
                     <Row>
                         <Col span={5} style={{ fontWeight: 500 }}>Dịch vụ thuê:</Col>
                         <Col span={19} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -449,6 +462,29 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                                                 <Col span={8}></Col>
                                                 <Col span={16} >
                                                     <div onClick={() => {
+                                                        setListImgForm({
+                                                            isShow: true,
+                                                            listImg: cur.plantStatusIMGModelList
+                                                        })
+                                                    }}>
+                                                        <CameraOutlined style={{
+                                                            cursor: 'pointer',
+                                                            marginRight: 10,
+                                                            color: 'blue',
+                                                        }} />
+                                                        <span style={{
+                                                            cursor: 'pointer',
+                                                            color: 'blue',
+                                                            textDecoration: 'underline'
+                                                        }}>Xem ảnh đính kèm</span>
+                                                    </div>
+
+                                                </Col>
+                                            </Row>
+                                            {/* <Row style={{ width: '100%' }}>
+                                                <Col span={8}></Col>
+                                                <Col span={16} >
+                                                    <div onClick={() => {
                                                         if (props.callbackFn) {
                                                             props.callbackFn('goToSchedule', cur.id);
                                                         }
@@ -466,7 +502,7 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                                                     </div>
 
                                                 </Col>
-                                            </Row>
+                                            </Row> */}
                                             <Row style={{ width: '100%' }}>
                                                 <Col span={8}>Ghi chú:</Col>
                                                 <Col span={16}>{cur.note ?? '--'}</Col>
@@ -490,5 +526,42 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                 </Col>
             </div>
         </div>
+        {
+            listImgForm.isShow ? <Modal
+                width={500}
+                open={true}
+                closable={false}
+                title={(
+                    <span className='__app-dialog-title'>
+                        Hình ảnh mô tả
+                    </span>
+                )}
+                footer={[
+                    <Button key='cancel' onClick={() => {
+                        setListImgForm({
+                            isShow: false,
+                            listImg: []
+                        })
+                    }}>Đóng</Button>
+                ]}
+                centered
+            >
+                <Row style={{ padding: 16, maxHeight: 600, display: 'flex', flexDirection: 'column', flexWrap: 'wrap', alignItems: 'center', gap: 14 }}>
+                    {
+                        listImgForm.listImg.length > 0 ? listImgForm.listImg.reduce((acc: JSX.Element[], cur: any) => {
+                            acc.push(
+                                <Image
+                                    preview={false}
+                                    width={180}
+                                    src={cur.imgUrl}
+                                    style={{ borderRadius: 2 }}
+                                />
+                            )
+                            return acc;
+                        }, []) : <span>Không có hình ảnh</span>
+                    }
+                </Row>
+            </Modal> : <></>
+        }
     </div>
 }

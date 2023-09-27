@@ -1072,6 +1072,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                     if (res.error) {
                                                         toast.error(res.error);
                                                     } else {
+                                                        loadData();
                                                         setFormMode('display');
                                                         setBonsaiDetail(null);
                                                         setImageUrl({

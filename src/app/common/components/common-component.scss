@@ -67,12 +67,16 @@
                     color: #1677ff;
 
                 }
+
                 user-select: none;
                 font-weight: 500;
             }
 
             .__app-date-content {
                 text-align: center;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
             }
         }
 

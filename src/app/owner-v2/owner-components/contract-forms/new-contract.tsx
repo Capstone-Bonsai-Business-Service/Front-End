@@ -87,18 +87,18 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                         return acc;
                     }, []),
                     'staffID': contractDetail['staffID'],
-                    'listURL': imageScanUrls,
+                    // 'listURL': imageScanUrls,
                     'isPaid': true
                 }
                 apiService.createContract$(dataPost).subscribe({
                     next: (res) => {
                         if (res) {
-                            toast.success('Tạo hợp đồng thành công');
+                            toast.success('Tạo yêu cầu thành công');
                             if (props.onSave) {
                                 props.onSave(contractDetail);
                             }
                         } else {
-                            toast.error('Tạo hợp đồng thất bại');
+                            toast.error('Tạo yêu cầu thất bại');
                         }
                     }
                 })
@@ -115,7 +115,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                 closable={false}
                 title={(
                     <span className='__app-dialog-title'>
-                        Tạo Hợp Đồng
+                        Tạo yêu cầu
                     </span>
                 )}
                 footer={getRenderFooterButton()}
@@ -333,7 +333,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             ></UserPicker>
                         </Col>
                     </Row>
-                    <Row className='__app-account-info-row'>
+                    {/* <Row className='__app-account-info-row'>
                         <Col span={3} className='__app-account-field'>
                             <span><strong>Ảnh Scan: </strong> <span className='__app-required-field'> *</span></span>
                         </Col>
@@ -378,7 +378,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 </div>
                             </div>
                         </Col>
-                    </Row>
+                    </Row> */}
                 </div>
             </Modal>
         </>
