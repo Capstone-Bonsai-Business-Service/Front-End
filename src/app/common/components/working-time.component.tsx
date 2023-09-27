@@ -1,15 +1,14 @@
 import { Button, Calendar, Col, Divider, Modal, Row, Select, Skeleton, Spin, Tag } from 'antd';
-import dayjs from 'dayjs';
 import { CommonUtility } from '../../utils/utilities';
 import './common-component.scss';
 import { useEffect, useState } from 'react';
 import { DefaultOptionType } from 'antd/es/select';
-import { Observable, concat, forkJoin, take } from 'rxjs';
+import { Observable, forkJoin, take } from 'rxjs';
 import { UserPicker } from './user-picker-component';
 import { IUser } from '../../../IApp.interface';
 import { cloneDeep } from 'lodash';
 import toast from 'react-hot-toast';
-import { ExclamationCircleOutlined, LeftOutlined, LoadingOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined, LeftOutlined, LoadingOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { DateTime } from 'luxon';
 import TextArea from 'antd/es/input/TextArea';
 
@@ -144,7 +143,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
     function onUpdateDataSource(data: any[]) {
         for (let item of data) {
             const _workingDate = new Date(item.workingDate).getTime();
-            const _toDay = new Date().getTime();
+            const _toDay = new Date().setHours(0, 0, 0, 0);
             if (_toDay > _workingDate && item.status !== 'DONE') {
                 item.status = 'MISSED'
             }
@@ -185,9 +184,9 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
     function getReport(workingDateId: string[]) {
         workingDateId.forEach(wkdId => {
             if (CommonUtility.isNullOrUndefined(workingDateReport.get(wkdId))) {
-                let temp = cloneDeep(workingDateReport);
                 props.apiServices.getWorkingTimesReport$(wkdId).pipe(take(1)).subscribe({
                     next: (res: any) => {
+                        let temp = cloneDeep(workingDateReport);
                         if (res.error) {
                             temp.set(wkdId, 'Lỗi tìm báo cáo.');
                         } else {
@@ -201,6 +200,23 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
 
     }
 
+    function formatDataExport() {
+        const result = listWorkingTime.reduce((acc, cur) => {
+            acc.push({
+                id: cur.id,
+                _workingDate: DateTime.fromJSDate(new Date(cur.workingDate)).toFormat('dd/MM/yyyy HH:mm'),
+                _serviceDetail: cur.contractDetailID,
+                fullName: cur.fullName,
+                _status: getDateContent(cur.status),
+                _checkIn: cur.startWorking ? DateTime.fromJSDate(new Date(cur.startWorking)).toFormat('dd/MM/yyyy HH:mm') : '',
+                _checkOut: cur.endWorking ? DateTime.fromJSDate(new Date(cur.endWorking)).toFormat('dd/MM/yyyy HH:mm') : '',
+                _noteWorkingDate: cur.noteWorkingDate ?? ''
+            })
+            return acc;
+        }, []);
+        return result;
+    }
+
     return <div className='__app-working-time-container'>
         <Calendar
             className='__app-calendar-container'
@@ -208,11 +224,58 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
             fullscreen={true}
             headerRender={(propsHeader) => {
                 return <div className='__app-calendar-header'>
-                    <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
-                        if (props.callbackFn) {
-                            props.callbackFn();
-                        }
-                    }} />
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: 24
+                    }}>
+                        <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
+                            if (props.callbackFn) {
+                                props.callbackFn();
+                            }
+                        }} />
+                        <div>
+                            <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='default' onClick={() => {
+                                const columns = [
+                                    {
+                                        key: 'id',
+                                        title: 'Mã'
+                                    },
+                                    {
+                                        key: '_workingDate',
+                                        title: 'Ngày làm việc'
+                                    },
+                                    {
+                                        key: '_serviceDetail',
+                                        title: 'Dịch vụ số'
+                                    },
+                                    {
+                                        key: 'fullName',
+                                        title: 'Nhân viên'
+                                    },
+                                    {
+                                        key: '_status',
+                                        title: 'Trạng thái'
+                                    },
+                                    {
+                                        key: '_checkIn',
+                                        title: 'Giờ làm'
+                                    },
+                                    {
+                                        key: '_checkOut',
+                                        title: 'Giờ về'
+                                    },
+                                    {
+                                        key: '_noteWorkingDate',
+                                        title: 'Ghi chú'
+                                    },
+                                ]
+                                let dataFormatted = formatDataExport();
+                                CommonUtility.exportExcelV2(dataFormatted, columns, 'Lịch làm việc');
+                            }}>Xuất Tệp Excel</Button>
+                        </div>
+                    </div>
+
                     <div style={{ display: 'flex', gap: 10 }}>
                         <Select
                             style={{ width: 100 }}
@@ -431,15 +494,20 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                 <Row>
                                                     <Col span={8} style={{ fontWeight: 500 }}>Ghi chú:</Col>
                                                     <Col span={12}>
-                                                        <TextArea
-                                                            rows={2}
-                                                            value={cur.noteWorkingDate ?? ''}
-                                                            onChange={(args) => {
-                                                                let temp = cloneDeep(popupDate);
-                                                                temp.data[index].noteWorkingDate = args.target.value;
-                                                                setPopupDate(temp);
-                                                            }}
-                                                        ></TextArea>
+                                                        {
+                                                            cur.status !== 'DONE' && cur.status !== 'MISSED' ?
+                                                                <TextArea
+                                                                    rows={2}
+                                                                    value={cur.noteWorkingDate ?? ''}
+                                                                    onChange={(args) => {
+                                                                        let temp = cloneDeep(popupDate);
+                                                                        temp.data[index].noteWorkingDate = args.target.value;
+                                                                        setPopupDate(temp);
+                                                                    }}
+                                                                ></TextArea>
+                                                                : <span>{cur.noteWorkingDate ?? ''}</span>
+                                                        }
+
                                                     </Col>
                                                 </Row>
                                                 {

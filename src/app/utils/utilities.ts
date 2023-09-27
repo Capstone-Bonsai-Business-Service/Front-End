@@ -130,6 +130,53 @@ export module CommonUtility {
         });
     }
 
+    export function exportExcelV2(dataSource: any[], columns: {key: string, title: string}[], fileName: string) {
+        const excelColumns = columns.reduce((acc: any, cur) => {
+            if (cur.key !== 'command') {
+                acc.push({ name: cur.title, filterButton: true });
+            }
+            return acc;
+        }, []);
+
+        const rowsData = dataSource.reduce((acc, cur) => {
+            const row = columns.reduce((acc_row: any, cur_row) => {
+                if (cur_row.key !== 'command') {
+                    acc_row.push(cur[cur_row.key] ?? '');
+                }
+                return acc_row;
+            }, []);
+            acc.push(row);
+            return acc;
+        }, []);
+
+        const workbook = new Workbook();
+        workbook.creator = 'System';
+        workbook.lastModifiedBy = 'System';
+        workbook.created = new Date();
+        workbook.modified = new Date();
+
+        const worksheet = workbook.addWorksheet('Lịch');
+        worksheet.addTable({
+            name: 'TABLEData',
+            ref: 'A1',
+            headerRow: true,
+            columns: excelColumns,
+            rows: rowsData,
+            style: {
+                showRowStripes: true,
+            }
+        });
+
+        return saveWorkbookToFile(workbook, fileName).pipe(take(1)).subscribe({
+            next: () => {
+                console.log(`Exported`);
+            },
+            error: (err) => {
+                console.error(err);
+            }
+        });
+    }
+
     export function saveWorkbookToFile(workbook: Workbook, fileName = 'export-excel') {
         return new Observable((observer) => {
             workbook.xlsx.writeBuffer()
