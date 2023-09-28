@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { OwnerServices } from '../../owner.service';
 import { forkJoin, take } from 'rxjs';
-import { Button, Col, DatePicker, Input, Modal, Row, Select, Skeleton } from 'antd';
+import { Button, Col, DatePicker, Input, Modal, Row, Select } from 'antd';
 import toast from 'react-hot-toast';
 import { NumericFormat, PatternFormat } from 'react-number-format';
-import { CheckSquareOutlined, CloudUploadOutlined, PlusOutlined, RestOutlined } from '@ant-design/icons';
+import { CheckSquareOutlined, PlusOutlined, RestOutlined } from '@ant-design/icons';
 import { cloneDeep } from 'lodash';
 import { UserPicker } from '../../../common/components/user-picker-component';
 import { DateTime } from 'luxon';
@@ -15,8 +15,6 @@ import { CommonUtility } from '../../../utils/utilities';
 
 export const FormCreateContractDialog: React.FC<any> = (props: any) => {
     const [contractDetail, setContractDetail] = useState<any>({});
-    const [isUpload, setIsUpload] = useState(false);
-    const [imageScanUrls, setImageScanUrls] = useState<string[]>([]);
     const [staffList, setStaffList] = useState<any[]>([]);
     const [serviceList, setServiceList] = useState<any[]>([]);
     const [servicePackList, setServicePackTypeList] = useState<any[]>([]);

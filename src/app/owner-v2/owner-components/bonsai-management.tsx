@@ -1,4 +1,4 @@
-import { CameraOutlined, CloseOutlined, CloudUploadOutlined, LeftOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
+import { CameraOutlined, CloseOutlined, CloudUploadOutlined, LeftOutlined, LoadingOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, RestOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
 import { Avatar, Button, Col, Divider, Input, Modal, Row, Select, Table, Tag, Image, Switch, Skeleton, Space, Dropdown, Spin, Rate } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
@@ -67,6 +67,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
     const [showPopupImport, setShowPopupImport] = useState<boolean>(false);
     const [showPopupPlantQuantity, setShowPopupPlantQuantity] = useState<boolean>(false);
     const [plantQuantityHistory, setPlantQuantityHistory] = useState<any[]>([]);
+    const [isProcessing, setProcessing] = useState(false);
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -1194,7 +1195,11 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                 Giảm số lượng cây
                             </span>
                         )}
-                        footer={[
+                        footer={
+                            isProcessing ? [
+                                <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                            ] :
+                            [
                             <Button key='cancel' onClick={() => {
                                 setPlantDecreaseQuantityForm({
                                     isShow: false,
@@ -1204,22 +1209,27 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                 })
                             }}>Đóng</Button>,
                             <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
+                                setProcessing(true);
                                 const validation = validateFormDecreasePlant();
                                 if (validation.invalid) {
                                     toast.error('Vui lòng nhập thông tin ' + validation.error.join(', '));
+                                    setProcessing(false);
                                 } else {
                                     ownerServices.removeStorePlantQuantity$(plantDecreaseQuantityForm.storePlantID, plantDecreaseQuantityForm.quantity, plantDecreaseQuantityForm.reason).pipe(take(1)).subscribe({
                                         next: (res) => {
                                             if (res.error) {
                                                 toast.error(res.error);
+                                                setProcessing(false);
                                             } else {
                                                 toast.success(`Cập nhật thành công.`);
+                                                setProcessing(false);
                                                 setPlantDecreaseQuantityForm({
                                                     isShow: false,
                                                     quantity: 0,
                                                     reason: '',
                                                     storePlantID: ''
-                                                })
+                                                });
+                                                loadData();
                                             }
                                         }
                                     })

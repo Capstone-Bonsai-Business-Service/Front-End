@@ -24,7 +24,7 @@ export const FeedbackManagementComponent: React.FC<IFeedbackManagementProps> = (
     const [tabKey, setTabKey] = useState<string>('order')
     return (
         <div style={{ height: 'calc(100vh - 100px)', width: 'calc(100% - 80px)', marginLeft: 20 }}>
-            <Tabs
+            {/* <Tabs
                 className="__app-tabs-custom"
                 style={{ marginBottom: 0 }}
                 defaultActiveKey='order'
@@ -44,7 +44,8 @@ export const FeedbackManagementComponent: React.FC<IFeedbackManagementProps> = (
                         children: tabKey === 'contract' ? <FeedbackTabComponent feedbackType='contract' /> : <></>,
                     },
                 ]}
-            />
+            /> */}
+            <FeedbackTabComponent feedbackType='order' />
         </div>
     )
 

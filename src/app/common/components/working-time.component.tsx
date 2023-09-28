@@ -217,6 +217,10 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
         return result;
     }
 
+    function openImg(src: string) {
+        window.open(src, 'Image');
+    }
+
     return <div className='__app-working-time-container'>
         <Calendar
             className='__app-calendar-container'
@@ -474,7 +478,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                                     <span style={{ fontWeight: 600, color: 'green' }}>Vào làm: </span>
                                                                     <span>{DateTime.fromJSDate(new Date(cur.startWorking)).toFormat('dd/MM/yyyy HH:mm')}</span>
                                                                 </span>
-                                                                <img alt='' src={cur.startWorkingIMG} style={{ width: 60 }} />
+                                                                <img alt='' src={cur.startWorkingIMG} style={{ width: 60, cursor: 'pointer' }} onClick={() => { openImg(cur.startWorkingIMG) }}/>
                                                             </div> : <></>
                                                         }
                                                         {
@@ -486,7 +490,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                                     <span style={{ fontWeight: 600, color: 'green' }}>Hoàn thành: </span>
                                                                     <span>{DateTime.fromJSDate(new Date(cur.endWorking)).toFormat('dd/MM/yyyy HH:mm')}</span>
                                                                 </span>
-                                                                <img alt='' src={cur.endWorkingIMG} style={{ width: 60 }} />
+                                                                <img alt='' src={cur.endWorkingIMG} style={{ width: 60, cursor: 'pointer' }} onClick={() => { openImg(cur.endWorkingIMG) }}/>
                                                             </div> : <></>
                                                         }
                                                     </div>

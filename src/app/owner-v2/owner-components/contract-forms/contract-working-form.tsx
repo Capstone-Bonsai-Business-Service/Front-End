@@ -283,11 +283,12 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [staffList, setStaffList] = useState<any[]>([]);
     const [staffForContract, setStaffForContract] = useState<number | null>(null);
-    const [rejectContractForm, setRejectContractForm] = useState({
-        isShow: false,
-        reason: '',
-        contractID: ''
-    });
+    const [hasDataChanged, setDataChanged] = useState(false);
+    // const [rejectContractForm, setRejectContractForm] = useState({
+    //     isShow: false,
+    //     reason: '',
+    //     contractID: ''
+    // });
     const [listImgForm, setListImgForm] = useState({
         isShow: false,
         listImg: []
@@ -312,6 +313,7 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                 }, [] as any)
                 setStaffList(staffListOption);
                 setContractDetail(values[0]);
+                setStaffForContract(values[0][0].showContractModel?.showStaffModel.id ?? null);
                 setDataReady(true);
                 setFirstInit(true);
             }
@@ -382,12 +384,22 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                     </Row>
                     <Row>
                         <Col span={8} style={{ fontWeight: 500 }}>Nhân viên tiếp nhận:</Col>
-                        <Col span={16}>
+                        {/* <Col span={16}>
                             {
                                 contractDetail[0]?.showContractModel?.showStaffModel.id ?
                                     <span>{contractDetail[0]?.showContractModel?.showStaffModel.fullName}</span> :
                                     <span>--</span>
                             }
+                        </Col> */}
+                        <Col span={16}>
+                            <UserPicker
+                                listUser={staffList}
+                                defaultValue={staffForContract}
+                                onChanged={(value) => {
+                                    setStaffForContract(value);
+                                    setDataChanged(true);
+                                }}
+                            />
                         </Col>
                     </Row>
                     <Row>
@@ -425,6 +437,21 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                                 }}>Xem lịch làm việc</span>
                             </div>
 
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span={8} style={{ fontWeight: 500 }}>Ảnh hợp đồng:</Col>
+                        <Col span={16}>
+                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                {
+                                    contractDetail[0]?.showContractModel?.imgList.reduce((acc, cur) => {
+                                        acc.push(
+                                            <img src={cur.imgUrl} alt='' style={{ width: 100, height: 140, cursor: 'pointer' }} onClick={() => { window.open(cur.imgUrl, 'Image') }} />
+                                        )
+                                        return acc;
+                                    }, [] as React.ReactNode[])
+                                }
+                            </div>
                         </Col>
                     </Row>
                 </Col>
@@ -525,6 +552,30 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                     </Row>
                 </Col>
             </div>
+            {
+                // contractDetail[0]?.showContractModel?.status === 'WAITING' ?
+                //      : <></>
+
+                <div className="__app-action-button" style={{ gap: 10 }}>
+                    <Button type="primary"
+                        disabled={!hasDataChanged}
+                        style={{ backgroundColor: hasDataChanged ? '#0D6368' : 'rgb(13, 99, 104, 0.3)', color: hasDataChanged ? '#FFF' : '#E2E2E2' }}
+                        onClick={() => {
+                            apiService.updateStaffForContract$(props.contractId, staffForContract as number).pipe(take(1)).subscribe({
+                                next: (res) => {
+                                    if (res) {
+                                        toast.success('Cập nhật thành công');
+                                        if (props.callbackFn) {
+                                            props.callbackFn('backToList');
+                                        }
+                                    } else {
+                                        toast.error('Cập nhật thất bại');
+                                    }
+                                }
+                            })
+                        }}>Cập nhật</Button>
+                </div>
+            }
         </div>
         {
             listImgForm.isShow ? <Modal
