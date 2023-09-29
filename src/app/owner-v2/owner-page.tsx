@@ -189,26 +189,26 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                     )
                 },
                 {
-                    key: 'members',
+                    key: 'staff',
                     className: '__app-group-menu',
                     icon: <PiUserList color='#000' />,
                     label: (
                         <div className='__app-group-menu-label'>
-                            Thành viên
+                            Nhân viên
                         </div>
                     ),
-                    children: [
-                        {
-                            key: 'manager',
-                            className: '__app-children-menu-divider',
-                            label: 'Quản lý',
-                        },
-                        {
-                            key: 'staff',
-                            className: '__app-children-menu-divider',
-                            label: 'Nhân viên',
-                        },
-                    ]
+                    // children: [
+                    //     {
+                    //         key: 'manager',
+                    //         className: '__app-children-menu-divider',
+                    //         label: 'Quản lý',
+                    //     },
+                    //     {
+                    //         key: 'staff',
+                    //         className: '__app-children-menu-divider',
+                    //         label: 'Nhân viên',
+                    //     },
+                    // ]
                 }
             ]
         },
@@ -327,16 +327,16 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
                                 currentMenuItem === 'staff' ? <MemberManagementComponent roleName='Nhân Viên' roleID='R004' />
                                     : <></>
                             }
-                            {
+                            {/* {
                                 currentMenuItem === 'manager' ? <MemberManagementComponent roleName='Quản Lý' roleID='R003' />
                                     : <></>
-                            }
+                            } */}
                             {
                                 currentMenuItem === 'contracts' ? <ContractManagementComponentV2
                                 /> : <></>
                             }
                             {
-                                currentMenuItem === 'orders' ? <OrderManagementComponent />
+                                currentMenuItem === 'orders' ? <OrderManagementComponent roleID='R003' />
                                     : <></>
                             }
                             {

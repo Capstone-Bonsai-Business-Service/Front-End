@@ -1,30 +1,42 @@
-import { LeftOutlined, ReloadOutlined, UserOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
-import { Avatar, Button, Col, Divider, Radio, Row, Skeleton, Table, Tag } from "antd";
+import { LeftOutlined, MoreOutlined, ReloadOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, Divider, Dropdown, Modal, Radio, Row, Skeleton, Table, Tag, Upload } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { OwnerServices } from "../owner.service";
 import { take } from "rxjs";
 import { IUser } from "../../../IApp.interface";
+import { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import { CommonUtility } from "../../utils/utilities";
+import toast from "react-hot-toast";
 import { AccountStatusMapping } from "../../common/object-interfaces/account.interface";
 import { PatternFormat } from "react-number-format";
 
 
 interface IMemberManagementProps {
-    roleName: 'Nhân Viên' | 'Quản Lý';
+    roleName: 'Nhân Viên';
     roleID: string;
 }
 
 export const MemberManagementComponent: React.FC<IMemberManagementProps> = (props) => {
-    const ownerServices = new OwnerServices();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const ownerService = new OwnerServices();
+
+    // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [members, setMember] = useState<any[]>([]);
     const [membersOnSearch, setSearchMember] = useState<any[]>([]);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [formMode, setFormMode] = useState<'display' | 'edit'>('display');
     const [userDetail, setUserDetail] = useState<IUser | null>(null);
+    const [popUpConfirm, setPopUpConfirm] = useState<{
+        isShow: boolean,
+        accountId: number
+    }>({
+        isShow: false,
+        accountId: -1
+    });
 
     useEffect(() => {
         if (!isFirstInit) {
@@ -33,29 +45,26 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
     });
 
     function loadData() {
-        setDataReady(false);
-        ownerServices.getMembersV1$(props.roleID).pipe(take(1)).subscribe({
+        ownerService.getMembers$().pipe(take(1)).subscribe({
             next: data => {
                 setMember(data);
                 setSearchMember(data);
                 setDataReady(true);
+                setFirstInit(true);
             }
         });
-        if (!isFirstInit) {
-            setFirstInit(true);
-        }
     }
 
     const tableUserColumns: ColumnsType<IUser> = [
         {
             title: 'ID',
-            dataIndex: 'userID',
-            key: 'userID',
+            dataIndex: 'id',
+            key: 'id',
             showSorterTooltip: false,
             ellipsis: true,
             width: 80,
             sorter: {
-                compare: (acc, cur) => acc.userID > cur.userID ? 1 : acc.userID < cur.userID ? -1 : 0
+                compare: (acc, cur) => acc.id > cur.id ? 1 : acc.id < cur.id ? -1 : 0
             },
             className: '__app-header-title'
         },
@@ -73,23 +82,6 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
             },
             sorter: {
                 compare: (acc, cur) => acc.fullName > cur.fullName ? 1 : acc.fullName < cur.fullName ? -1 : 0
-            },
-            className: '__app-header-title'
-        },
-        {
-            title: 'Chi Nhánh Làm Việc',
-            dataIndex: 'storeName',
-            key: 'storeName',
-            showSorterTooltip: false,
-            ellipsis: true,
-            width: 250,
-            render: (value) => {
-                return <div>
-                    {value ?? '--'}
-                </div>
-            },
-            sorter: {
-                compare: (acc, cur) => acc.storeName > cur.storeName ? 1 : acc.storeName < cur.storeName ? -1 : 0
             },
             className: '__app-header-title'
         },
@@ -138,12 +130,45 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
             showSorterTooltip: false,
             ellipsis: true,
             render: (_, record, __) => {
+                // return <div>
+                //     <Button className='__app-command-button' onClick={(e) => {
+                //         e.preventDefault();
+                //         getUserDetail(record.id);
+                //         setFormMode('edit');
+                //     }} icon={<FormOutlined />} />
+                // </div>
                 return <div>
-                    <Button className='__app-command-button' onClick={(e) => {
-                        e.preventDefault();
-                        getUserDetail(record.userID);
-                        setFormMode('edit');
-                    }}>Chi tiết</Button>
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [{
+                                key: 'detail',
+                                label: <span
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        getUserDetail(record.id);
+                                        setFormMode('edit');
+                                    }}
+                                >Xem chi tiết</span>
+                            },
+                            record.status === 'ACTIVE' ? 
+                            {
+                                key: 'disableAccount',
+                                label: <span
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPopUpConfirm({
+                                            isShow: true,
+                                            accountId: record['id']
+                                        })
+                                    }}
+                                >Sa thải</span>
+                            } : null,
+                            ]
+                        }}
+                        placement='bottom'>
+                        <MoreOutlined />
+                    </Dropdown>
                 </div>
             },
         }
@@ -151,7 +176,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
 
     function getUserDetail(userID: number) {
         setDataReady(false);
-        ownerServices.getMemberByID$(userID).pipe(take(1)).subscribe({
+        ownerService.getMemberByID$(userID).pipe(take(1)).subscribe({
             next: (data) => {
                 setUserDetail(data);
                 setDataReady(true);
@@ -163,11 +188,20 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
         <>
             {
                 formMode === 'display' ? <>
-                    <div className='__app-toolbar-container' style={{ padding: '8px 24px' }}>
+                    <div className='__app-toolbar-container'>
                         <div className='__app-toolbar-left-buttons'>
+                            {/* <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => { }}>Thêm {props.roleName}</Button> */}
                             {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => { }}>Xuất Tệp Excel</Button> */}
                             <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
-                                loadData();
+                                setDataReady(false);
+                                ownerService.getMembers$().pipe(take(1)).subscribe({
+                                    next: data => {
+                                        setMember(data);
+                                        setSearchMember(data);
+                                        setFirstInit(true);
+                                        setDataReady(true);
+                                    }
+                                })
                             }}>Tải Lại</Button>
                         </div>
                         <div className='__app-toolbar-right-buttons'>
@@ -220,14 +254,59 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                 setUserDetail(null);
                                 // setImageUrl('');
                             }} />
-                            <div className="__app-title-form">Chi tiết {props.roleName}</div>
+                            <div className="__app-title-form">Chi tiết</div>
                         </div>
                         <div className="__app-content-container">
                             <Row className='__app-account-info-row'>
                                 <Col span={3} className='__app-account-field'>
                                 </Col>
                                 <Col span={4}>
-                                    <Avatar shape="circle" size={100} src={userDetail?.avatar} icon={<UserOutlined />} />
+                                    <Upload
+                                        name="avatar"
+                                        listType="picture-circle"
+                                        className="avatar-uploader"
+                                        showUploadList={false}
+                                        // action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                                        action={(file: RcFile) => {
+                                            return new Promise<string>(resolve => {
+                                                console.log(file);
+                                                resolve('https://www.mocky.io/v2/5cc8019d300000980a055e76');
+                                            })
+                                        }}
+                                        beforeUpload={() => {
+
+                                        }}
+                                        onChange={(info: UploadChangeParam<UploadFile>) => {
+                                            if (info.file.status === 'uploading') {
+                                                return;
+                                            }
+                                            if (info.file.status === 'done') {
+                                                // Get this url from response in real world.
+                                                CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
+                                                    // setLoading(false);
+                                                    // setImageUrl(url);
+                                                });
+                                            }
+                                            if (info.file.status === 'error') {
+                                                // Get this url from response in real world.
+                                                CommonUtility.getBase64(info.file.originFileObj as RcFile, (url) => {
+                                                    // setLoading(false);
+                                                    // setImageUrl(url);
+                                                });
+                                                // setLoading(false);
+                                                toast.error('Tải ảnh thất bại. Vui lòng thử lại sau.');
+                                            }
+                                        }}
+                                    >
+                                        {
+                                            userDetail?.avatar ?
+                                                <Avatar shape="circle" size={100} src={userDetail?.avatar} icon={<UserOutlined />} /> :
+                                                // <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> 
+                                                <div>
+                                                    <div style={{ marginTop: 8 }}>Upload</div>
+                                                </div>
+                                        }
+                                    </Upload>
                                 </Col>
                                 <Col span={16}>
                                     <Row className='__app-account-info-row'>
@@ -349,7 +428,7 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
 
                                 </Col>
                             </Row>
-                            {
+                            {/* {
                                 !isDataReady ?
                                     <Skeleton.Input block={true} active={true} />
                                     :
@@ -364,12 +443,26 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                                             </Col>
                                             <Col span={15}>
                                                 {
-                                                    userDetail?.storeID ? <span>{userDetail?.storeName}</span> : <>--</>
+                                                    userDetail?.storeID ? <span>{userDetail?.storeName}</span> : <></>
                                                 }
+                                                {
+                                                    userDetail?.storeID === null ?
+                                                        <Select
+                                                            defaultValue={userDetail?.storeID}
+                                                            style={{ width: '100%' }}
+                                                            options={stores}
+                                                            onChange={(value) => {
+                                                                // let temp = cloneDeep(accountDetail) ?? {};
+                                                                // temp['storeId'] = value;
+                                                                // setAccountDetail(temp);
+                                                            }}
+                                                        /> : <></>
+                                                }
+
                                             </Col>
                                         </Row> :
                                         <></>
-                            }
+                            } */}
                             {/* {
                                 isDataReady ?
                                     <div style={{ height: 210, display: 'flex', flexDirection: 'column-reverse', padding: 24 }}>
@@ -384,6 +477,53 @@ export const MemberManagementComponent: React.FC<IMemberManagementProps> = (prop
                         </div>
                     </div>
                 </> : <></>
+            }
+            {
+                popUpConfirm.isShow ?
+                    <Modal
+                        width={300}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Xác nhận
+                            </span>
+                        )}
+                        footer={[
+                            <Button type="default" onClick={() => {
+                                setPopUpConfirm({
+                                    isShow: false,
+                                    accountId: -1
+                                })
+                            }}>Huỷ</Button>,
+                            <Button type="primary"
+                                style={{ backgroundColor: '#5D050b' }}
+                                onClick={() => {
+                                    ownerService.disableAccount$(popUpConfirm.accountId).pipe(take(1)).subscribe({
+                                        next: (res) => {
+                                            if (res.error) {
+                                                toast.error(res.error);
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    accountId: -1
+                                                })
+                                            } else {
+                                                setPopUpConfirm({
+                                                    isShow: false,
+                                                    accountId: -1
+                                                })
+                                                loadData();
+                                                toast.success('Cập nhật thành công');
+                                            }
+                                        }
+                                    })
+
+                                }}>Xác Nhận</Button>
+                        ]}
+                        centered
+                    >
+                        <span>Vui lòng xác nhận sẽ sa thải nhân viên?</span>
+                    </Modal> : <></>
             }
         </>
     )

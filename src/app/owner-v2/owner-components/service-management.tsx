@@ -1274,7 +1274,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                                 return acc;
                                             }, []),
                                             "listURL": serviceDetail.imgList.reduce((acc: string[], cur: any) => {
-                                                acc.push(cur.id);
+                                                acc.push(cur.url);
                                                 return acc;
                                             }, []),
                                             "atHome": true
@@ -1459,7 +1459,7 @@ const TabPackList: React.FC<{}> = (props) => {
 
     function loadData() {
         setDataReady(false);
-        ownerServices.getServicePacks$().pipe(take(1)).subscribe({
+        ownerServices.getAllServicePacks$().pipe(take(1)).subscribe({
             next: data => {
                 setServicePacks(data);
                 setServicePacksOnSearch(data);

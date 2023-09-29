@@ -991,5 +991,56 @@ export class OwnerServices extends CoreServices {
             })
         })
     }
+
+    getStoreOrders$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    disableAccount$(accountID: number) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/store/employee/${accountID}`
+            axios.delete(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res);
+                obs.complete();
+            }).catch(err => {
+                obs.next({ error: JSON.stringify(err.response?.data) ?? 'Thay đổi thất bại.' });
+                obs.complete();
+            })
+        })
+    }
+
+    getAllServicePacks$() {
+        return new Observable<any[]>(obs => {
+            let url = this.globalSettings.domain + `/servicePack/v2/getAllForOwner`
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch(() => {
+                obs.next([]);
+                obs.complete();
+            })
+        })
+    }
     //#endregion
 }

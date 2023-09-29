@@ -44,7 +44,6 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     }, [] as any)
                     setStaffList(staffListOption);
                     setServicePackTypeList(values[2]);
-                    setStaffList(staffListOption);
                     setServiceList(values[1]);
                     setFirstInit(true);
                 }
@@ -407,10 +406,12 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                             <Select
                                                 style={{ width: '100%' }}
                                                 options={serviceList.reduce((acc_, cur_) => {
-                                                    acc_.push({
-                                                        value: cur_.serviceID,
-                                                        label: cur_.name
-                                                    })
+                                                    if (cur_.status === 'ACTIVE') {
+                                                        acc_.push({
+                                                            value: cur_.serviceID,
+                                                            label: cur_.name
+                                                        })
+                                                    }
                                                     return acc_;
                                                 }, [])}
                                                 value={cur.serviceID}
