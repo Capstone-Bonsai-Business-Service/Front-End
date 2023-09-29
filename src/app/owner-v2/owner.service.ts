@@ -218,9 +218,9 @@ export class OwnerServices extends CoreServices {
         })
     }
 
-    createServicePack$(range: string, unit: string, percent: number) {
+    createServicePack$(range: string, unit: string, percent: number, status: string) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/servicePack?range=${range}&unit=${unit}&percentage=${percent}`
+            let url = this.globalSettings.domain + `/servicePack?range=${range}&unit=${unit}&percentage=${percent}&status=${status}`
             axios.post(url, undefined, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

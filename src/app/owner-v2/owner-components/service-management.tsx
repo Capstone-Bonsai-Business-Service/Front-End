@@ -409,10 +409,12 @@ const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICrea
         range: string | null;
         unit: 'năm' | 'tháng';
         percentage: number;
+        status: 'ACTIVE' | 'INACTIVE';
     }>({
         range: null,
         unit: 'tháng',
-        percentage: 0
+        percentage: 0,
+        status: 'ACTIVE'
     });
 
     return (
@@ -578,6 +580,25 @@ const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICrea
                             />
                         </Col>
                     </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={6} className='__app-object-field'>
+                            <span>
+                                <strong>Trạng thái: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={18}>
+                            <Select
+                                onChange={(value) => {
+                                    let temp = cloneDeep(servicePackForm);
+                                    temp['status'] = value;
+                                    setServicePackForm(temp);
+                                }}
+                                style={{ width: '100%' }}
+                                options={[{ value: 'ACTIVE', label: 'Hoạt động' }, { value: 'INACTIVE', label: 'Ngưng hoạt động' }]}
+                                value={servicePackForm.status}
+                            />
+                        </Col>
+                    </Row>
                 </div>
             </Modal>
         </>
@@ -605,7 +626,7 @@ const FormCreateServicePackDialog: React.FC<ICreateServiceProps> = (props: ICrea
     }
 
     function onCreateServicePack() {
-        ownerServices.createServicePack$(servicePackForm.range as string, servicePackForm.unit as string, servicePackForm.percentage).pipe(take(1)).subscribe({
+        ownerServices.createServicePack$(servicePackForm.range as string, servicePackForm.unit as string, servicePackForm.percentage, servicePackForm.status).pipe(take(1)).subscribe({
             next: (res) => {
                 if (res.error) {
                     toast.error(res.error);
@@ -626,7 +647,7 @@ const FormEditServicePackDialog: React.FC<IEditServicePackProps> = (props: IEdit
     }>({
         range: props.servicePackData.range,
         unit: props.servicePackData.unit,
-        percentage: props.servicePackData.percentage
+        percentage: props.servicePackData.percentage,
     });
 
     return (
@@ -1255,14 +1276,16 @@ const TabServiceList: React.FC<any> = (props) => {
                                             {
                                                 isDataReady ?
                                                     <NumericFormat
-                                                        displayType='text'
+                                                        // displayType='text'
+                                                        className="app-numeric-input"
+                                                        allowNegative={false}
                                                         value={serviceDetail?.price}
                                                         onValueChange={(values) => {
-                                                            // let temp = cloneDeep(serviceDetail) ?? {};
-                                                            // temp['height'] = values.floatValue as number;
-                                                            // setBonsaitDetail(temp);
+                                                            let temp = cloneDeep(serviceDetail);
+                                                            temp['height'] = values.floatValue as number;
+                                                            setServiceDetail(temp);
                                                         }}
-                                                        placeholder="Nhập chiều cao"
+                                                        placeholder="Nhập giá"
                                                         suffix=' vnđ'
                                                         thousandSeparator=" "
                                                     />
