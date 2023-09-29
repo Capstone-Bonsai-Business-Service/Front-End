@@ -1,5 +1,5 @@
 import { MoreOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Divider, Table, Tag, Dropdown, Modal, Row, Col, Input } from "antd";
+import { Button, Divider, Table, Tag, Dropdown, Modal, Row, Col, Input, Select } from "antd";
 import Search from "antd/es/input/Search";
 import { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
@@ -24,19 +24,23 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
     const [isDataReady, setDataReady] = useState<boolean>(false);
     const [isShowPopupCreate, setShowPopupCreate] = useState<{
         isShow: boolean,
-        plantCategoryName: string
+        plantCategoryName: string,
+        status: 'ACTIVE' | 'INACTIVE'
     }>({
         isShow: false,
-        plantCategoryName: ''
+        plantCategoryName: '',
+        status: 'ACTIVE'
     });
     const [isShowPopupEdit, setShowPopupEdit] = useState<{
         isShow: boolean,
         plantCategoryName: string,
-        plantCategoryID: string
+        plantCategoryID: string,
+        status: 'ACTIVE' | 'INACTIVE'
     }>({
         isShow: false,
         plantCategoryName: '',
-        plantCategoryID: ''
+        plantCategoryID: '',
+        status: 'ACTIVE'
     });
     const [popUpConfirm, setPopUpConfirm] = useState<{
         isShow: boolean,
@@ -131,7 +135,8 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                             setShowPopupEdit({
                                                 isShow: true,
                                                 plantCategoryName: record.categoryName,
-                                                plantCategoryID: record.categoryID
+                                                plantCategoryID: record.categoryID,
+                                                status: record.status
                                             });
                                         }}
                                     >Xem chi tiết</span>
@@ -209,7 +214,8 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                     <Button shape='default' icon={<PlusOutlined />} type='text' onClick={() => {
                         setShowPopupCreate({
                             isShow: true,
-                            plantCategoryName: ''
+                            plantCategoryName: '',
+                            status: 'ACTIVE'
                         });
                     }}>Thêm Loại Cây</Button>
                     {/* <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='text' onClick={() => {
@@ -270,7 +276,8 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                 setShowPopupEdit({
                                     isShow: false,
                                     plantCategoryName: '',
-                                    plantCategoryID: ''
+                                    plantCategoryID: '',
+                                    status: 'ACTIVE'
                                 })
                             }}>Huỷ</Button>,
                             <Button key='save' style={{ background: '#0D6368' }} type='primary' onClick={() => {
@@ -283,7 +290,8 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                                 setShowPopupEdit({
                                                     isShow: false,
                                                     plantCategoryName: '',
-                                                    plantCategoryID: ''
+                                                    plantCategoryID: '',
+                                                    status: 'ACTIVE'
                                                 });
                                                 loadData();
                                             } else {
@@ -316,6 +324,25 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                     />
                                 </Col>
                             </Row>
+                            <Row className='__app-object-info-row'>
+                                <Col span={6} className='__app-object-field'>
+                                    <span>
+                                        <strong>Trạng thái: </strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={18}>
+                                    <Select
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(isShowPopupEdit);
+                                            temp['status'] = value;
+                                            setShowPopupEdit(temp);
+                                        }}
+                                        style={{ width: '100%' }}
+                                        options={[{ value: 'ACTIVE', label: 'Hoạt động' }, { value: 'INACTIVE', label: 'Ngưng hoạt động' }]}
+                                        value={isShowPopupEdit.status}
+                                    />
+                                </Col>
+                            </Row>
                         </div>
                     </Modal> : <></>
             }
@@ -335,18 +362,20 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                 setShowPopupCreate({
                                     isShow: false,
                                     plantCategoryName: '',
+                                    status: 'ACTIVE'
                                 })
                             }}>Huỷ</Button>,
                             <Button key='save' style={{ background: '#0D6368' }} type='primary' onClick={() => {
                                 const validation = validateFormCreate();
                                 if (validation.invalid === false) {
-                                    ownerServices.createNewCategory$(isShowPopupCreate.plantCategoryName).pipe(take(1)).subscribe({
+                                    ownerServices.createNewCategory$(isShowPopupCreate.plantCategoryName, isShowPopupCreate.status).pipe(take(1)).subscribe({
                                         next: (res) => {
                                             if (res) {
                                                 toast.success('Tạo thành công.');
                                                 setShowPopupCreate({
                                                     isShow: false,
-                                                    plantCategoryName: ''
+                                                    plantCategoryName: '',
+                                                    status: 'ACTIVE'
                                                 });
                                                 loadData();
                                             } else {
@@ -375,6 +404,25 @@ export const PlantCategoryManagementComponent: React.FC<IPlantCategoryManagement
                                         setShowPopupCreate(temp);
                                     }}
                                         placeholder="Nhập tên loại cây"
+                                    />
+                                </Col>
+                            </Row>
+                            <Row className='__app-object-info-row'>
+                                <Col span={6} className='__app-object-field'>
+                                    <span>
+                                        <strong>Trạng thái: </strong> <span className='__app-required-field'> *</span>
+                                    </span>
+                                </Col>
+                                <Col span={18}>
+                                    <Select
+                                        onChange={(value) => {
+                                            let temp = cloneDeep(isShowPopupCreate);
+                                            temp['status'] = value;
+                                            setShowPopupCreate(temp);
+                                        }}
+                                        style={{ width: '100%' }}
+                                        options={[{ value: 'ACTIVE', label: 'Hoạt động' }, { value: 'INACTIVE', label: 'Ngưng hoạt động' }]}
+                                        value={isShowPopupCreate.status}
                                     />
                                 </Col>
                             </Row>

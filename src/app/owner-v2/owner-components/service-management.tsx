@@ -865,6 +865,12 @@ const TabServiceList: React.FC<any> = (props) => {
     const [serviceDetail, setServiceDetail] = useState<any>(null);
     const [imageUrl, setImageUrl] = useState<string>('');
     const [showPopupCreate, setShowPopupCreate] = useState<boolean>(false);
+    const [popUpConfirm, setPopUpConfirm] = useState<any>({
+        isShow: false,
+        serviceID: '',
+        message: '',
+        action: ''
+    });
 
     const tableUserColumns: ColumnsType<any> = [
         {
@@ -932,12 +938,54 @@ const TabServiceList: React.FC<any> = (props) => {
             ellipsis: true,
             render: (_, record, __) => {
                 return <div>
-                    <Button className='__app-command-button' type='ghost' onClick={(e) => {
-                        e.preventDefault();
-                        setServiceDetail(record);
-                        setImageUrl(record?.imgList[0]?.url ?? '');
-                        setFormMode('edit');
-                    }} icon={<FormOutlined />} />
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [
+                                {
+                                    key: 'detail',
+                                    label: <span
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setServiceDetail(record);
+                                            setImageUrl(record?.imgList[0]?.url ?? '');
+                                            setFormMode('edit');
+                                        }}
+                                    >Xem chi tiết</span>
+                                },
+                                record.status === 'ACTIVE' ?
+                                    {
+                                        key: 'disableService',
+                                        label: <span
+                                            onClick={() => {
+                                                setPopUpConfirm({
+                                                    isShow: true,
+                                                    serviceID: record.serviceID,
+                                                    message: 'Vui lòng xác nhận huỷ bán cây trong hệ thống.',
+                                                    action: 'disable'
+                                                });
+                                            }}
+                                        >Ngưng hoạt động</span>
+                                    } : null,
+                                record.status === 'INACTIVE' ?
+                                    {
+                                        key: 'activeService',
+                                        label: <span
+                                            onClick={() => {
+                                                setPopUpConfirm({
+                                                    isShow: true,
+                                                    serviceID: record.serviceID,
+                                                    message: 'Vui lòng xác nhận bán lại cây trong hệ thống.',
+                                                    action: 'active'
+                                                });
+                                            }}
+                                        >Hoạt động lại</span>
+                                    } : null,
+                            ]
+                        }}
+                        placement='bottom'>
+                        <MoreOutlined />
+                    </Dropdown>
                 </div>
             },
             className: '__app-header-title'
@@ -1295,6 +1343,87 @@ const TabServiceList: React.FC<any> = (props) => {
                         </div>
                     </div>
                 </> : <></>
+            }
+            {
+                popUpConfirm.isShow ?
+                    <Modal
+                        width={300}
+                        open={true}
+                        closable={false}
+                        title={(
+                            <span className='__app-dialog-title'>
+                                Xác nhận
+                            </span>
+                        )}
+                        footer={[
+                            <Button type="default" onClick={() => {
+                                setPopUpConfirm({
+                                    isShow: false,
+                                    serviceID: '',
+                                    message: '',
+                                    action: ''
+                                })
+                            }}>Huỷ</Button>,
+                            popUpConfirm.action === 'active' ?
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#0D6368' }}
+                                    onClick={() => {
+                                        ownerServices.activeService$(popUpConfirm.serviceID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        serviceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        serviceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
+                                            }
+                                        })
+
+                                    }}>Xác Nhận</Button> :
+                                <Button type="primary"
+                                    style={{ backgroundColor: '#5D050b' }}
+                                    onClick={() => {
+                                        ownerServices.disableService$(popUpConfirm.serviceID).pipe(take(1)).subscribe({
+                                            next: (res) => {
+                                                if (res.error) {
+                                                    toast.error(res.error);
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        serviceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                } else {
+                                                    setPopUpConfirm({
+                                                        isShow: false,
+                                                        serviceID: '',
+                                                        message: '',
+                                                        action: ''
+                                                    })
+                                                    loadData();
+                                                    toast.success('Cập nhật thành công');
+                                                }
+                                            }
+                                        })
+
+                                    }}>Xác Nhận</Button>
+                        ]}
+                        centered
+                    >
+                        <span>{popUpConfirm.message}</span>
+                    </Modal> : <></>
             }
         </>
 

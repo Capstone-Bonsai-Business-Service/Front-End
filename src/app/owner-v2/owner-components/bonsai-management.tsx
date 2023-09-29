@@ -241,7 +241,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                     >Giảm số lượng cây</span>
                                 },
                                 {
-                                    key: 'disablePlant',
+                                    key: 'history',
                                     label: <span
                                         onClick={() => {
                                             getPlantQuantityHistory(record.plantID);
@@ -321,7 +321,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
             <Skeleton.Image style={{ width: 100 }} active={true} />,
             <Skeleton.Image style={{ width: 100 }} active={true} />]
         }
-        const elements: JSX.Element[] = (bonsaiDetail?.plantIMGList as any[])?.reduce((acc, cur) => {
+        const elements: JSX.Element[] = (bonsaiDetail?.plantIMGList as any[])?.reduce((acc, cur, index) => {
             acc.push(
                 <Image
                     preview={false}
@@ -329,7 +329,10 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                     src={cur.url}
                     style={{ cursor: 'pointer', borderRadius: 4 }}
                     onClick={() => {
-                        setImageUrl(cur.url);
+                        setImageUrl({
+                            index: index,
+                            url: cur.url
+                        });
                     }}
                 />
             )
@@ -706,7 +709,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                         padding: 8
                                                     }}>
                                                         <CloseOutlined style={{
-                                                            cursor: 'pointer', 
+                                                            cursor: 'pointer',
                                                             width: 18, height: 18, fontSize: 18,
                                                             zIndex: 10
                                                         }} onClick={() => {
@@ -997,13 +1000,25 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                         <Col span={17} style={{ display: 'flex' }}>
                                             {
                                                 isDataReady ?
+                                                    // <NumericFormat
+                                                    //     style={{ display: 'flex', alignItems: 'center' }}
+                                                    //     displayType="text"
+                                                    //     value={bonsaiDetail?.showPlantPriceModel.price}
+                                                    //     placeholder="Nhập giá cây"
+                                                    //     thousandSeparator=" "
+                                                    //     suffix=' vnđ'
+                                                    // />
                                                     <NumericFormat
-                                                        style={{ display: 'flex', alignItems: 'center' }}
-                                                        displayType="text"
+                                                        className="app-numeric-input"
+                                                        thousandSeparator=' '
+                                                        allowNegative={false}
+                                                        onValueChange={(values) => {
+                                                            let temp = cloneDeep(bonsaiDetail) as IPlant;
+                                                            temp['price'] = values.floatValue as number;
+                                                            setBonsaiDetail(temp);
+                                                        }}
+                                                        placeholder="Nhập giá"
                                                         value={bonsaiDetail?.showPlantPriceModel.price}
-                                                        placeholder="Nhập giá cây"
-                                                        thousandSeparator=" "
-                                                        suffix=' vnđ'
                                                     />
                                                     : <Skeleton.Input block={true} active={true} />
                                             }
@@ -1199,43 +1214,43 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                             isProcessing ? [
                                 <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
                             ] :
-                            [
-                            <Button key='cancel' onClick={() => {
-                                setPlantDecreaseQuantityForm({
-                                    isShow: false,
-                                    quantity: 0,
-                                    reason: '',
-                                    storePlantID: ''
-                                })
-                            }}>Đóng</Button>,
-                            <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
-                                setProcessing(true);
-                                const validation = validateFormDecreasePlant();
-                                if (validation.invalid) {
-                                    toast.error('Vui lòng nhập thông tin ' + validation.error.join(', '));
-                                    setProcessing(false);
-                                } else {
-                                    ownerServices.removeStorePlantQuantity$(plantDecreaseQuantityForm.storePlantID, plantDecreaseQuantityForm.quantity, plantDecreaseQuantityForm.reason).pipe(take(1)).subscribe({
-                                        next: (res) => {
-                                            if (res.error) {
-                                                toast.error(res.error);
-                                                setProcessing(false);
-                                            } else {
-                                                toast.success(`Cập nhật thành công.`);
-                                                setProcessing(false);
-                                                setPlantDecreaseQuantityForm({
-                                                    isShow: false,
-                                                    quantity: 0,
-                                                    reason: '',
-                                                    storePlantID: ''
-                                                });
-                                                loadData();
-                                            }
+                                [
+                                    <Button key='cancel' onClick={() => {
+                                        setPlantDecreaseQuantityForm({
+                                            isShow: false,
+                                            quantity: 0,
+                                            reason: '',
+                                            storePlantID: ''
+                                        })
+                                    }}>Đóng</Button>,
+                                    <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
+                                        setProcessing(true);
+                                        const validation = validateFormDecreasePlant();
+                                        if (validation.invalid) {
+                                            toast.error('Vui lòng nhập thông tin ' + validation.error.join(', '));
+                                            setProcessing(false);
+                                        } else {
+                                            ownerServices.removeStorePlantQuantity$(plantDecreaseQuantityForm.storePlantID, plantDecreaseQuantityForm.quantity, plantDecreaseQuantityForm.reason).pipe(take(1)).subscribe({
+                                                next: (res) => {
+                                                    if (res.error) {
+                                                        toast.error(res.error);
+                                                        setProcessing(false);
+                                                    } else {
+                                                        toast.success(`Cập nhật thành công.`);
+                                                        setProcessing(false);
+                                                        setPlantDecreaseQuantityForm({
+                                                            isShow: false,
+                                                            quantity: 0,
+                                                            reason: '',
+                                                            storePlantID: ''
+                                                        });
+                                                        loadData();
+                                                    }
+                                                }
+                                            })
                                         }
-                                    })
-                                }
-                            }}>Lưu</Button>
-                        ]}
+                                    }}>Lưu</Button>
+                                ]}
                         centered
                     >
                         <div style={{ width: '100%', display: 'flex', gap: 4, flexDirection: 'column' }}>
@@ -1533,7 +1548,7 @@ const FormCreateBonsaitDialog: React.FC<any> = (props: any) => {
                                                 value={newCategory}
                                             />
                                             <Button type="text" icon={<PlusOutlined />} disabled={newCategory === ''} onClick={() => {
-                                                ownerServices.createNewCategory$(newCategory).pipe(take(1)).subscribe({
+                                                ownerServices.createNewCategory$(newCategory, 'ACTIVE').pipe(take(1)).subscribe({
                                                     next: (value) => {
                                                         if (value) {
                                                             toast.success('Tạo loại cây mới thành công!');

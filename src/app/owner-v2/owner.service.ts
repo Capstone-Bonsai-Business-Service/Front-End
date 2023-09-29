@@ -300,9 +300,9 @@ export class OwnerServices extends CoreServices {
         })
     }
 
-    createNewCategory$(newCategory: any) {
+    createNewCategory$(newCategory: string, status: string) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/category?name=${newCategory}`
+            let url = this.globalSettings.domain + `/category?name=${newCategory}&status=${status}`
             axios.post(url, null, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -1038,6 +1038,40 @@ export class OwnerServices extends CoreServices {
                 obs.complete();
             }).catch(() => {
                 obs.next([]);
+                obs.complete();
+            })
+        })
+    }
+
+    disableService$(serviceId: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/service/${serviceId}`
+            axios.delete(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Huỷ bán thất bại.'});
+                obs.complete();
+            })
+        })
+    }
+
+    activeService$(serviceId: string) {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/service/v2/activeService?serviceID=${serviceId}`
+            axios.put(url, undefined, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Thay đổi thất bại.'});
                 obs.complete();
             })
         })

@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { ExclamationCircleOutlined, LeftOutlined, LoadingOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { DateTime } from 'luxon';
 import TextArea from 'antd/es/input/TextArea';
+import { WorkingTimeDashBoardComponent } from './working-time-dashboard';
 
 interface IWorkingTimeProps {
     contractDetailId: string[];
@@ -37,6 +38,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
     })
     const [workingDateReport, setWorkingDateReport] = useState(new Map<string, any>());
     const [hasDataChanged, setDataChanged] = useState(false);
+    const [displayType, setDisplayType] = useState<'calendar' | 'dashboard'>('dashboard');
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
@@ -44,6 +46,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
             renderOptions();
             setFirstInit(true);
             loadData();
+            setDisplayType('calendar');
         }
     });
 
@@ -156,13 +159,13 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
             return 'transparent';
         }
         switch (status) {
-            case 'DONE': return 'rgb(146, 208, 80, 0.3)';
-            case 'MISSED': return 'rgb(192, 0, 0, 0.3)';
-            case 'WAITING': return 'rgb(255, 230, 153, 0.3)';
-            case 'WORKING': return 'rgb(255, 130, 13, 0.3)';
-            case 'CUSTOMERCANCELED': return 'rgb(192, 0, 0, 0.3)';
-            case 'STAFFCANCELED': return 'rgb(192, 0, 0, 0.3)';
-            default: return 'rgb(255, 230, 153, 0.3)'
+            case 'DONE': return 'rgb(146, 208, 80, 0.7)';
+            case 'MISSED': return 'rgb(192, 0, 0, 0.7)';
+            case 'WAITING': return 'rgb(255, 230, 153, 0.7)';
+            case 'WORKING': return 'rgb(255, 130, 13, 0.7)';
+            case 'CUSTOMERCANCELED': return 'rgb(192, 0, 0, 0.7)';
+            case 'STAFFCANCELED': return 'rgb(192, 0, 0, 0.7)';
+            default: return 'rgb(255, 230, 153, 0.7)'
         }
     }
 
@@ -221,163 +224,190 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
         window.open(src, 'Image');
     }
 
+    function backToSchedule() {
+        setDisplayType('calendar');
+    }
+
+    function exportExcel() {
+        const columns = [
+            {
+                key: 'id',
+                title: 'Mã'
+            },
+            {
+                key: '_workingDate',
+                title: 'Ngày làm việc'
+            },
+            {
+                key: '_serviceDetail',
+                title: 'Dịch vụ số'
+            },
+            {
+                key: 'fullName',
+                title: 'Nhân viên'
+            },
+            {
+                key: '_status',
+                title: 'Trạng thái'
+            },
+            {
+                key: '_checkIn',
+                title: 'Giờ làm'
+            },
+            {
+                key: '_checkOut',
+                title: 'Giờ về'
+            },
+            {
+                key: '_noteWorkingDate',
+                title: 'Ghi chú'
+            },
+        ]
+        let dataFormatted = formatDataExport();
+        CommonUtility.exportExcelV2(dataFormatted, columns, 'Lịch làm việc');
+    }
+
     return <div className='__app-working-time-container'>
-        <Calendar
-            className='__app-calendar-container'
-            mode='month'
-            fullscreen={true}
-            headerRender={(propsHeader) => {
-                return <div className='__app-calendar-header'>
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        gap: 24
-                    }}>
-                        <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
-                            if (props.callbackFn) {
-                                props.callbackFn();
-                            }
-                        }} />
-                        <div>
-                            <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='default' onClick={() => {
-                                const columns = [
-                                    {
-                                        key: 'id',
-                                        title: 'Mã'
-                                    },
-                                    {
-                                        key: '_workingDate',
-                                        title: 'Ngày làm việc'
-                                    },
-                                    {
-                                        key: '_serviceDetail',
-                                        title: 'Dịch vụ số'
-                                    },
-                                    {
-                                        key: 'fullName',
-                                        title: 'Nhân viên'
-                                    },
-                                    {
-                                        key: '_status',
-                                        title: 'Trạng thái'
-                                    },
-                                    {
-                                        key: '_checkIn',
-                                        title: 'Giờ làm'
-                                    },
-                                    {
-                                        key: '_checkOut',
-                                        title: 'Giờ về'
-                                    },
-                                    {
-                                        key: '_noteWorkingDate',
-                                        title: 'Ghi chú'
-                                    },
-                                ]
-                                let dataFormatted = formatDataExport();
-                                CommonUtility.exportExcelV2(dataFormatted, columns, 'Lịch làm việc');
-                            }}>Xuất Tệp Excel</Button>
+        {
+            displayType === 'calendar' ? <Calendar
+                className='__app-calendar-container'
+                mode='month'
+                fullscreen={true}
+                headerRender={(propsHeader) => {
+                    return <div className='__app-calendar-header'>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            gap: 24
+                        }}>
+                            <LeftOutlined style={{ color: '#000', cursor: 'pointer' }} onClick={() => {
+                                if (props.callbackFn) {
+                                    props.callbackFn();
+                                }
+                            }} />
+                            <div style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+                                <Button shape='default' icon={<VerticalAlignBottomOutlined />} type='default' onClick={() => {
+                                    exportExcel();
+                                }}>Xuất Tệp Excel</Button>
+                                <Select
+                                    style={{ width: 120 }}
+                                    value={displayType}
+                                    options={[{ value: 'calendar', label: 'Lịch' }, { value: 'dashboard', label: 'Dashboard' }]}
+                                    onChange={(value) => {
+                                        setDisplayType(value);
+                                    }}
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div style={{ display: 'flex', gap: 10 }}>
-                        <Select
-                            style={{ width: 100 }}
-                            value={yearSelect}
-                            options={yearOptions}
-                            onChange={(value) => {
-                                setYearSelect(value);
-                                let temp = propsHeader.value.clone().year(value);
-                                propsHeader.onChange(temp);
-                            }}
-                        />
-                        <Select
-                            style={{ width: 150 }}
-                            value={monthSelect}
-                            options={monthOptions}
-                            onChange={(value) => {
-                                setMonthSelect(value);
-                                let temp = propsHeader.value.clone().month(value - 1);
-                                propsHeader.onChange(temp);
-                            }}
-                        />
-                    </div>
-
-                </div>
-            }}
-            fullCellRender={(date) => {
-                if (isDataReady) {
-                    const items = listWorkingTime.filter(itm => { return date.isSame(itm.workingDate, 'date') }).reduce((acc, cur) => {
-                        acc.push({ ...cur, newStaff: cur?.showStaffModel?.id ?? null });
-                        return acc;
-                    }, []);
-                    // const _backgroud = getBackgroundColor(item?.status);
-                    const isToday = date.isSame(new Date(), 'date');
-                    const hasReport = items.reduce((acc: boolean, cur: any) => {
-                        if (cur.isReported) {
-                            acc = true;
-                        }
-                        return acc;
-                    }, false);
-                    return <div
-                        className={`__app-date-block${isToday ? ' today' : ''}`}
-                        style={{ background: 'transparent', marginBottom: 4 }}
-                        onDoubleClick={() => {
-                            // item.newStaff = item?.showStaffModel?.id ?? null;
-                            setPopupDate({
-                                isShow: true,
-                                data: items
-                            });
-                            getReport(items.reduce((acc: string[], cur: any) => {
-                                acc.push(cur.id)
-                                return acc;
-                            }, []));
-                        }}
-                    >
-                        <div className={`__app-date-value${isToday ? ' today' : ''}`}>
-                            {
-                                hasReport ? <ExclamationCircleOutlined style={{
-                                    marginRight: 10,
-                                    color: 'red'
-                                }} /> : null
-                            }
-                            {date.date()}
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <Select
+                                style={{ width: 100 }}
+                                value={yearSelect}
+                                options={yearOptions}
+                                onChange={(value) => {
+                                    setYearSelect(value);
+                                    let temp = propsHeader.value.clone().year(value);
+                                    propsHeader.onChange(temp);
+                                }}
+                            />
+                            <Select
+                                style={{ width: 150 }}
+                                value={monthSelect}
+                                options={monthOptions}
+                                onChange={(value) => {
+                                    setMonthSelect(value);
+                                    let temp = propsHeader.value.clone().month(value - 1);
+                                    propsHeader.onChange(temp);
+                                }}
+                            />
                         </div>
-                        <div className='__app-date-content'>
-                            {/* {getDateContent(items?.status)} */}
-                            {
-                                items.length > 0 ? items.reduce((acc: JSX.Element[], cur: any) => {
-                                    acc.push(
-                                        <span style={{
-                                            padding: 5,
-                                            background: getBackgroundColor(cur.status),
-                                        }}></span>
-                                    )
+
+                    </div>
+                }}
+                fullCellRender={(date) => {
+                    if (isDataReady) {
+                        const items = listWorkingTime.filter(itm => { return date.isSame(itm.workingDate, 'date') }).reduce((acc, cur) => {
+                            acc.push({ ...cur, newStaff: cur?.showStaffModel?.id ?? null });
+                            return acc;
+                        }, []);
+                        // const _backgroud = getBackgroundColor(item?.status);
+                        const isToday = date.isSame(new Date(), 'date');
+                        const hasReport = items.reduce((acc: boolean, cur: any) => {
+                            if (cur.isReported) {
+                                acc = true;
+                            }
+                            return acc;
+                        }, false);
+                        return <div
+                            className={`__app-date-block${isToday ? ' today' : ''}`}
+                            style={{ background: 'transparent', marginBottom: 4 }}
+                            onDoubleClick={() => {
+                                // item.newStaff = item?.showStaffModel?.id ?? null;
+                                setPopupDate({
+                                    isShow: true,
+                                    data: items
+                                });
+                                getReport(items.reduce((acc: string[], cur: any) => {
+                                    acc.push(cur.id)
                                     return acc;
-                                }, []) : <></>
-                            }
+                                }, []));
+                            }}
+                        >
+                            <div className={`__app-date-value${isToday ? ' today' : ''}`}>
+                                {
+                                    hasReport ? <ExclamationCircleOutlined style={{
+                                        marginRight: 10,
+                                        color: 'red'
+                                    }} /> : null
+                                }
+                                {date.date()}
+                            </div>
+                            <div className='__app-date-content'>
+                                {/* {getDateContent(items?.status)} */}
+                                {
+                                    items.length > 0 ? items.reduce((acc: JSX.Element[], cur: any) => {
+                                        acc.push(
+                                            <span style={{
+                                                padding: 5,
+                                                background: getBackgroundColor(cur.status),
+                                            }}></span>
+                                        )
+                                        return acc;
+                                    }, []) : <></>
+                                }
+                            </div>
                         </div>
-                    </div>
-                } else {
-                    return <div
-                        className={`__app-date-block`}
-                        style={{ marginBottom: 4 }}
-                    >
-                        <div className={`__app-date-value`}>
-                            {date.date()}
+                    } else {
+                        return <div
+                            className={`__app-date-block`}
+                            style={{ marginBottom: 4 }}
+                        >
+                            <div className={`__app-date-value`}>
+                                {date.date()}
+                            </div>
+                            <div className='__app-date-content'>
+                                <Spin indicator={<LoadingOutlined style={{ fontSize: 24, color: '#0D6368' }} spin />} />
+                            </div>
                         </div>
-                        <div className='__app-date-content'>
-                            <Spin indicator={<LoadingOutlined style={{ fontSize: 24, color: '#0D6368' }} spin />} />
-                        </div>
-                    </div>
-                }
+                    }
 
-            }}
-            onChange={(date) => {
-                setMonthSelect(date.month() + 1);
-                setYearSelect(date.year());
-            }}
-        />
+                }}
+                onChange={(date) => {
+                    setMonthSelect(date.month() + 1);
+                    setYearSelect(date.year());
+                }}
+            /> : <WorkingTimeDashBoardComponent
+                data={listWorkingTime}
+                backToSchedule={() => { backToSchedule() }}
+                exportExcel={() => { exportExcel() }}
+                backToList={() => {
+                    if (props.callbackFn) {
+                        props.callbackFn();
+                    }
+                }} />
+        }
+
         {
             popupDate.isShow ?
                 <Modal
@@ -478,7 +508,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                                     <span style={{ fontWeight: 600, color: 'green' }}>Vào làm: </span>
                                                                     <span>{DateTime.fromJSDate(new Date(cur.startWorking)).toFormat('dd/MM/yyyy HH:mm')}</span>
                                                                 </span>
-                                                                <img alt='' src={cur.startWorkingIMG} style={{ width: 60, cursor: 'pointer' }} onClick={() => { openImg(cur.startWorkingIMG) }}/>
+                                                                <img alt='' src={cur.startWorkingIMG} style={{ width: 60, cursor: 'pointer' }} onClick={() => { openImg(cur.startWorkingIMG) }} />
                                                             </div> : <></>
                                                         }
                                                         {
@@ -490,7 +520,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                                     <span style={{ fontWeight: 600, color: 'green' }}>Hoàn thành: </span>
                                                                     <span>{DateTime.fromJSDate(new Date(cur.endWorking)).toFormat('dd/MM/yyyy HH:mm')}</span>
                                                                 </span>
-                                                                <img alt='' src={cur.endWorkingIMG} style={{ width: 60, cursor: 'pointer' }} onClick={() => { openImg(cur.endWorkingIMG) }}/>
+                                                                <img alt='' src={cur.endWorkingIMG} style={{ width: 60, cursor: 'pointer' }} onClick={() => { openImg(cur.endWorkingIMG) }} />
                                                             </div> : <></>
                                                         }
                                                     </div>
@@ -564,5 +594,6 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                     </div>
                 </Modal> : <></>
         }
+
     </div>
 }
