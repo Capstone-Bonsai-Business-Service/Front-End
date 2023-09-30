@@ -572,16 +572,20 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                             key='save'
                                                             disabled={cur.newStaff ? false : true}
                                                             onClick={() => {
-                                                                props.apiServices.changeStaffForWorkingDate$(cur.newStaff, cur.id, cur.noteWorkingDate).pipe(take(1)).subscribe({
-                                                                    next: (value: any) => {
-                                                                        if (value.error) {
-                                                                            toast.error(value.error);
-                                                                        } else {
-                                                                            toast.success('Cập nhật thành công.');
-                                                                            setDataChanged(true);
+                                                                if (CommonUtility.isNullOrEmpty(cur.noteWorkingDate)) {
+                                                                    toast.error('Vui lòng nhập Ghi chú')
+                                                                } else {
+                                                                    props.apiServices.changeStaffForWorkingDate$(cur.newStaff, cur.id, cur.noteWorkingDate ?? '').pipe(take(1)).subscribe({
+                                                                        next: (value: any) => {
+                                                                            if (value.error) {
+                                                                                toast.error(value.error);
+                                                                            } else {
+                                                                                toast.success('Cập nhật thành công.');
+                                                                                setDataChanged(true);
+                                                                            }
                                                                         }
-                                                                    }
-                                                                });
+                                                                    });
+                                                                }
                                                             }}>Thay đổi</Button></div> : <></>
                                                 }
                                             </div>
