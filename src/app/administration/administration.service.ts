@@ -42,7 +42,7 @@ export class adminServices extends CoreServices {
 
     getAccounts$(options: string = '') {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=USERNAME&sortTypeAsc=true`
+            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=100&sortBy=USERNAME&sortTypeAsc=true`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

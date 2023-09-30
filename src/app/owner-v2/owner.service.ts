@@ -21,7 +21,7 @@ export class OwnerServices extends CoreServices {
 
     getBonsais$(options: any) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/plant/v2/getStorePlant?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`;
+            let url = this.globalSettings.domain + `/plant/v2/getStorePlant?storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`;
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -89,7 +89,7 @@ export class OwnerServices extends CoreServices {
 
     getStorePlant$(storeId: string) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/store/getStorePlant/${storeId}?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/store/getStorePlant/${storeId}?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -123,7 +123,7 @@ export class OwnerServices extends CoreServices {
 
     getMembersV1$(roleID: string) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=1000&sortBy=ID&sortTypeAsc=false`
+            let url = this.globalSettings.domain + `/user?pageNo=0&pageSize=100&sortBy=ID&sortTypeAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -146,7 +146,7 @@ export class OwnerServices extends CoreServices {
 
     getMembersByStoreID$(storeID: string, managerID: number = -1) {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${storeID}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${storeID}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -186,7 +186,7 @@ export class OwnerServices extends CoreServices {
 
     getService$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/service/getAllServiceForOwner?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/service/getAllServiceForOwner?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -404,7 +404,7 @@ export class OwnerServices extends CoreServices {
 
     getAllContracts$() {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/contract/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/contract/getAll?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 'headers': {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -438,7 +438,7 @@ export class OwnerServices extends CoreServices {
 
     getAllOrders$() {
         return new Observable<IContractDetail[]>(obs => {
-            let url = this.globalSettings.domain + `/order/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/order/getAll?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -611,7 +611,7 @@ export class OwnerServices extends CoreServices {
 
     getStoreOrderFeedbacks$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/feedback/getFeedbackOwnerManager?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/feedback/getFeedbackOwnerManager?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -628,7 +628,7 @@ export class OwnerServices extends CoreServices {
 
     getStoreContractFeedbacks$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/feedback/contractFeedback?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/feedback/contractFeedback?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -697,7 +697,7 @@ export class OwnerServices extends CoreServices {
 
     getMembers$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -994,7 +994,7 @@ export class OwnerServices extends CoreServices {
 
     getStoreOrders$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true`
+            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=true`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

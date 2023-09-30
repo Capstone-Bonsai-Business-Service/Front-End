@@ -32,7 +32,7 @@ export class ManagerServices extends CoreServices {
 
     getMembers$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -57,7 +57,7 @@ export class ManagerServices extends CoreServices {
 
     disableAccount$(accountID: number) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/store/getStoreStaff?storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -104,7 +104,7 @@ export class ManagerServices extends CoreServices {
 
     getBonsais$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/store/getStorePlant/${this.storeId}?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/store/getStorePlant/${this.storeId}?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -138,7 +138,7 @@ export class ManagerServices extends CoreServices {
 
     getContracts$() {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/contract?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true`
+            let url = this.globalSettings.domain + `/contract?storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=true`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -377,7 +377,7 @@ export class ManagerServices extends CoreServices {
 
     getStoreOrders$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=true`
+            let url = this.globalSettings.domain + `/order/getAllOrderByUsername?storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=true`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -394,7 +394,7 @@ export class ManagerServices extends CoreServices {
 
     getStoreOrderFeedbacks$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/feedback/getFeedbackOwnerManager?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/feedback/getFeedbackOwnerManager?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -411,7 +411,7 @@ export class ManagerServices extends CoreServices {
 
     getReports$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/report/getAll?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/report/getAll?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -434,7 +434,7 @@ export class ManagerServices extends CoreServices {
 
     getTransactions$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/transaction/getAll?byOrder=true&byContract=false&storeID=${this.storeId}&pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/transaction/getAll?byOrder=true&byContract=false&storeID=${this.storeId}&pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
@@ -468,7 +468,7 @@ export class ManagerServices extends CoreServices {
 
     getStoreContractFeedbacks$() {
         return new Observable<any[]>(obs => {
-            let url = this.globalSettings.domain + `/feedback/contractFeedback?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false`
+            let url = this.globalSettings.domain + `/feedback/contractFeedback?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`

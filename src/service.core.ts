@@ -67,7 +67,7 @@ export class CoreServices {
 
     getShipPlant$() {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + '/plantShipPrice?pageNo=0&pageSize=1000&sortBy=ID&sortAsc=false';
+            let url = this.globalSettings.domain + '/plantShipPrice?pageNo=0&pageSize=100&sortBy=ID&sortAsc=false';
             axios.get(url).then((res) => {
                 obs.next(res.data);
                 obs.complete();
