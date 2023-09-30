@@ -81,7 +81,8 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             'servicePackID': cur['servicePackID'] ?? '',
                             'serviceTypeID': cur['serviceTypeID'] ?? '',
                             'startDate': cur['startDate'] ?? '',
-                            'endDate': getEndDate(cur) ?? ''
+                            'endDate': getEndDate(cur) ?? '',
+                            'plantName': cur['plantName'] ?? '(Chưa có tên cây)'
                         })
                         return acc;
                     }, []),
@@ -281,7 +282,8 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                                 'servicePackID': '',
                                                 'serviceTypeID': '',
                                                 'startDate': '',
-                                                'endDate': ''
+                                                'endDate': '',
+                                                'plantName': null
                                             })
                                             setServiceForm(form);
                                         }}
@@ -478,7 +480,22 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 </Col>
                             </Row>
                             <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={4} className='__app-account-field'>
+                                    <span>
+                                        <strong>Tên cây:</strong> <span className='__app-required-field'> *</span>
+                                    </span>
 
+                                </Col>
+                                <Col span={20}>
+                                    <Input 
+                                        value={ cur.plantName }
+                                        onChange={(args) => {
+                                            let temp = cloneDeep(servicesForm) ?? [];
+                                            temp[currentIndex]['plantName'] = args.target.value;
+                                            setServiceForm(temp);
+                                        }}
+                                    />
+                                </Col>
                             </Row>
                             <Row style={{ width: '100%', padding: '0 12px' }}>
                                 <Col span={4} className='__app-account-field'>

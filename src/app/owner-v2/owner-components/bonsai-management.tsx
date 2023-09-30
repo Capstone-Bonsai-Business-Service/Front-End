@@ -226,6 +226,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                         }}
                                     >Xem chi tiết</span>
                                 },
+                                record.totalPlant > 0 ?
                                 {
                                     key: 'quantityDecrease',
                                     label: <span
@@ -239,7 +240,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                             });
                                         }}
                                     >Giảm số lượng cây</span>
-                                },
+                                } : null,
                                 {
                                     key: 'history',
                                     label: <span
@@ -1014,7 +1015,7 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                         allowNegative={false}
                                                         onValueChange={(values) => {
                                                             let temp = cloneDeep(bonsaiDetail) as IPlant;
-                                                            temp['price'] = values.floatValue as number;
+                                                            temp['showPlantPriceModel']['price'] = values.floatValue as number;
                                                             setBonsaiDetail(temp);
                                                         }}
                                                         placeholder="Nhập giá"
@@ -1079,7 +1080,9 @@ export const BonsaiManagementComponent: React.FC<IBonsaiManagementProps> = (prop
                                                 }, []),
                                                 "price": bonsaiDetail?.showPlantPriceModel.price,
                                                 "listURL": bonsaiDetail?.plantIMGList.reduce((acc: string[], cur: any) => {
-                                                    acc.push(cur.url);
+                                                    if (cur.url) {
+                                                        acc.push(cur.url);
+                                                    }
                                                     return acc;
                                                 }, []),
                                             }
