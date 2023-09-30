@@ -480,6 +480,12 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
                                                 <Col span={16}>{`${cur.showServicePackModel?.packRange} ${cur.showServicePackModel?.packUnit}`}</Col>
                                             </Row>
                                             <Row style={{ width: '100%' }}>
+                                                <Col span={8}>Cây:</Col>
+                                                <Col span={16}>
+                                                    <span>{cur.plantName ?? '--'} {cur.plantStatus ? `(${cur.plantStatus})` : `(Chưa kiểm tra)`}</span>
+                                                    </Col>
+                                            </Row>
+                                            <Row style={{ width: '100%' }}>
                                                 <Col span={8}>Ngày làm:</Col>
                                                 <Col span={16}>
                                                     <span>{cur.timeWorking ?? '--'}</span>

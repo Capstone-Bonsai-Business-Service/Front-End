@@ -69,9 +69,9 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     'phone': contractDetail['phone'] ?? '',
                     'address': contractDetail['address'] ?? '',
                     'storeID': apiService.storeId,
-                    'status': contractDetail.status ?? 'ACTIVE',
+                    // 'status': contractDetail.status ?? 'ACTIVE',
                     'paymentMethod': contractDetail['paymentMethod'] ?? '',
-                    'customerID': contractDetail['customerID'] ?? null,
+                    'customerID': contractDetail['customerID'] !== -1 ? contractDetail['customerID'] : null,
                     'email': contractDetail['email'] ?? '',
                     'detailModelList': servicesForm.reduce((acc, cur) => {
                         acc.push({
@@ -332,7 +332,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                             ></UserPicker>
                         </Col>
                     </Row>
-                    <Row className='__app-object-info-row'>
+                    {/* <Row className='__app-object-info-row'>
                         <Col span={3} className='__app-object-field'>
                             <span>
                                 <strong>Trạng thái: </strong> <span className='__app-required-field'> *</span>
@@ -350,7 +350,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                 value={contractDetail.status}
                             />
                         </Col>
-                    </Row>
+                    </Row> */}
                     {/* <Row className='__app-account-info-row'>
                         <Col span={3} className='__app-account-field'>
                             <span><strong>Ảnh Scan: </strong> <span className='__app-required-field'> *</span></span>

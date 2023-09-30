@@ -74,14 +74,16 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
             key: string;
         }[],
         listURL: string[],
-        atHome: boolean
+        atHome: boolean,
+        status: 'ACTIVE' | 'INACTIVE'
     }>({
         name: '',
         price: 0,
         description: '',
         createServiceTypeModel: [],
         listURL: [],
-        atHome: true
+        atHome: true,
+        status: 'ACTIVE'
     });
     const [isUpload, setIsUpload] = useState<boolean>(false);
     const [images, setImages] = useState<string[]>([]);
@@ -161,6 +163,25 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                                     temp['atHome'] = value;
                                     setServiceForm(temp);
                                 }}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={3} className='__app-object-field'>
+                            <span>
+                                <strong>Trạng thái: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={20}>
+                            <Select
+                                onChange={(value) => {
+                                    let temp = cloneDeep(serviceForm);
+                                    temp['status'] = value;
+                                    setServiceForm(temp);
+                                }}
+                                style={{ width: '100%' }}
+                                options={[{ value: 'ACTIVE', label: 'Hoạt động' }, { value: 'INACTIVE', label: 'Ngưng hoạt động' }]}
+                                value={serviceForm.status}
                             />
                         </Col>
                     </Row>
@@ -378,7 +399,8 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                 return acc;
             }, [] as any[]),
             "listURL": images,
-            "atHome": serviceForm.atHome
+            "atHome": serviceForm.atHome,
+            status: serviceForm.status
         }
         ownerServices.createService$(formData).pipe(take(1)).subscribe({
             next: (res) => {
