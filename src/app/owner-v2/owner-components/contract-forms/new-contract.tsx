@@ -62,49 +62,112 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
         );
         nodes.push(
             <Button key='save' type='primary' style={{ background: '#0D6368' }} onClick={() => {
-                const firstServiceName = serviceList.find(item => item.serviceID === servicesForm[0]?.serviceID)?.name ?? 'Dịch vụ';
-                const dataPost = {
-                    'title': `Hợp đồng ${firstServiceName}`,
-                    'fullName': contractDetail['fullName'],
-                    'phone': contractDetail['phone'] ?? '',
-                    'address': contractDetail['address'] ?? '',
-                    'storeID': apiService.storeId,
-                    // 'status': contractDetail.status ?? 'ACTIVE',
-                    'paymentMethod': contractDetail['paymentMethod'] ?? '',
-                    'customerID': contractDetail['customerID'] !== -1 ? contractDetail['customerID'] : null,
-                    'email': contractDetail['email'] ?? '',
-                    'detailModelList': servicesForm.reduce((acc, cur) => {
-                        acc.push({
-                            'note': CommonUtility.isNullOrEmpty(cur['note']) ? '(Không có ghi chú)' : cur['note'],
-                            'timeWorking': cur['timeWorking']?.join(' - ') ?? '',
-                            'totalPrice': getTotalPrice(cur),
-                            'servicePackID': cur['servicePackID'] ?? '',
-                            'serviceTypeID': cur['serviceTypeID'] ?? '',
-                            'startDate': cur['startDate'] ?? '',
-                            'endDate': getEndDate(cur) ?? '',
-                            'plantName': cur['plantName'] ?? '(Chưa có tên cây)'
-                        })
-                        return acc;
-                    }, []),
-                    'staffID': contractDetail['staffID'] !== -1 ? contractDetail['staffID'] : null,
-                    // 'listURL': imageScanUrls,
-                    'isPaid': true
-                }
-                apiService.createContract$(dataPost).subscribe({
-                    next: (res) => {
-                        if (res) {
-                            toast.success('Tạo yêu cầu thành công');
-                            if (props.onSave) {
-                                props.onSave(contractDetail);
-                            }
-                        } else {
-                            toast.error('Tạo yêu cầu thất bại');
-                        }
+                const validation = validateFormCreate();
+                if (validation.invalid) {
+                    toast.error(`Vui lòng nhập đủ thông tin ${validation.fields.join(', ')}`);
+                } else {
+                    const firstServiceName = serviceList.find(item => item.serviceID === servicesForm[0]?.serviceID)?.name ?? 'Dịch vụ';
+                    const dataPost = {
+                        'title': `Hợp đồng ${firstServiceName}`,
+                        'fullName': contractDetail['fullName'],
+                        'phone': contractDetail['phone'] ?? '',
+                        'address': contractDetail['address'] ?? '',
+                        'storeID': apiService.storeId,
+                        // 'status': contractDetail.status ?? 'ACTIVE',
+                        'paymentMethod': contractDetail['paymentMethod'] ?? '',
+                        'customerID': contractDetail['customerID'] !== -1 ? contractDetail['customerID'] : null,
+                        'email': contractDetail['email'] ?? '',
+                        'detailModelList': servicesForm.reduce((acc, cur) => {
+                            acc.push({
+                                'note': CommonUtility.isNullOrEmpty(cur['note']) ? '(Không có ghi chú)' : cur['note'],
+                                'timeWorking': cur['timeWorking']?.join(' - ') ?? '',
+                                'totalPrice': getTotalPrice(cur),
+                                'servicePackID': cur['servicePackID'] ?? '',
+                                'serviceTypeID': cur['serviceTypeID'] ?? '',
+                                'startDate': cur['startDate'] ?? '',
+                                'endDate': getEndDate(cur) ?? '',
+                                'plantName': cur['plantName'] ?? '(Chưa có tên cây)'
+                            })
+                            return acc;
+                        }, []),
+                        'staffID': contractDetail['staffID'] !== -1 ? contractDetail['staffID'] : null,
+                        // 'listURL': imageScanUrls,
+                        'isPaid': true
                     }
-                })
+                    apiService.createContract$(dataPost).subscribe({
+                        next: (res) => {
+                            if (res) {
+                                toast.success('Tạo yêu cầu thành công');
+                                if (props.onSave) {
+                                    props.onSave(contractDetail);
+                                }
+                            } else {
+                                toast.error('Tạo yêu cầu thất bại');
+                            }
+                        }
+                    })
+                }
             }}>Lưu</Button>
         );
         return nodes;
+    }
+
+    function validateFormCreate() {
+        const temp = cloneDeep(contractDetail);
+        let result = {
+            invalid: false,
+            fields: [] as string[]
+        }
+        if (CommonUtility.isNullOrEmpty(temp.fullName)) {
+            result.invalid = true;
+            result.fields.push('Tên Khách hàng');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.phone)) {
+            result.invalid = true;
+            result.fields.push('Số điện thoại');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.address)) {
+            result.invalid = true;
+            result.fields.push('Địa chỉ');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.email)) {
+            result.invalid = true;
+            result.fields.push('Email');
+        }
+        if (temp.staffID === -1) {
+            result.invalid = true;
+            result.fields.push('Nhân viên');
+        }
+        if (CommonUtility.isNullOrEmpty(temp.servicesForm)) {
+            result.invalid = true;
+            result.fields.push('Dịch vụ');
+        }
+        const check = servicesForm.reduce((acc, cur) => {
+            if (cur.timeWorking.length < 3) {
+                acc = true;
+            }
+            if (CommonUtility.isNullOrEmpty(cur.servicePackID)) {
+                acc = true;
+            }
+            if (CommonUtility.isNullOrEmpty(cur.serviceTypeID)) {
+                acc = true;
+            }
+            if (CommonUtility.isNullOrEmpty(cur.startDate)) {
+                acc = true;
+            }
+            if (CommonUtility.isNullOrEmpty(cur.endDate)) {
+                acc = true;
+            }
+            if (CommonUtility.isNullOrEmpty(cur.plantName)) {
+                acc = true;
+            }
+            return acc;
+        }, false);
+        if (check) {
+            result.invalid = true;
+            result.fields.push('Thông tin của dịch vụ');
+        }
+        return result;
     }
 
     return (
@@ -575,6 +638,17 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                             }
                                         }}
                                     />
+                                </Col>
+                            </Row>
+                            <Row style={{ width: '100%', padding: '0 12px' }}>
+                                <Col span={4} className='__app-account-field'>
+                                </Col>
+                                <Col span={20}>
+                                    {
+                                        cur.timeWorking.length < 3 ? <span style={{ color: 'red' }}>
+                                            Vui lòng chọn 3 ngày làm việc
+                                        </span> : <></>
+                                    }
                                 </Col>
                             </Row>
                             <Row style={{ width: '100%', padding: '0 12px' }}>
