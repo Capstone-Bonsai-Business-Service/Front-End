@@ -69,6 +69,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                     'phone': contractDetail['phone'] ?? '',
                     'address': contractDetail['address'] ?? '',
                     'storeID': apiService.storeId,
+                    'status': contractDetail.status ?? 'ACTIVE',
                     'paymentMethod': contractDetail['paymentMethod'] ?? '',
                     'customerID': contractDetail['customerID'] ?? null,
                     'email': contractDetail['email'] ?? '',
@@ -84,7 +85,7 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                         })
                         return acc;
                     }, []),
-                    'staffID': contractDetail['staffID'],
+                    'staffID': contractDetail['staffID'] !== -1 ? contractDetail['staffID'] : null,
                     // 'listURL': imageScanUrls,
                     'isPaid': true
                 }
@@ -329,6 +330,25 @@ export const FormCreateContractDialog: React.FC<any> = (props: any) => {
                                     setContractDetail(temp);
                                 }}
                             ></UserPicker>
+                        </Col>
+                    </Row>
+                    <Row className='__app-object-info-row'>
+                        <Col span={3} className='__app-object-field'>
+                            <span>
+                                <strong>Trạng thái: </strong> <span className='__app-required-field'> *</span>
+                            </span>
+                        </Col>
+                        <Col span={20}>
+                            <Select
+                                onChange={(value) => {
+                                    let temp = cloneDeep(contractDetail);
+                                    temp['status'] = value;
+                                    setContractDetail(temp);
+                                }}
+                                style={{ width: '100%' }}
+                                options={[{ value: 'ACTIVE', label: 'Hoạt động' }, { value: 'INACTIVE', label: 'Ngưng hoạt động' }]}
+                                value={contractDetail.status}
+                            />
                         </Col>
                     </Row>
                     {/* <Row className='__app-account-info-row'>

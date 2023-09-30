@@ -39,7 +39,7 @@ export const OwnerPage: React.FC<IOwnerPageProps> = (props) => {
 
     // const [collapsed, setCollapsed] = useState<boolean>(false);
     const [isFirstInit, setFirstInit] = useState<boolean>(false);
-    const [currentMenuItem, setCurrentMenuItem] = useState<string>('storeRating');
+    const [currentMenuItem, setCurrentMenuItem] = useState<string>('contracts');
     const [showModalExpiredToken, setShowModalExpiredToken] = useState<boolean>(false);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
