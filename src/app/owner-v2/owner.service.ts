@@ -790,7 +790,7 @@ export class OwnerServices extends CoreServices {
 
     getWorkingTimesByService$(contractDetailID: string) {
         return new Observable<any>(obs => {
-            let url = this.globalSettings.domain + `/workingDate/getWorkingDateByContractDetailID?contractDetailID=${contractDetailID}&pageNo=0&pageSize=100&sortBy=WORKINGDATE&sortAsc=false`
+            let url = this.globalSettings.domain + `/workingDate/getWorkingDateByContractDetailID?contractDetailID=${contractDetailID}&pageNo=0&pageSize=300&sortBy=WORKINGDATE&sortAsc=false`
             axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${this.globalSettings.userToken}`
