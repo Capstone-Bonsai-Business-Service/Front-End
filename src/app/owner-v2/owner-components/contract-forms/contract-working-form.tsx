@@ -307,7 +307,7 @@ const ContractDetailComponent: React.FC<IContractDetailProps> = (props) => {
 
     function loadData() {
         setDataReady(false);
-        forkJoin([apiService.getContractDetail$(props.contractId), apiService.getMembers$()]).subscribe({
+        forkJoin([apiService.getContractDetail$(props.contractId), apiService.getMembers$(), apiService.checkWorkingDate$()]).subscribe({
             next: (values) => {
                 const staffListOption = values[1].reduce((acc, cur) => {
                     acc.push({
