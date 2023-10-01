@@ -167,12 +167,12 @@ const FormCreateServiceDialog: React.FC<ICreateServiceProps> = (props: ICreateSe
                         </Col>
                     </Row>
                     <Row className='__app-object-info-row'>
-                        <Col span={3} className='__app-object-field'>
+                        <Col span={6} className='__app-object-field'>
                             <span>
                                 <strong>Trạng thái: </strong> <span className='__app-required-field'> *</span>
                             </span>
                         </Col>
-                        <Col span={20}>
+                        <Col span={18}>
                             <Select
                                 onChange={(value) => {
                                     let temp = cloneDeep(serviceForm);
