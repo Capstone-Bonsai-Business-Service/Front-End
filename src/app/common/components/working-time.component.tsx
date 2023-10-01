@@ -620,7 +620,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                                         }
                                                                         request$.push(props.apiServices.swapWorkingDate$(cur.id, cur.newDate))
                                                                     }
-                                                                    forkJoin(...request$).pipe(take(1)).subscribe({
+                                                                    forkJoin([...request$]).pipe(take(1)).subscribe({
                                                                         next: (values: any[]) => {
                                                                             if (values[0].error) {
                                                                                 toast.error(values[0].error);
