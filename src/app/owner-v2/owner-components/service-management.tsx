@@ -1060,7 +1060,7 @@ const TabServiceList: React.FC<any> = (props) => {
             className: '__app-header-title'
         },
         {
-            title: 'Kích thước',
+            title: 'Kích thước (m)',
             dataIndex: 'size',
             key: 'size',
             showSorterTooltip: false,
@@ -1304,7 +1304,7 @@ const TabServiceList: React.FC<any> = (props) => {
                                                         value={serviceDetail?.price}
                                                         onValueChange={(values) => {
                                                             let temp = cloneDeep(serviceDetail);
-                                                            temp['height'] = values.floatValue as number;
+                                                            temp['price'] = values.floatValue as number;
                                                             setServiceDetail(temp);
                                                         }}
                                                         placeholder="Nhập giá"

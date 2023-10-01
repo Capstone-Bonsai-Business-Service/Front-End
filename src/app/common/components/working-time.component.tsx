@@ -1,4 +1,4 @@
-import { Button, Calendar, Col, Divider, Modal, Row, Select, Skeleton, Spin, Tag } from 'antd';
+import { Button, Calendar, Col, DatePicker, Divider, Modal, Row, Select, Skeleton, Spin, Tag } from 'antd';
 import { CommonUtility } from '../../utils/utilities';
 import './common-component.scss';
 import { useEffect, useState } from 'react';
@@ -12,6 +12,7 @@ import { ExclamationCircleOutlined, LeftOutlined, LoadingOutlined, VerticalAlign
 import { DateTime } from 'luxon';
 import TextArea from 'antd/es/input/TextArea';
 import { WorkingTimeDashBoardComponent } from './working-time-dashboard';
+import dayjs from 'dayjs';
 
 interface IWorkingTimeProps {
     contractDetailId: string[];
@@ -492,6 +493,7 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                             <span style={{ color: 'red' }}>Nhân viên không đi làm</span>
                                                             : <></>
                                                     }
+
                                                     <div style={{
                                                         display: 'flex',
                                                         flexDirection: 'row',
@@ -559,6 +561,41 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                         </Row>
                                                         : <></>
                                                 }
+                                                {
+                                                    cur.status === 'WAITING' ?
+                                                        <Row>
+                                                            <Col span={8} style={{ fontWeight: 500 }}></Col>
+                                                            <Col span={12}>
+                                                                <span style={{ color: 'blue', cursor: 'pointer' }}
+                                                                    onClick={() => {
+                                                                        let temp = cloneDeep(popupDate);
+                                                                        temp.data[index]['changedDate'] = true;
+                                                                        setPopupDate(temp);
+                                                                    }}
+                                                                >Đổi ngày</span>
+                                                            </Col>
+                                                        </Row>
+
+                                                        : <></>
+                                                }
+                                                {
+                                                    cur.changedDate ?
+                                                        <Row>
+                                                            <Col span={8} style={{ fontWeight: 500 }}></Col>
+                                                            <Col span={12}>
+                                                                <DatePicker
+                                                                    style={{ width: '100%' }}
+                                                                    placeholder='Chọn ngày thay đổi'
+                                                                    value={cur.workingDate !== '' ? dayjs(new Date(cur.workingDate)) : null}
+                                                                    onChange={(value) => {
+                                                                        let temp = cloneDeep(popupDate);
+                                                                        temp.data[index]['newDate'] = DateTime.fromJSDate(value?.toDate() as any).toFormat('yyyy-MM-dd');
+                                                                        setPopupDate(temp);
+                                                                    }} />
+                                                            </Col>
+                                                        </Row>
+                                                        : <></>
+                                                }
                                                 <span style={{ padding: 2 }}></span>
                                                 {
                                                     cur.status !== 'DONE' && cur.status !== 'MISSED' ?
@@ -573,12 +610,22 @@ export const WorkingTimeCalendar: React.FC<IWorkingTimeProps> = (props) => {
                                                             disabled={cur.newStaff ? false : true}
                                                             onClick={() => {
                                                                 if (CommonUtility.isNullOrEmpty(cur.noteWorkingDate)) {
-                                                                    toast.error('Vui lòng nhập Ghi chú')
+                                                                    toast.error('Vui lòng nhập Ghi chú');
                                                                 } else {
-                                                                    props.apiServices.changeStaffForWorkingDate$(cur.newStaff, cur.id, cur.noteWorkingDate ?? '').pipe(take(1)).subscribe({
-                                                                        next: (value: any) => {
-                                                                            if (value.error) {
-                                                                                toast.error(value.error);
+                                                                    const request$: Observable<any>[] = [props.apiServices.changeStaffForWorkingDate$(cur.newStaff, cur.id, cur.noteWorkingDate ?? '')];
+                                                                    if (cur.changedDate) {
+                                                                        if (new Date(cur.newDate).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+                                                                            toast.error('Vui lòng chọn ngày lớn hơn ngày hiện tại');
+                                                                            return;
+                                                                        }
+                                                                        request$.push(props.apiServices.swapWorkingDate$(cur.id, cur.newDate))
+                                                                    }
+                                                                    forkJoin(...request$).pipe(take(1)).subscribe({
+                                                                        next: (values: any[]) => {
+                                                                            if (values[0].error) {
+                                                                                toast.error(values[0].error);
+                                                                            } else if (values[1].error) {
+                                                                                toast.error(values[1].error);
                                                                             } else {
                                                                                 toast.success('Cập nhật thành công.');
                                                                                 setDataChanged(true);
