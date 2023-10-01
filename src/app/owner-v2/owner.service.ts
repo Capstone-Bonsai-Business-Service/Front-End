@@ -1093,5 +1093,22 @@ export class OwnerServices extends CoreServices {
             })
         })
     }
+
+    checkWorkingDate$() {
+        return new Observable<any>(obs => {
+            let url = this.globalSettings.domain + `/workingDate/v2/checkMissedDate`;
+            axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${this.globalSettings.userToken}`
+                }
+            }).then((res) => {
+                obs.next(res.data);
+                obs.complete();
+            }).catch((err) => {
+                obs.next({error: JSON.stringify(err.response?.data) ?? 'Thay đổi thất bại.'});
+                obs.complete();
+            })
+        })
+    }
     //#endregion
 }

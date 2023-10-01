@@ -227,7 +227,12 @@ const RequestContractListComponent: React.FC<IContractFormProps> = (props) => {
                     setShowPopupCreate(true);
                 }}>Tạo Hợp Đồng</Button>
                 <Button shape='default' icon={<ReloadOutlined />} type='text' onClick={() => {
-                    loadData();
+                    // loadData();
+                    apiService.checkWorkingDate$().pipe(take(1)).subscribe({
+                        next: () => {
+                            loadData();
+                        }
+                    })
                 }}>Tải Lại</Button>
             </div>
             <div className='__app-toolbar-right-buttons'>
